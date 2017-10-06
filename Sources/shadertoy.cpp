@@ -55,7 +55,42 @@ void st_render(const char *id)
 {
 	try
 	{
-		st_get_context(id)->performRender(st_window);
+		auto context(st_get_context(id));
+		int frameCount;
+
+		if (!MLGetInteger32(stdlink, &frameCount))
+		{
+			MLClearError(stdlink);
+
+			const char *symbol;
+			if (MLGetSymbol(stdlink, &symbol))
+			{
+				// Null is default value
+				bool is_null = strcmp("Null", symbol) == 0;
+
+				MLReleaseSymbol(stdlink, symbol);
+
+				if (!is_null)
+					throw runtime_error("Invalid value for Frame");
+				else
+					frameCount = context->frameCount;
+			}
+			else
+			{
+				MLClearError(stdlink);
+				throw runtime_error("Could not get value for Frame");
+			}
+		}
+
+		int width, height;
+		MLGetInteger32(stdlink, &width);
+		MLGetInteger32(stdlink, &height);
+
+		auto image = context->performRender(st_window, frameCount, width, height);
+		context->frameCount = frameCount + 1;
+
+		MLPutFunction(stdlink, "Image", 1);
+		MLPutReal32Array(stdlink, image.data->data(), &image.dims[0], NULL, 3);
 	}
 	catch (oglplus::ProgramBuildError &pbe)
 	{

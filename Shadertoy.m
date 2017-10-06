@@ -20,6 +20,10 @@ $sourceFiles = FileNameJoin[{$packageDir, "Sources", #}]& /@
 (* Just a colourful Print alternative *)
 print[args___] := Print @@ (Style[#, Red]&) /@ {args}
 
+(* Uninstall existing *)
+Uninstall[$executable];
+
+(* Compile and install *)
 If[
     Install[$executable] === $Failed
     ,

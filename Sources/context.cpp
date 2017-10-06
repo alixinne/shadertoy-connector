@@ -4,8 +4,6 @@
 #include <alloca.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-#include "mathlink.h"
-
 using namespace std;
 
 StContext::StContext(const std::string &shaderId, int width, int height)
@@ -25,15 +23,13 @@ StContext::StContext(const std::string &shaderId, int width, int height)
 	context->Initialize();
 }
 
-void StContext::performRender(GLFWwindow *window)
+StImage StContext::performRender(GLFWwindow *window, int frameCount, int width, int height)
 {
 	// Ensure we are working at the right size
-	int win_width, win_height;
-	glfwGetFramebufferSize(window, &win_width, &win_height);
-	if (win_width != config.width || win_height != config.height)
+	if (width != config.width || height != config.height)
 	{
-		config.width = win_width;
-		config.height = win_height;
+		config.width = width;
+		config.height = height;
 		context->AllocateTextures();
 	}
 
@@ -44,7 +40,7 @@ void StContext::performRender(GLFWwindow *window)
 
 	// Update uniforms
 	//  iTime and iFrame
-	state.V<shadertoy::iTime>() += 1.0 / config.targetFramerate;
+	state.V<shadertoy::iTime>() = frameCount * (1.0 / config.targetFramerate);
 	state.V<shadertoy::iFrame>() = frameCount;
 
 	//  iDate
@@ -76,33 +72,26 @@ void StContext::performRender(GLFWwindow *window)
 	context->DoReadCurrentFrame(tex);
 
 	// Store it in a suitably sized array
-	GLint width, height, depth;
+	GLint depth;
 	glGetTextureLevelParameteriv(tex, 0, GL_TEXTURE_WIDTH, &width);
 	glGetTextureLevelParameteriv(tex, 0, GL_TEXTURE_HEIGHT, &height);
 	depth = 3; // RGB output
 
 	// float textures
-	float *texData = new float[width * height * depth];
-	glGetTextureImage(tex, 0, GL_RGB, GL_FLOAT, sizeof(float) * width * height * depth, texData);
+	shared_ptr<vector<float>> texData = make_shared<vector<float>>(width * height * depth);
+	glGetTextureImage(tex, 0, GL_RGB, GL_FLOAT, sizeof(float) * width * height * depth, texData->data());
 
 	// Vertical flip
 	size_t stride_size = sizeof(float) * width * depth;
 	float *stride = static_cast<float *>(alloca(stride_size));
 	for (int i = 0; i < height / 2; ++i)
 	{
-		memcpy(stride, &texData[i * stride_size / sizeof(float)], stride_size);
-		memcpy(&texData[i * stride_size / sizeof(float)],
-			   &texData[(height - i - 1) * stride_size / sizeof(float)], stride_size);
-		memcpy(&texData[(height - i - 1) * stride_size / sizeof(float)], stride, stride_size);
+		memcpy(stride, &(*texData)[i * stride_size / sizeof(float)], stride_size);
+		memcpy(&(*texData)[i * stride_size / sizeof(float)],
+			   &(*texData)[(height - i - 1) * stride_size / sizeof(float)], stride_size);
+		memcpy(&(*texData)[(height - i - 1) * stride_size / sizeof(float)], stride, stride_size);
 	}
 
-	// Send this to Mathematica
-	int dims[] = { height, width, depth };
-	MLPutFunction(stdlink, "Image", 1);
-	MLPutReal32Array(stdlink, texData, &dims[0], NULL, 3);
-
-	delete[] texData;
-
-	// Update time and framecount
-	frameCount++;
+	// Return the image
+	return StImage{ texData, { height, width, depth }};
 }

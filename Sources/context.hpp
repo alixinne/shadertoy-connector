@@ -11,6 +11,12 @@
 
 #include <shadertoy/Shadertoy.hpp>
 
+struct StImage
+{
+	std::shared_ptr<std::vector<float>> data;
+	int dims[3];
+};
+
 struct StContext
 {
 	/// Identifier of the Shadertoy object
@@ -41,9 +47,14 @@ struct StContext
 	 * Renders the next frame of this Shadertoy and sends it to the stdlink
 	 * connection as a result.
 	 *
-	 * @param window OpenGL rendering window
+	 * @param window     OpenGL rendering window
+	 * @param frameCount Id of the frame to render
+	 * @param width      Width of the rendering
+	 * @param height     Height of the rendering
+	 *
+	 * @return
 	 */
-	void performRender(GLFWwindow *window);
+	StImage performRender(GLFWwindow *window, int frameCount, int width, int height);
 };
 
 #endif /* _CONTEXT_HPP_ */
