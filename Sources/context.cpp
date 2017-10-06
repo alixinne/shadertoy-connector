@@ -13,6 +13,7 @@ StContext::StContext(const std::string &shaderId, int width, int height)
 {
 	config.width = width;
 	config.height = height;
+	config.targetFramerate = 60.0;
 
 	// Load the shader from the remote source
 	loadRemote(shaderId, "fdnKWn", config);
@@ -36,7 +37,7 @@ void StContext::performRender(GLFWwindow *window)
 		context->AllocateTextures();
 	}
 
-	auto state(context->GetState());
+	auto &state(context->GetState());
 
 	// Poll events
 	glfwPollEvents();
@@ -82,8 +83,7 @@ void StContext::performRender(GLFWwindow *window)
 
 	// float textures
 	float *texData = new float[width * height * depth];
-	glBindTexture(GL_TEXTURE_2D, tex);
-	glGetnTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, sizeof(float) * width * height * depth, texData);
+	glGetTextureImage(tex, 0, GL_RGB, GL_FLOAT, sizeof(float) * width * height * depth, texData);
 
 	// Vertical flip
 	size_t stride_size = sizeof(float) * width * depth;

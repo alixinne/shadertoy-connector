@@ -24,6 +24,7 @@ GLFWwindow *st_window;
 // Failure callback
 void st_fail(const char *msgname, const char *arg)
 {
+	MLPutFunction(stdlink, "CompoundExpression", 2);
 	MLPutFunction(stdlink, "Message", 2);
 	MLPutFunction(stdlink, "MessageName", 2);
 	MLPutSymbol(stdlink, "RenderShadertoy");
