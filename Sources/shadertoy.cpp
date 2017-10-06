@@ -17,7 +17,7 @@
 
 using namespace std;
 
-extern "C" void st_render(const char *id);
+extern "C" void st_render();
 
 GLFWwindow *st_window;
 
@@ -51,8 +51,14 @@ shared_ptr<StContext> st_get_context(const string &shaderId)
 	return it->second;
 }
 
-void st_render(const char *id)
+void st_render()
 {
+	const char *id_c;
+	MLGetString(stdlink, &id_c);
+
+	string id(id_c);
+	MLReleaseString(stdlink, id_c);
+
 	try
 	{
 		auto context(st_get_context(id));

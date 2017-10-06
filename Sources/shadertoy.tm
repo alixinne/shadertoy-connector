@@ -1,10 +1,10 @@
-void st_render P(( const char* ));
+void st_render P(( ));
 
 :Begin:
 :Function:       st_render
 :Pattern:        RenderShadertoy[id_String, OptionsPattern[]]
 :Arguments:      { id, OptionValue[Frame], OptionValue[Width], OptionValue[Height] }
-:ArgumentTypes:  { String, Manual }
+:ArgumentTypes:  { Manual }
 :ReturnType:     Manual
 :End:
 
