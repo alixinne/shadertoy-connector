@@ -81,6 +81,9 @@ void loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::C
 {
 	CURL *curl = curl_easy_init();
 
+	// Put everything in tmp
+	fs::path basedir(fs::temp_directory_path());
+
 	if (!curl)
 	{
 		throw runtime_error("Failed to initialize curl");
@@ -98,7 +101,7 @@ void loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::C
 			throw runtime_error(shaderSpec["Error"].asString().c_str());
 		}
 
-		ofstream dump(shaderId + string(".json"));
+		ofstream dump((basedir / fs::path(shaderId + string(".json"))).string());
 		dump << shaderSpec;
 		dump.close();
 
@@ -124,7 +127,7 @@ void loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::C
 			// Load code
 			stringstream sspath;
 			sspath << shaderId << "-" << i << ".glsl";
-			fs::path p(sspath.str());
+			fs::path p(basedir / sspath.str());
 
 			if (!fs::exists(p))
 			{
@@ -177,7 +180,7 @@ void loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::C
 
 					fs::path srcpath(input["src"].asString());
 					string url = string("https://www.shadertoy.com") + input["src"].asString();
-					fs::path dstpath(srcpath.filename());
+					fs::path dstpath(basedir / srcpath.filename());
 
 					if (!fs::exists(dstpath))
 					{
