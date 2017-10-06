@@ -27,8 +27,7 @@ If[
     CreateExecutable[$sourceFiles, $programName,
      "TargetDirectory" -> FileNameJoin[{$executable, $SystemID}],
      "IncludeDirectories" -> { "/usr/include", "/usr/local/include", "/usr/include/jsoncpp" },
-     "Libraries" -> { "curl", "jsoncpp", "glfw", "shadertoy0", "boost_filesystem", "boost_log", "boost_system", "GLEW", "GL" },
-     "Defines" -> { "BOOST_LOG_DYN_LINK" -> "1" },
+     "Libraries" -> { "curl", "jsoncpp", "glfw", "shadertoy0", "boost_filesystem", "boost_system", "GLEW", "GL" },
      (* the following two options are here to ease debugging *)
      "ShellCommandFunction" -> Print, (* see compilation command *)
      "ShellOutputFunction" -> Print (* see compiler messages *)

@@ -8,7 +8,6 @@
 #include <json/json.h>
 
 #include <boost/filesystem.hpp>
-#include <boost/log/trivial.hpp>
 
 #include <GL/glew.h>
 
@@ -78,23 +77,19 @@ Json::Value json_get(CURL *curl, const string &url)
 	return result;
 }
 
-int loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::ContextConfig &contextConfig)
+void loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::ContextConfig &contextConfig)
 {
 	CURL *curl = curl_easy_init();
 
 	if (!curl)
 	{
-		BOOST_LOG_TRIVIAL(error) << "Failed to initialize curl.";
-		curl_global_cleanup();
-		return 100;
+		throw runtime_error("Failed to initialize curl");
 	}
 
-	int code = 0;
 	try
 	{
 		string endpoint =
 		string("https://www.shadertoy.com/api/v1/shaders/") + shaderId + string("?key=") + shaderApiKey;
-		BOOST_LOG_TRIVIAL(info) << "Fetching shader info from " << endpoint;
 		Json::Value shaderSpec = json_get(curl, endpoint);
 
 		// Check errors from ShaderToy
@@ -123,7 +118,6 @@ int loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::Co
 			// Skip if sound buffer
 			if (pass["type"].asString().compare("sound") == 0)
 			{
-				BOOST_LOG_TRIVIAL(warning) << "Skipping unsupported sound shader.";
 				continue;
 			}
 
@@ -187,12 +181,7 @@ int loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::Co
 
 					if (!fs::exists(dstpath))
 					{
-						BOOST_LOG_TRIVIAL(info) << "Downloading " << url;
 						file_get(curl, url, dstpath);
-					}
-					else
-					{
-						BOOST_LOG_TRIVIAL(info) << "Using cache for " << url;
 					}
 
 					conf.source = dstpath.string();
@@ -202,10 +191,6 @@ int loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::Co
 					conf.type = "buffer";
 					conf.source = "Buf A";
 					conf.source.back() = 'A' + (input["id"].asInt() - 257);
-
-					BOOST_LOG_TRIVIAL(debug)
-					<< "Pass " << i << ", input " << input["channel"].asInt() << ": binding "
-					<< conf.source << " buffer " << conf.enabled();
 				}
 				else
 				{
@@ -216,10 +201,6 @@ int loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::Co
 					if (!(input["ctype"].compare("keyboard") == 0))
 					{
 						throw runtime_error(ss.str().c_str());
-					}
-					else
-					{
-						BOOST_LOG_TRIVIAL(warning) << ss.str();
 					}
 				}
 			}
@@ -236,12 +217,13 @@ int loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::Co
 	}
 	catch (exception &ex)
 	{
-		BOOST_LOG_TRIVIAL(error) << ex.what();
-		code = 101;
+		// Free CURL
+		curl_easy_cleanup(curl);
+
+		// Rethrow
+		throw ex;
 	}
 
 	// Free CURL
 	curl_easy_cleanup(curl);
-
-	return code;
 }

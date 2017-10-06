@@ -8,8 +8,6 @@
 #include <GLFW/glfw3.h>
 #include <oglplus/all.hpp>
 
-#include <boost/log/trivial.hpp>
-
 #include <shadertoy/Shadertoy.hpp>
 
 #include "context.hpp"
