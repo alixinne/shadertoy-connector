@@ -92,9 +92,29 @@ void st_render()
 		MLGetInteger32(stdlink, &width);
 		MLGetInteger32(stdlink, &height);
 
-		auto image = context->performRender(st_window, frameCount, width, height);
+		float *mouseParam;
+		int mouseParamSize;
+
+		if (!MLGetReal32List(stdlink, &mouseParam, &mouseParamSize))
+			throw runtime_error("Could not get value for Mouse");
+
+		if (mouseParamSize != 2 && mouseParamSize != 4)
+		{
+			MLReleaseReal32List(stdlink, mouseParam, mouseParamSize);
+			throw runtime_error("Mouse must be a list of size 2 or 4");
+		}
+
+		float mouse[4] = { 0.f, 0.f, 0.f, 0.f };
+		memcpy(mouse, mouseParam, mouseParamSize * sizeof(float));
+		MLReleaseReal32List(stdlink, mouseParam, mouseParamSize);
+
+		// Render image
+		context->performRender(st_window, frameCount, width, height, mouse);
+
+		// Next frame
 		context->frameCount = frameCount + 1;
 
+		auto &image(context->currentImage);
 		MLPutFunction(stdlink, "Image", 1);
 		MLPutReal32Array(stdlink, image.data->data(), &image.dims[0], NULL, 3);
 	}

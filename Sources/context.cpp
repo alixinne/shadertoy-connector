@@ -13,6 +13,11 @@ StContext::StContext(const std::string &shaderId, int width, int height)
 	config.height = height;
 	config.targetFramerate = 60.0;
 
+	currentImage.data = make_shared<vector<float>>(3 * width * height);
+	currentImage.dims[0] = height;
+	currentImage.dims[1] = width;
+	currentImage.dims[2] = 3;
+
 	// Load the shader from the remote source
 	loadRemote(shaderId, "fdnKWn", config);
 
@@ -23,7 +28,7 @@ StContext::StContext(const std::string &shaderId, int width, int height)
 	context->Initialize();
 }
 
-StImage StContext::performRender(GLFWwindow *window, int frameCount, int width, int height)
+void StContext::performRender(GLFWwindow *window, int frameCount, int width, int height, float mouse[4])
 {
 	// Ensure we are working at the right size
 	if (width != config.width || height != config.height)
@@ -31,6 +36,11 @@ StImage StContext::performRender(GLFWwindow *window, int frameCount, int width, 
 		config.width = width;
 		config.height = height;
 		context->AllocateTextures();
+
+		currentImage.data = make_shared<vector<float>>(3 * width * height);
+		currentImage.dims[0] = height;
+		currentImage.dims[1] = width;
+		currentImage.dims[2] = 3;
 	}
 
 	auto &state(context->GetState());
@@ -49,19 +59,8 @@ StImage StContext::performRender(GLFWwindow *window, int frameCount, int width, 
 												 dt.time_of_day().total_nanoseconds() / 1e9f);
 
 	//  iMouse
-	int btnstate = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-	if (btnstate == GLFW_PRESS)
-	{
-		double xpos, ypos;
-		glfwGetCursorPos(window, &xpos, &ypos);
-
-		state.V<shadertoy::iMouse>()[0] = state.V<shadertoy::iMouse>()[2] = xpos;
-		state.V<shadertoy::iMouse>()[1] = state.V<shadertoy::iMouse>()[3] = config.height - ypos;
-	}
-	else
-	{
-		state.V<shadertoy::iMouse>()[2] = state.V<shadertoy::iMouse>()[3] = 0.f;
-	}
+	for (int i = 0; i < 4; ++i)
+		state.V<shadertoy::iMouse>()[i] = mouse[i];
 	// End update uniforms
 
 	// Render to texture
@@ -72,13 +71,10 @@ StImage StContext::performRender(GLFWwindow *window, int frameCount, int width, 
 	context->DoReadCurrentFrame(tex);
 
 	// Store it in a suitably sized array
-	GLint depth;
-	glGetTextureLevelParameteriv(tex, 0, GL_TEXTURE_WIDTH, &width);
-	glGetTextureLevelParameteriv(tex, 0, GL_TEXTURE_HEIGHT, &height);
-	depth = 3; // RGB output
+	GLint depth = 3; // RGB output
 
 	// float textures
-	shared_ptr<vector<float>> texData = make_shared<vector<float>>(width * height * depth);
+	shared_ptr<vector<float>> texData = currentImage.data;
 	glGetTextureImage(tex, 0, GL_RGB, GL_FLOAT, sizeof(float) * width * height * depth, texData->data());
 
 	// Vertical flip
@@ -91,7 +87,4 @@ StImage StContext::performRender(GLFWwindow *window, int frameCount, int width, 
 			   &(*texData)[(height - i - 1) * stride_size / sizeof(float)], stride_size);
 		memcpy(&(*texData)[(height - i - 1) * stride_size / sizeof(float)], stride, stride_size);
 	}
-
-	// Return the image
-	return StImage{ texData, { height, width, depth }};
 }

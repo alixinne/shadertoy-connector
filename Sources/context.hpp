@@ -34,6 +34,9 @@ struct StContext
 	/// Number of rendered frames
 	int frameCount;
 
+	/// The currently rendered image
+	StImage currentImage;
+
 	/**
 	 * Builds a new rendering context for a given Shadertoy.
 	 *
@@ -44,17 +47,15 @@ struct StContext
 	StContext(const std::string &shaderId, int width, int height);
 
 	/**
-	 * Renders the next frame of this Shadertoy and sends it to the stdlink
-	 * connection as a result.
+	 * Renders the next frame of this Shadertoy into the currentImage field.
 	 *
 	 * @param window     OpenGL rendering window
 	 * @param frameCount Id of the frame to render
 	 * @param width      Width of the rendering
 	 * @param height     Height of the rendering
-	 *
-	 * @return
+	 * @param mouse      Values for the mouse uniform
 	 */
-	StImage performRender(GLFWwindow *window, int frameCount, int width, int height);
+	void performRender(GLFWwindow *window, int frameCount, int width, int height, float mouse[4]);
 };
 
 #endif /* _CONTEXT_HPP_ */
