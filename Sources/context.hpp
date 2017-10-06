@@ -47,6 +47,17 @@ struct StContext
 	StContext(const std::string &shaderId, int width, int height);
 
 	/**
+	 * Builds a single-buffer rendering context from source.
+	 *
+	 * @param shaderId Identifier for this rendering context.
+	 * @param source   Source contents for the file to render.
+	 * @param width    Initial width of the rendering context.
+	 * @param height   Initial height of the rendering context.
+	 */
+	StContext(const std::string &shaderId, const std::string &source,
+			  int width, int height);
+
+	/**
 	 * Renders the next frame of this Shadertoy into the currentImage field.
 	 *
 	 * @param window     OpenGL rendering window
@@ -56,6 +67,12 @@ struct StContext
 	 * @param mouse      Values for the mouse uniform
 	 */
 	void performRender(GLFWwindow *window, int frameCount, int width, int height, float mouse[4]);
+
+private:
+	/**
+	 * Initialize the rendering context members.
+	 */
+	void initialize(const std::string &shaderId, int width, int height);
 };
 
 #endif /* _CONTEXT_HPP_ */

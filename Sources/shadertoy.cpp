@@ -12,29 +12,25 @@
 
 #include "context.hpp"
 #include "remote.hpp"
+#include "wrapper.hpp"
 
 #include "mathlink.h"
 
 using namespace std;
 
 extern "C" void st_render();
+extern "C" char *st_compile(const char *source);
 
 GLFWwindow *st_window;
-
-// Failure callback
-void st_fail(const char *msgname, const char *arg)
-{
-	MLPutFunction(stdlink, "CompoundExpression", 2);
-	MLPutFunction(stdlink, "Message", 2);
-	MLPutFunction(stdlink, "MessageName", 2);
-	MLPutSymbol(stdlink, "RenderShadertoy");
-	MLPutString(stdlink, msgname);
-	MLPutString(stdlink, arg);
-	MLPutSymbol(stdlink, "$Failed");
-}
-
+int local_counter = 0;
 map<string, shared_ptr<StContext>> st_contexts;
 
+/**
+ * Get or allocate a new remote context.
+ *
+ * @param  shaderId Context Id
+ * @return          Pointer to the context
+ */
 shared_ptr<StContext> st_get_context(const string &shaderId)
 {
 	auto it = st_contexts.find(shaderId);
@@ -51,6 +47,32 @@ shared_ptr<StContext> st_get_context(const string &shaderId)
 	return it->second;
 }
 
+/**
+ * Instantiate a new unique local context.
+ *
+ * @param  source   Shader source code
+ * @return          Name of the created context
+ */
+string st_new_context(const string &source)
+{
+	stringstream name;
+	name << "localshader-" << local_counter++;
+	string shaderId(name.str());
+
+	int width, height;
+	glfwGetFramebufferSize(st_window, &width, &height);
+	shared_ptr<StContext> ptr = make_shared<StContext>(shaderId, source, width, height);
+	st_contexts.insert(make_pair(string(shaderId), ptr));
+	return shaderId;
+}
+
+char *st_compile(const char *source)
+{
+	return st_wrapper_exec(function<char*(void)>([&]() {
+		return const_cast<char*>(st_new_context(source).c_str());
+	}));
+}
+
 void st_render()
 {
 	const char *id_c;
@@ -59,8 +81,7 @@ void st_render()
 	string id(id_c);
 	MLReleaseString(stdlink, id_c);
 
-	try
-	{
+	st_wrapper_exec(function<void(void)>([&]() {
 		auto context(st_get_context(id));
 		int frameCount;
 
@@ -117,25 +138,7 @@ void st_render()
 		auto &image(context->currentImage);
 		MLPutFunction(stdlink, "Image", 1);
 		MLPutReal32Array(stdlink, image.data->data(), &image.dims[0], NULL, 3);
-	}
-	catch (oglplus::ProgramBuildError &pbe)
-	{
-		stringstream ss;
-		ss << "Program build error: " << pbe.what() << " [" << pbe.SourceFile() << ":"
-		   << pbe.SourceLine() << "] " << pbe.Log();
-		st_fail("glerr", ss.str().c_str());
-	}
-	catch (oglplus::Error &err)
-	{
-		stringstream ss;
-		ss << "Error: " << err.what() << " [" << err.SourceFile() << ":" << err.SourceLine() << "] "
-		   << err.Log();
-		st_fail("glerr", ss.str().c_str());
-	}
-	catch (runtime_error &ex)
-	{
-		st_fail("err", ex.what());
-	}
+	}));
 }
 
 enum st_ERRORS

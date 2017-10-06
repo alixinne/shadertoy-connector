@@ -1,5 +1,6 @@
 #include "context.hpp"
 #include "remote.hpp"
+#include "local.hpp"
 
 #include <alloca.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -9,17 +10,25 @@ using namespace std;
 StContext::StContext(const std::string &shaderId, int width, int height)
 : shaderId(shaderId), config(), context(), frameCount(0)
 {
-	config.width = width;
-	config.height = height;
-	config.targetFramerate = 60.0;
-
-	currentImage.data = make_shared<vector<float>>(3 * width * height);
-	currentImage.dims[0] = height;
-	currentImage.dims[1] = width;
-	currentImage.dims[2] = 3;
+	initialize(shaderId, width, height);
 
 	// Load the shader from the remote source
 	loadRemote(shaderId, "fdnKWn", config);
+
+	// Create the rendering context
+	context = make_shared<shadertoy::RenderContext>(config);
+
+	// Initialize it
+	context->Initialize();
+}
+
+StContext::StContext(const std::string &shaderId, const std::string &source, int width, int height)
+: shaderId(shaderId), config(), context(), frameCount(0)
+{
+	initialize(shaderId, width, height);
+
+	// Load the shader from a locally created file
+	loadLocal(shaderId, source, config);
 
 	// Create the rendering context
 	context = make_shared<shadertoy::RenderContext>(config);
@@ -87,4 +96,16 @@ void StContext::performRender(GLFWwindow *window, int frameCount, int width, int
 			   &(*texData)[(height - i - 1) * stride_size / sizeof(float)], stride_size);
 		memcpy(&(*texData)[(height - i - 1) * stride_size / sizeof(float)], stride, stride_size);
 	}
+}
+
+void StContext::initialize(const std::string &shaderId, int width, int height)
+{
+	config.width = width;
+	config.height = height;
+	config.targetFramerate = 60.0;
+
+	currentImage.data = make_shared<vector<float>>(3 * width * height);
+	currentImage.dims[0] = height;
+	currentImage.dims[1] = width;
+	currentImage.dims[2] = 3;
 }

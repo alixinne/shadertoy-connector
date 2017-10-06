@@ -15,7 +15,7 @@ $executable = FileNameJoin[{$packageDir, $programName}]; (* See Install[] docume
    Details section, on how to include additional object files. See CreateObjectFile[]
    on how to create an object file without also linking it into an executable. *)
 $sourceFiles = FileNameJoin[{$packageDir, "Sources", #}]& /@
-	{"shadertoy.tm", "shadertoy.cpp", "remote.cpp", "context.cpp"};
+	{"shadertoy.tm", "remote.cpp", "context.cpp", "local.cpp", "wrapper.cpp", "shadertoy.cpp"};
 
 (* Just a colourful Print alternative *)
 print[args___] := Print @@ (Style[#, Red]&) /@ {args}
