@@ -106,7 +106,7 @@ int st_main(int argc, char *argv[])
 		glfwWindowHint(GLFW_VISIBLE, 0);
 
 		// Initialize window
-		st_window = glfwCreateWindow(640, 480, "Mathematica Shadertoy Renderer", nullptr, nullptr);
+		st_window = glfwCreateWindow(640, 360, "Mathematica Shadertoy Renderer", nullptr, nullptr);
 
 		if (st_window)
 		{
