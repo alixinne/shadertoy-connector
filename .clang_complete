@@ -1,0 +1,5 @@
+-I/usr/include
+-I/usr/local/include
+-I/usr/include/jsoncpp
+-I/usr/local/Wolfram/Mathematica/11.2/SystemFiles/Links/MathLink/DeveloperKit/Linux-x86-64/CompilerAdditions
+-ISources
