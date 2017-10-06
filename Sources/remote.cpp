@@ -206,7 +206,7 @@ void loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::C
 
 					if (!(input["ctype"].compare("keyboard") == 0))
 					{
-						throw runtime_error(ss.str().c_str());
+						// throw runtime_error(ss.str().c_str());
 					}
 				}
 			}
@@ -227,7 +227,7 @@ void loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::C
 		curl_easy_cleanup(curl);
 
 		// Rethrow
-		throw ex;
+		throw runtime_error(ex.what());
 	}
 
 	// Free CURL

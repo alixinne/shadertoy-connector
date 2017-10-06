@@ -25,7 +25,9 @@ GLFWwindow *st_window;
 void st_fail(const char *msgname, const char *arg)
 {
 	MLPutFunction(stdlink, "Message", 2);
-	MLPutSymbol(stdlink, msgname);
+	MLPutFunction(stdlink, "MessageName", 2);
+	MLPutSymbol(stdlink, "RenderShadertoy");
+	MLPutString(stdlink, msgname);
 	MLPutString(stdlink, arg);
 	MLPutSymbol(stdlink, "$Failed");
 }
@@ -59,18 +61,18 @@ void st_render(const char *id)
 		stringstream ss;
 		ss << "Program build error: " << pbe.what() << " [" << pbe.SourceFile() << ":"
 		   << pbe.SourceLine() << "] " << pbe.Log();
-		st_fail("RenderShadertoy::glerr", ss.str().c_str());
+		st_fail("glerr", ss.str().c_str());
 	}
 	catch (oglplus::Error &err)
 	{
 		stringstream ss;
 		ss << "Error: " << err.what() << " [" << err.SourceFile() << ":" << err.SourceLine() << "] "
 		   << err.Log();
-		st_fail("RenderShadertoy::glerr", ss.str().c_str());
+		st_fail("glerr", ss.str().c_str());
 	}
 	catch (runtime_error &ex)
 	{
-		st_fail("RenderShadertoy::err", ex.what());
+		st_fail("err", ex.what());
 	}
 }
 
@@ -84,7 +86,7 @@ enum st_ERRORS
 // GLFW error callback
 void st_glfwErrorCallback(int error, const char *description)
 {
-	st_fail("RenderShadertoy::glfwerr", description);
+	st_fail("glfwerr", description);
 }
 
 // Shadertoy module entrypoint
