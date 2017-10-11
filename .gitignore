@@ -1,2 +1,3 @@
 /shadertoy.bin/*
 !/shadertoy.bin/.keep
+/build

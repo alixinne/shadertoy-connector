@@ -1,0 +1,3 @@
+[submodule "cmake/FindMathematica"]
+	path = cmake/FindMathematica
+	url = https://github.com/sakra/FindMathematica.git
