@@ -70,7 +70,9 @@ Note that loading the package multiple times will create more linked processes.
 ### Octave
 
 Ensure the built `shadertoy_octave.oct` file is somewhere in the load path. Here
-we assume it is in the current directory, but change the path accordingly.
+we assume it is in the current directory, but change the path accordingly. You
+can use the `make install` command in the `build/` directory to install the `oct`
+file into the package directory.
 
 ```matlab
 % Tell octave to autoload the functions from the .oct file
