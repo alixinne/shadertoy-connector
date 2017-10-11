@@ -81,6 +81,9 @@ void Host::Allocate()
 
 StImage *Host::Render(const string &id, boost::optional<int> frame, int width, int height, float mouse[4])
 {
+	// Ensure we are in the right context
+	glfwMakeContextCurrent(st_window);
+
 	auto context(GetContext(id));
 
 	// Default value for frame is the current frame count of the context
@@ -99,6 +102,10 @@ StImage *Host::Render(const string &id, boost::optional<int> frame, int width, i
 
 string Host::CreateLocal(const string &source)
 {
+	// Ensure we are in the right context
+	glfwMakeContextCurrent(st_window);
+
+	// Generate unique name
 	stringstream name;
 	name << "localshader-" << local_counter++;
 	string shaderId(name.str());

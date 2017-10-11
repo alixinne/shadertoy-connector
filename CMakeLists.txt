@@ -74,5 +74,19 @@ if(Mathematica_FOUND)
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:shadertoy_mathematica>" "${CMAKE_SOURCE_DIR}/shadertoy.bin/${Mathematica_SYSTEM_ID}/$<TARGET_FILE_NAME:shadertoy_mathematica>")
 endif()
 
-# C++14 on all targets
+# Octave connector
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+find_package(Octave)
+if(Octave_FOUND)
+	octave_add_oct(shadertoy_octave
+		SOURCES ${SOURCES_DIR}/shadertoy_octave.cpp
+		LINK_LIBRARIES ${COMMON_LIBRARIES})
+
+	install(TARGETS shadertoy_octave DESTINATION ${OCTAVE_OCT_FILE_DIR})
+endif()
+
+# C++14 for the shadertoy_connector target. Others should be fine
 set_property(TARGET shadertoy_connector PROPERTY CXX_STANDARD 14)
+
+# Required
+set_property(TARGET shadertoy_connector PROPERTY POSITION_INDEPENDENT_CODE ON)
