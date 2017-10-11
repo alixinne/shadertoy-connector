@@ -11,7 +11,7 @@ void st_render P(( ));
 :Evaluate: RenderShadertoy::usage = "RenderShadertoy[id] renders a Shadertoy as an image";
 :Evaluate: Options[RenderShadertoy] = { Frame -> Null, Width -> 640, Height -> 360, Mouse -> { 0, 0, 0, 0 } };
 
-char * st_compile P(( const char * ));
+char *st_compile P((const char *));
 
 :Begin:
 :Function:      st_compile
@@ -23,6 +23,5 @@ char * st_compile P(( const char * ));
 
 :Evaluate: CompileShadertoy::usage = "CompileShadertoy[source] compiles source as a Shadertoy and returns its id";
 
-:Evaluate: Shadertoy::glfwerr = "A GLFW error occurred: `1`";
 :Evaluate: Shadertoy::glerr = "OpenGL error: `1`";
 :Evaluate: Shadertoy::err = "Error: `1`";

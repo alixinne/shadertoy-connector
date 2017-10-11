@@ -54,8 +54,7 @@ struct StContext
 	 * @param width    Initial width of the rendering context.
 	 * @param height   Initial height of the rendering context.
 	 */
-	StContext(const std::string &shaderId, const std::string &source,
-			  int width, int height);
+	StContext(const std::string &shaderId, const std::string &source, int width, int height);
 
 	/**
 	 * Renders the next frame of this Shadertoy into the currentImage field.
@@ -68,7 +67,7 @@ struct StContext
 	 */
 	void performRender(GLFWwindow *window, int frameCount, int width, int height, float mouse[4]);
 
-private:
+	private:
 	/**
 	 * Initialize the rendering context members.
 	 */

@@ -9,6 +9,7 @@
 void initRemote();
 void freeRemote();
 
-void loadRemote(const std::string &shaderId, const std::string &shaderApiKey, shadertoy::ContextConfig &contextConfig);
+void loadRemote(const std::string &shaderId, const std::string &shaderApiKey,
+				shadertoy::ContextConfig &contextConfig);
 
 #endif /* _REMOTE_HPP_ */

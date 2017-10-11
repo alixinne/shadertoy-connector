@@ -1,6 +1,6 @@
 #include "context.hpp"
-#include "remote.hpp"
 #include "local.hpp"
+#include "remote.hpp"
 
 #include <alloca.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
