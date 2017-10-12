@@ -106,7 +106,7 @@ void loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::C
 		dump.close();
 
 		// Create buffer configs for each render pass
-		regex rxiGlobalTime("\\biGlobalTime\\b"), rxChar("\\bchar\\b");
+		regex rxChar("\\bchar\\b");
 
 		for (int i = 0; i < shaderSpec["Shader"]["renderpass"].size(); ++i)
 		{
@@ -132,8 +132,7 @@ void loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::C
 			if (!fs::exists(p))
 			{
 				ofstream ofs(p.string());
-				ofs << regex_replace(regex_replace(pass["code"].asString(), rxiGlobalTime, "iTime"),
-									 rxChar, "webgl_char");
+				ofs << regex_replace(pass["code"].asString(), rxChar, "webgl_char");
 				ofs.close();
 			}
 
