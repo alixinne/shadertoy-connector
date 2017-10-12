@@ -61,8 +61,8 @@ Manipulate[
 		{n, 0, 10, 1}, {x, 0, 640}, {y, 0, 360}];
 
 (* Compile some GLSL source and render it *)
-shaderId = CompileShadertoy["void mainImage(out vec4 O, in vec2 U){O = vec4(length(U/iResolution.xy));}"];
-RenderShadertoy[shaderId]
+shaderId = CompileShadertoy["void mainImage(out vec4 O, in vec2 U){O = vec4(sin(iTime*.1), cos(iTime*.1), length(U/iResolution.xy));}"];
+RenderShadertoy[shaderId, Format -> "Luminance"]
 ```
 
 Note that loading the package multiple times will create more linked processes.
@@ -85,6 +85,9 @@ img = st_render('llySRh');
 
 % Show it
 imshow(img);
+
+% Grayscale render, next frame
+img = st_render('llySRh', -1, 'Luminance');
 ```
 
 ## Author

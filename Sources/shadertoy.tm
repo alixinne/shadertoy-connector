@@ -3,13 +3,13 @@ void st_render P(( ));
 :Begin:
 :Function:       st_render
 :Pattern:        RenderShadertoy[id_String, OptionsPattern[]]
-:Arguments:      { id, OptionValue[Frame], OptionValue[Width], OptionValue[Height], OptionValue[Mouse] }
+:Arguments:      { id, OptionValue[Frame], OptionValue[Width], OptionValue[Height], OptionValue[Mouse], OptionValue[Format] }
 :ArgumentTypes:  { Manual }
 :ReturnType:     Manual
 :End:
 
 :Evaluate: RenderShadertoy::usage = "RenderShadertoy[id] renders a Shadertoy as an image";
-:Evaluate: Options[RenderShadertoy] = { Frame -> Null, Width -> 640, Height -> 360, Mouse -> { 0, 0, 0, 0 } };
+:Evaluate: Options[RenderShadertoy] = { Frame -> Null, Width -> 640, Height -> 360, Mouse -> { 0, 0, 0, 0 }, Format -> "RGB" };
 
 char *st_compile P((const char *));
 

@@ -111,10 +111,12 @@ void st_render()
 			frameCount = boost::optional<int>(i);
 		}
 
+		// Read size params
 		int width, height;
 		MLGetInteger32(stdlink, &width);
 		MLGetInteger32(stdlink, &height);
 
+		// Read mouse param
 		float *mouseParam;
 		int mouseParamSize;
 
@@ -131,8 +133,28 @@ void st_render()
 		memcpy(mouse, mouseParam, mouseParamSize * sizeof(float));
 		MLReleaseReal32List(stdlink, mouseParam, mouseParamSize);
 
+		// Read format
+		const char *formatName;
+		GLenum format;
+		if (!MLGetString(stdlink, &formatName))
+			throw runtime_error("Invalid Format parameter");
+
+		if (strcmp(formatName, "RGBA") == 0)
+			format = GL_RGBA;
+		else if (strcmp(formatName, "RGB") == 0)
+			format = GL_RGB;
+		else if (strcmp(formatName, "Luminance") == 0)
+			format = GL_LUMINANCE;
+		else
+		{
+			MLReleaseString(stdlink, formatName);
+			throw runtime_error("Invalid Format parameter");
+		}
+
+		MLReleaseString(stdlink, formatName);
+
 		// Render image
-		auto image(host.Render(id, frameCount, width, height, mouse));
+		auto image(host.Render(id, frameCount, width, height, mouse, format));
 
 		MLPutFunction(stdlink, "Image", 1);
 		MLPutReal32Array(stdlink, image->data->data(), &image->dims[0], NULL, 3);

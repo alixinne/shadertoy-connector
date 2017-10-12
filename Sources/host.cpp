@@ -79,7 +79,7 @@ void Host::Allocate()
 	}
 }
 
-StImage *Host::Render(const string &id, boost::optional<int> frame, int width, int height, float mouse[4])
+StImage *Host::Render(const string &id, boost::optional<int> frame, int width, int height, float mouse[4], GLenum format)
 {
 	// Ensure we are in the right context
 	glfwMakeContextCurrent(st_window);
@@ -91,7 +91,7 @@ StImage *Host::Render(const string &id, boost::optional<int> frame, int width, i
 		frame = context->frameCount;
 
 	// Render the next frame
-	context->performRender(st_window, *frame, width, height, mouse);
+	context->performRender(st_window, *frame, width, height, mouse, format);
 
 	// Advance the frame counter
 	context->frameCount = *frame + 1;

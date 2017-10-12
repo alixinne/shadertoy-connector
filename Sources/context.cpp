@@ -37,19 +37,23 @@ StContext::StContext(const std::string &shaderId, const std::string &source, int
 	context->Initialize();
 }
 
-void StContext::performRender(GLFWwindow *window, int frameCount, int width, int height, float mouse[4])
+void StContext::performRender(GLFWwindow *window, int frameCount, int width, int height, float mouse[4], GLenum format)
 {
 	// Ensure we are working at the right size
-	if (width != config.width || height != config.height)
+	GLint depth = formatDepth(format);
+	if (width != config.width || height != config.height || depth != currentImage.dims[2])
 	{
-		config.width = width;
-		config.height = height;
-		context->AllocateTextures();
+		if (width != config.width || height != config.height)
+		{
+			config.width = width;
+			config.height = height;
+			context->AllocateTextures();
+		}
 
-		currentImage.data = make_shared<vector<float>>(3 * width * height);
 		currentImage.dims[0] = height;
 		currentImage.dims[1] = width;
-		currentImage.dims[2] = 3;
+		currentImage.dims[2] = depth;
+		currentImage.data = make_shared<vector<float>>(depth * width * height);
 	}
 
 	auto &state(context->GetState());
@@ -80,11 +84,10 @@ void StContext::performRender(GLFWwindow *window, int frameCount, int width, int
 	context->DoReadCurrentFrame(tex);
 
 	// Store it in a suitably sized array
-	GLint depth = 3; // RGB output
 
 	// float textures
 	shared_ptr<vector<float>> texData = currentImage.data;
-	glGetTextureImage(tex, 0, GL_RGB, GL_FLOAT, sizeof(float) * width * height * depth, texData->data());
+	glGetTextureImage(tex, 0, format, GL_FLOAT, sizeof(float) * width * height * depth, texData->data());
 
 	// Vertical flip
 	size_t stride_size = sizeof(float) * width * depth;
@@ -104,8 +107,23 @@ void StContext::initialize(const std::string &shaderId, int width, int height)
 	config.height = height;
 	config.targetFramerate = 60.0;
 
-	currentImage.data = make_shared<vector<float>>(3 * width * height);
 	currentImage.dims[0] = height;
 	currentImage.dims[1] = width;
-	currentImage.dims[2] = 3;
+	currentImage.dims[2] = formatDepth(GL_RGB);
+	currentImage.data = make_shared<vector<float>>(currentImage.dims[2] * width * height);
+}
+
+int StContext::formatDepth(GLenum format)
+{
+	switch (format)
+	{
+		case GL_RGBA:
+			return 4;
+		case GL_RGB:
+			return 3;
+		case GL_LUMINANCE:
+			return 1;
+		default:
+			throw runtime_error("Invalid format");
+	}
 }

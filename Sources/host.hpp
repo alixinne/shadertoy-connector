@@ -40,9 +40,10 @@ class Host
 	 * @param  width  Rendering width.
 	 * @param  height Rendering height.
 	 * @param  mouse  Value of the iMouse uniform.
+	 * @param  format Format of the rendering (GL_RGBA, GL_RGB, or GL_LUMINANCE).
 	 * @return        Pointer to the rendered frame.
 	 */
-	StImage *Render(const std::string &id, boost::optional<int> frame, int width, int height, float mouse[4]);
+	StImage *Render(const std::string &id, boost::optional<int> frame, int width, int height, float mouse[4], GLenum format);
 
 	/**
 	 * Create a new local context from the give source code.

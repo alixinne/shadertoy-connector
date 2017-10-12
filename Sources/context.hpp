@@ -64,14 +64,22 @@ struct StContext
 	 * @param width      Width of the rendering
 	 * @param height     Height of the rendering
 	 * @param mouse      Values for the mouse uniform
+	 * @param format     Format of the rendering
 	 */
-	void performRender(GLFWwindow *window, int frameCount, int width, int height, float mouse[4]);
+	void performRender(GLFWwindow *window, int frameCount, int width, int height, float mouse[4], GLenum format);
 
 	private:
 	/**
 	 * Initialize the rendering context members.
 	 */
 	void initialize(const std::string &shaderId, int width, int height);
+
+	/**
+	 * Returns the number of components for a given format.
+	 *
+	 * @param  format Format to return the number of components of
+	 */
+	int formatDepth(GLenum format);
 };
 
 #endif /* _CONTEXT_HPP_ */

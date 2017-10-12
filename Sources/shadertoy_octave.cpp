@@ -76,9 +76,9 @@ DEFUN_DLD (st_compile, args, nargout,
 }
 
 DEFUN_DLD (st_render, args, nargout,
-		   "st_render('id', [frame, [width, [height, [mouse]]]]) renders a Shadertoy as an image")
+		   "st_render('id', [frame, [format, [width, [height, [mouse]]]]]) renders a Shadertoy as an image")
 {
-	if (args.length() < 1 || args.length() > 5)
+	if (args.length() < 1 || args.length() > 6)
 	{
 		print_usage();
 		return octave_value();
@@ -92,20 +92,39 @@ DEFUN_DLD (st_render, args, nargout,
 			// Parse more arguments
 			boost::optional<int> frame;
 			if (args.length() >= 2)
-				frame = boost::optional<int>(args(1).int_value());
+			{
+				int value(args(1).int_value());
+				if (value >= 0)
+					frame = boost::optional<int>(value);
+			}
+
+			GLenum format = GL_RGB;
+			if (args.length() >= 3)
+			{
+				std::string formatName(args(2).string_value());
+
+				if (formatName.compare("RGBA") == 0)
+					format = GL_RGBA;
+				else if (formatName.compare("RGB") == 0)
+					format = GL_RGB;
+				else if (formatName.compare("Luminance") == 0)
+					format = GL_LUMINANCE;
+				else
+					throw std::runtime_error("Invalid format parameter");
+			}
 
 			int width = 640;
-			if (args.length() >= 3)
-				width = args(2).int_value();
+			if (args.length() >= 4)
+				width = args(3).int_value();
 
 			int height = 360;
-			if (args.length() >= 4)
-				height = args(3).int_value();
+			if (args.length() >= 5)
+				height = args(4).int_value();
 
 			float mouse[4] = { 0.f, 0.f, 0.f, 0.f };
-			if (args.length() >= 5)
+			if (args.length() >= 6)
 			{
-				auto mouse_arg(args(5).array_value());
+				auto mouse_arg(args(6).array_value());
 				auto mouse_arg_dim(mouse_arg.dims());
 				const char err[] = "The mouse argument must be a 2 or 4 element 1D double array.";
 
@@ -120,7 +139,7 @@ DEFUN_DLD (st_render, args, nargout,
 			}
 
 			// Render the image
-			auto image(st_host().Render(shaderId, frame, width, height, mouse));
+			auto image(st_host().Render(shaderId, frame, width, height, mouse, format));
 
 			// Return the image
 			auto dims(dim_vector(image->dims[0], image->dims[1], image->dims[2]));
