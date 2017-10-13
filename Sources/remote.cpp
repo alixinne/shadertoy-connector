@@ -129,12 +129,9 @@ void loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::C
 			sspath << shaderId << "-" << i << ".glsl";
 			fs::path p(basedir / sspath.str());
 
-			if (!fs::exists(p))
-			{
-				ofstream ofs(p.string());
-				ofs << regex_replace(pass["code"].asString(), rxChar, "webgl_char");
-				ofs.close();
-			}
+			ofstream ofs(p.string());
+			ofs << regex_replace(pass["code"].asString(), rxChar, "webgl_char");
+			ofs.close();
 
 			// Load inputs
 			for (int j = 0; j < pass["inputs"].size(); ++j)
