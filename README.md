@@ -38,21 +38,26 @@ $ cmake ..
 
 # Build
 $ make -j32
+
+# Install the Mathematica package
+$ cmake -DCOMPONENT=st_mathematica -P cmake_install.cmake
+
+# Install the Octave library
+$ cmake -DCOMPONENT=st_octave -P cmake_install.cmake
+
+# Install both
+$ cmake -P cmake_install.cmake
 ```
 
 ## Usage
 
 ### Mathematica
 
-In order to use this package in Mathematica, the parent folder (ie. the one
-containing the `shadertoy-connector` package) must exist and be named `Shadertoy`.
-It must also be in one of the folders which are in the Mathematica load path.
+The default install target mentioned above puts this package in the user package
+load path, so it can be loaded directly from any session.
 
 ```mathematica
-(* Add the package folder to the path, edit accordingly *)
-AppendTo[$Path, FileNameJoin[{$UserDocumentsDirectory, "Wolfram Mathematica"}]];
-
-(* Load the package *)
+(* Load the Shadertoy package *)
 << Shadertoy`
 
 (* Render a specific frame of a Shadertoy, with given inputs *)
@@ -69,10 +74,9 @@ Note that loading the package multiple times will create more linked processes.
 
 ### Octave
 
-Ensure the built `shadertoy_octave.oct` file is somewhere in the load path. Here
-we assume it is in the current directory, but change the path accordingly. You
-can use the `make install` command in the `build/` directory to install the `oct`
-file into the package directory.
+The default install target for Octave puts `shadertoy_octave.oct` in the load
+path. Note that `autoload` commands are needed to tell Octave to load the
+functions from the correct file.
 
 ```matlab
 % Tell octave to autoload the functions from the .oct file
