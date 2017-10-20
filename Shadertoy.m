@@ -13,7 +13,7 @@ $executable = FileNameJoin[{
 }];
 
 (* Terminate existing connection *)
-If[Head[$currentLink] == LinkObject && LinkConnectedQ[$currentLink], Uninstall[$currentLink]];
+If[Head[$currentLink] == LinkObject, Uninstall[$currentLink]];
 
 (* Create new connection *)
 $currentLink = Install[$executable];
