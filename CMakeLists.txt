@@ -15,6 +15,9 @@ pkg_search_module(jsoncpp REQUIRED jsoncpp)
 # Directories
 set(SOURCES_DIR "${CMAKE_SOURCE_DIR}/Sources")
 
+# Set link directories
+link_directories(${glfw3_LIBRARY_DIRS} ${jsoncpp_LIBRARY_DIRS})
+
 # oglplus config
 set(oglplus_CONFIGURE_EXTRA_ARGS --use-glew --use-glfw3)
 set(shadertoy_LOAD_OGLPLUS ON)
@@ -63,6 +66,10 @@ if(Mathematica_FOUND)
 	add_executable(shadertoy_mathematica
 		${SOURCES_DIR}/shadertoy_mathematica.cpp
 		${CMAKE_CURRENT_BINARY_DIR}/shadertoy_mathematica.c)
+
+	if(WIN32)
+		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS")
+	endif(WIN32)
 
 	set_property(TARGET shadertoy_mathematica PROPERTY OUTPUT_NAME "shadertoy.bin")
 	target_include_directories(shadertoy_mathematica PUBLIC ${Mathematica_MathLink_INCLUDE_DIR})

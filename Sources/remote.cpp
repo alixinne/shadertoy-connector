@@ -40,7 +40,7 @@ size_t curl_write_data(char *buffer, size_t size, size_t nmemb, void *userp)
 
 void file_get(CURL *curl, const string &url, const fs::path &dst)
 {
-	ofstream ofs(dst.string());
+	ofstream ofs(dst.string(), ios::out | ios::binary);
 
 	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_data);
@@ -51,6 +51,8 @@ void file_get(CURL *curl, const string &url, const fs::path &dst)
 	{
 		throw runtime_error(curl_easy_strerror(res));
 	}
+
+	ofs.close();
 }
 
 stringstream curl_get(CURL *curl, const string &url)
