@@ -68,6 +68,23 @@ struct StContext
 	 */
 	void performRender(GLFWwindow *window, int frameCount, int width, int height, float mouse[4], GLenum format);
 
+	/**
+	 * Sets the value of an input for the next renderings.
+	 *
+	 * @param buffer   Name of the buffer to change the inputs
+	 * @param channel  Channel id (0 to 3) of the input to change
+	 * @param image    Image data to feed to the channel
+	 */
+	void setInput(const std::string &buffer, int channel, StImage &image);
+
+	/**
+	 * Resets the values of the given input to the default as given by the context.
+	 *
+	 * @param buffer  Name of the buffer to change the inputs
+	 * @param channel Channel id (0 to 3) of the input to reset
+	 */
+	void resetInput(const std::string &buffer, int channel);
+
 	private:
 	/**
 	 * Initialize the rendering context members.
@@ -80,6 +97,47 @@ struct StContext
 	 * @param  format Format to return the number of components of
 	 */
 	int formatDepth(GLenum format);
+
+	/**
+	 * Returns the PixelDataFormat of a given image depth.
+	 *
+	 * @param  depth Depth of the image
+	 */
+	oglplus::PixelDataFormat depthFormat(int depth);
+
+	/**
+	 * Allocates the rendering context
+	 *
+	 * @param config Rendering context configuration
+	 */
+	void createContext(shadertoy::ContextConfig &config);
+
+	/**
+	 * Gets the map of input overrides for a given buffer.
+	 *
+	 * @param buffer Name of the buffer to get the overrides for.
+	 */
+	std::map<int, StImage> &getBufferInputOverrides(const std::string &buffer);
+
+	/// Input override map
+	std::map<std::string, std::map<int, StImage>> inputOverrides;
+
+	/// Data texture handler
+	std::shared_ptr<oglplus::Texture> DataTextureHandler(const shadertoy::InputConfig &inputConfig,
+		bool &skipTextureOptions,
+		bool &skipCache,
+		bool &framebufferSized);
+
+	/**
+	 * Get an oglplus::Texture instance for the given input id.
+	 */
+	std::shared_ptr<oglplus::Texture> getDataTexture(const std::string &inputId);
+
+	/// List of input override textures OpenGL objects
+	std::map<std::string, std::shared_ptr<oglplus::Texture>> textures;
+
+	/// true if the set of input overrides has changed and textures need to be reloaded
+	bool reloadInputConfig;
 };
 
 #endif /* _CONTEXT_HPP_ */

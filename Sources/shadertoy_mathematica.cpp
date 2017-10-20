@@ -13,9 +13,15 @@
 
 using namespace std;
 
-extern "C" void st_compile(const char *source);
-extern "C" void st_reset(const char *id);
-extern "C" void st_render();
+extern "C"
+{
+	void st_compile(const char *source);
+	void st_reset(const char *id);
+	void st_render();
+
+	void st_set_input();
+	void st_reset_input();
+}
 
 // Render context host
 Host host;
@@ -42,14 +48,14 @@ template <typename TRet> TRet st_wrapper_exec(function<TRet(void)> &&fun)
 	{
 		stringstream ss;
 		ss << "Program build error: " << pbe.what() << " [" << pbe.SourceFile() << ":"
-		   << pbe.SourceLine() << "] " << pbe.Log();
+			<< pbe.SourceLine() << "] " << pbe.Log();
 		st_fail("glerr", ss.str().c_str());
 	}
 	catch (oglplus::Error &err)
 	{
 		stringstream ss;
 		ss << "Error: " << err.what() << " [" << err.SourceFile() << ":" << err.SourceLine() << "] "
-		   << err.Log();
+			<< err.Log();
 		st_fail("glerr", ss.str().c_str());
 	}
 	catch (runtime_error &ex)
@@ -167,6 +173,92 @@ void st_render()
 
 		MLPutFunction(stdlink, "Image", 1);
 		MLPutReal32Array(stdlink, image->data->data(), &image->dims[0], NULL, 3);
+	}));
+}
+
+void st_input_args(string &id, string &buffer, int &channel)
+{
+	const char *idC;
+	if (!MLGetString(stdlink, &idC))
+		throw runtime_error("Failed to get context Id");
+
+	id = string(idC);
+	MLReleaseString(stdlink, idC);
+
+	const char *inputSpec;
+	if (!MLGetString(stdlink, &inputSpec))
+		throw runtime_error("Failed to get input name");
+
+	string inputStr(inputSpec);
+	MLReleaseString(stdlink, inputSpec);
+
+	auto dotPos(inputStr.find('.'));
+	if (dotPos == string::npos)
+		throw runtime_error("Invalid input specification");
+
+	buffer.assign(inputStr.begin(), inputStr.begin() + dotPos);
+	string inputChannelStr(inputStr.begin() + dotPos + 1, inputStr.end());
+	channel = atoi(inputChannelStr.c_str());
+
+	if (channel < 0 || channel > 3)
+		throw runtime_error("Invalid channel number");
+}
+
+void st_set_input()
+{
+	st_wrapper_exec(function<void(void)>([&]() {
+		string shaderId, bufferName;
+		int channelName;
+		st_input_args(shaderId, bufferName, channelName);
+
+		float *data;
+		int *dims;
+		int d;
+		char **heads;
+
+		if (!MLGetReal32Array(stdlink, &data, &dims, &heads, &d))
+		{
+			throw runtime_error("Failed to get image data");
+		}
+
+		if (d <= 1 || d > 3)
+		{
+			MLReleaseReal32Array(stdlink, data, dims, heads, d);
+			throw runtime_error("Invalid number of dimensions for image. Must be 2 or 3");
+		}
+
+		// Move image data in StImage structure
+		StImage img;
+		img.dims[0] = dims[0];
+		img.dims[1] = dims[1];
+		if (d == 3)
+			img.dims[2] = dims[2];
+		else
+			img.dims[2] = 1;
+		img.data = make_shared<vector<float>>();
+		img.data->assign(data, data + img.dims[0] * img.dims[1] * img.dims[2]);
+
+		// Release data
+		MLReleaseReal32Array(stdlink, data, dims, heads, d);
+
+		// Set input
+		host.GetContext(shaderId)->setInput(bufferName, channelName, img);
+
+		MLPutSymbol(stdlink, "True");
+	}));
+}
+
+void st_reset_input()
+{
+	st_wrapper_exec(function<void(void)>([&]() {
+		string shaderId, bufferName;
+		int channelName;
+		st_input_args(shaderId, bufferName, channelName);
+
+		// Set input
+		host.GetContext(shaderId)->resetInput(bufferName, channelName);
+
+		MLPutSymbol(stdlink, "True");
 	}));
 }
 

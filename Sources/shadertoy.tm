@@ -37,3 +37,27 @@ void st_compile P((const char *));
 
 :Evaluate: Shadertoy::glerr = "OpenGL error: `1`";
 :Evaluate: Shadertoy::err = "Error: `1`";
+
+void st_set_input P(( ));
+
+:Begin:
+:Function:      st_set_input
+:Pattern:       SetShadertoyInput[id_String, input_String, image_Image]
+:Arguments:     { id, input, ImageData[image] }
+:ArgumentTypes: { Manual }
+:ReturnType:    Manual
+:End:
+
+:Evaluate: SetShadertoyInput::usage = "SetShadertoyInput[id, input, image] sets the input 'input' of the Shadertoy context 'id' to 'image'";
+
+void st_reset_input P(( ));
+
+:Begin:
+:Function:      st_reset_input
+:Pattern:       ResetShadertoyInput[id_String, input_String]
+:Arguments:     { id, input }
+:ArgumentTypes: { Manual }
+:ReturnType:    Manual
+:End:
+
+:Evaluate: SetShadertoyInput::usage = "ResetShadertoyInput[id, input, image] sets the input 'input' of the Shadertoy context 'id' to what was used by the shadertoy beforehand";

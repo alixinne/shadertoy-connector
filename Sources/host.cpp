@@ -121,10 +121,9 @@ string Host::CreateLocal(const string &source)
 	name << "localshader-" << local_counter++;
 	string shaderId(name.str());
 
-	int width, height;
-	glfwGetFramebufferSize(st_window, &width, &height);
-	shared_ptr<StContext> ptr = make_shared<StContext>(shaderId, source, width, height);
-	st_contexts.insert(make_pair(string(shaderId), ptr));
+	// Create local context
+	NewContext(shaderId, source);
+
 	return shaderId;
 }
 
@@ -133,12 +132,7 @@ shared_ptr<StContext> Host::GetContext(const std::string &id)
 	auto it = st_contexts.find(id);
 	if (it == st_contexts.end())
 	{
-		int width, height;
-		glfwGetFramebufferSize(st_window, &width, &height);
-		shared_ptr<StContext> ptr = make_shared<StContext>(id, width, height);
-		st_contexts.insert(make_pair(string(id), ptr));
-
-		return ptr;
+		return NewContext(id);
 	}
 
 	return it->second;

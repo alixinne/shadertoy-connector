@@ -60,7 +60,6 @@ class Host
 	 */
 	std::string CreateLocal(const std::string &source);
 
-	private:
 	/**
 	 * Get or allocate a new remote context. Throws if no local context exists
 	 * for this name, and no remote context could be created for this id.
@@ -69,6 +68,26 @@ class Host
 	 * @return    Pointer to the context.
 	 */
 	std::shared_ptr<StContext> GetContext(const std::string &id);
+
+	private:
+	/**
+	 * Instantiate a new context from the given arguments.
+	 */
+	template<class... T> inline
+	std::shared_ptr<StContext> NewContext(T&&... args)
+	{
+		// Get default size
+		int width, height;
+		glfwGetFramebufferSize(st_window, &width, &height);
+
+		// Allocate context
+		std::shared_ptr<StContext> ptr(std::make_shared<StContext>(std::forward<T>(args)..., width, height));
+
+		// Add to context map
+		st_contexts.insert(std::make_pair(ptr->shaderId, ptr));
+
+		return ptr;
+	}
 
 	/// OpenGL window for rendering
 	GLFWwindow *st_window;
