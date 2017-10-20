@@ -100,6 +100,17 @@ StImage *Host::Render(const string &id, boost::optional<int> frame, int width, i
 	return &(context->currentImage);
 }
 
+void Host::Reset(const string &id)
+{
+	const char local[] = "localshader-";
+	if (strncmp(id.c_str(), local, sizeof(local) - 1) == 0)
+	{
+		throw std::runtime_error("Cannot reset a local context.");
+	}
+
+	st_contexts.erase(id);
+}
+
 string Host::CreateLocal(const string &source)
 {
 	// Ensure we are in the right context

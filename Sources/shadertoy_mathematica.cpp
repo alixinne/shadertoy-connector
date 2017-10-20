@@ -13,8 +13,9 @@
 
 using namespace std;
 
-extern "C" void st_render();
 extern "C" void st_compile(const char *source);
+extern "C" void st_reset(const char *id);
+extern "C" void st_render();
 
 // Render context host
 Host host;
@@ -71,6 +72,14 @@ void st_compile(const char *source)
 {
 	string result(st_wrapper_exec(function<string(void)>([&]() { return host.CreateLocal(source); })));
 	MLPutString(stdlink, result.c_str());
+}
+
+void st_reset(const char *id)
+{
+	st_wrapper_exec(function<void(void)>([&]() {
+		host.Reset(id);
+		MLPutSymbol(stdlink, "True");
+	}));
 }
 
 void st_render()

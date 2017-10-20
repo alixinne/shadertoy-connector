@@ -46,6 +46,13 @@ class Host
 	StImage *Render(const std::string &id, boost::optional<int> frame, int width, int height, float mouse[4], GLenum format);
 
 	/**
+	 * Resets the context associated with this Shadertoy Id.
+	 *
+	 * @param id Identifier of the context.
+	 */
+	void Reset(const std::string &id);
+
+	/**
 	 * Create a new local context from the give source code.
 	 *
 	 * @param  source Source of the main program for this context.

@@ -75,6 +75,28 @@ DEFUN_DLD (st_compile, args, nargout,
 	}
 }
 
+DEFUN_DLD (st_reset, args, nargout,
+		   "st_reset('id') resets a context")
+{
+	if (args.length() != 1)
+	{
+		print_usage();
+		return octave_value();
+	}
+	else
+	{
+		return st_wrapper_exec(std::function<octave_value(void)>([&]() {
+			// Get the id
+			std::string id(args(0).string_value());
+
+			// Reset
+			host.Reset(id);
+
+			return octave_value();
+		}));
+	}
+}
+
 DEFUN_DLD (st_render, args, nargout,
 		   "st_render('id', [frame, [format, [width, [height, [mouse]]]]]) renders a Shadertoy as an image")
 {
