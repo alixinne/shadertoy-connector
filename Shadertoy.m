@@ -3,11 +3,20 @@ BeginPackage["Shadertoy`"]
 
 Begin["`Private`"]
 
-$packageDir = DirectoryName[$InputFileName];
-$programName = "shadertoy.bin"
-$executable = FileNameJoin[{$packageDir, $programName}]; (* See Install[] documentation, Details section, for how it resolves directories into executables *)
+(* Find the binary location *)
+$programName = "shadertoy.bin" <> If[StringContainsQ[$SystemID, "Windows"], ".exe", ""];
+$executable = FileNameJoin[{
+	DirectoryName[$InputFileName],
+	"shadertoy.bin",
+	$SystemID,
+	$programName
+}];
 
-Install[$executable]
+(* Terminate existing connection *)
+If[Head[$currentLink] == LinkObject && LinkConnectedQ[$currentLink], Uninstall[$currentLink]];
+
+(* Create new connection *)
+$currentLink = Install[$executable];
 
 End[] (* `Private` *)
 
