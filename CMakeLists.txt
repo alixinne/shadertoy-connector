@@ -79,6 +79,17 @@ if(Mathematica_FOUND)
 
 	add_custom_command(TARGET shadertoy_mathematica POST_BUILD
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:shadertoy_mathematica>" "${CMAKE_SOURCE_DIR}/shadertoy.bin/${Mathematica_SYSTEM_ID}/$<TARGET_FILE_NAME:shadertoy_mathematica>")
+
+	set(ST_MATH_INSTALL_DIR ${Mathematica_USERBASE_DIR}/Applications/Shadertoy)
+	install(DIRECTORY ${CMAKE_SOURCE_DIR}/Kernel
+			DESTINATION ${ST_MATH_INSTALL_DIR}
+			COMPONENT st_mathematica)
+	install(DIRECTORY ${CMAKE_SOURCE_DIR}/shadertoy.bin/${Mathematica_SYSTEM_ID}
+			DESTINATION ${ST_MATH_INSTALL_DIR}/shadertoy.bin
+			COMPONENT st_mathematica)
+	install(FILES ${CMAKE_SOURCE_DIR}/Shadertoy.m
+			DESTINATION ${ST_MATH_INSTALL_DIR}
+			COMPONENT st_mathematica)
 endif()
 
 # Octave connector
@@ -89,7 +100,9 @@ if(Octave_FOUND)
 		SOURCES ${SOURCES_DIR}/shadertoy_octave.cpp
 		LINK_LIBRARIES ${COMMON_LIBRARIES})
 
-	install(TARGETS shadertoy_octave DESTINATION ${OCTAVE_OCT_FILE_DIR})
+	install(TARGETS shadertoy_octave
+			DESTINATION ${OCTAVE_OCT_FILE_DIR}
+			COMPONENT st_octave)
 endif()
 
 # C++14 for the shadertoy_connector target. Others should be fine
