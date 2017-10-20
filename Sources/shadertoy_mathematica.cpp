@@ -14,7 +14,7 @@
 using namespace std;
 
 extern "C" void st_render();
-extern "C" char *st_compile(const char *source);
+extern "C" void st_compile(const char *source);
 
 // Render context host
 Host host;
@@ -67,10 +67,10 @@ template <> void st_wrapper_exec(function<void(void)> &&fun)
 	}));
 }
 
-char *st_compile(const char *source)
+void st_compile(const char *source)
 {
-	return st_wrapper_exec(
-	function<char *(void)>([&]() { return const_cast<char *>(host.CreateLocal(source).c_str()); }));
+	string result(st_wrapper_exec(function<string(void)>([&]() { return host.CreateLocal(source); })));
+	MLPutString(stdlink, result.c_str());
 }
 
 void st_render()
