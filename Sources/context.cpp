@@ -109,6 +109,9 @@ void StContext::setInput(const string &buffer, int channel, StImage &image)
 {
 	auto &bufferOverrides(getBufferInputOverrides(buffer));
 
+	// Changed flag will propagate to the instance in the map
+	image.changed = true;
+
 	// Override channel for this buffer
 	auto it = bufferOverrides.find(channel);
 	if (it == bufferOverrides.end())
@@ -273,14 +276,20 @@ shared_ptr<oglplus::Texture> StContext::DataTextureHandler(const shadertoy::Inpu
 
 	StImage &img(getBufferInputOverrides(bufferName)[channel]);
 
-	// Get the format of this image
-	oglplus::PixelDataFormat fmt(depthFormat(img.dims[2]));
+	if (img.changed)
+	{
+		// Get the format of this image
+		oglplus::PixelDataFormat fmt(depthFormat(img.dims[2]));
 
-	// Load into OpenGL
-	gl.DirectEXT(oglplus::TextureTarget::_2D, *texPtr)
+		// Load into OpenGL
+		gl.DirectEXT(oglplus::TextureTarget::_2D, *texPtr)
 		.Image2D(0, oglplus::PixelDataInternalFormat::RGBA32F,
 			img.dims[1], img.dims[0], 0, fmt,
 			oglplus::PixelDataType::Float, img.data->data());
+
+		// Reset flag
+		img.changed = false;
+	}
 
 	return texPtr;
 }
