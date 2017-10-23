@@ -86,7 +86,8 @@ if(Mathematica_FOUND)
 			COMPONENT st_mathematica)
 	install(DIRECTORY ${CMAKE_SOURCE_DIR}/shadertoy.bin/${Mathematica_SYSTEM_ID}
 			DESTINATION ${ST_MATH_INSTALL_DIR}/shadertoy.bin
-			COMPONENT st_mathematica)
+			COMPONENT st_mathematica
+			USE_SOURCE_PERMISSIONS)
 	install(FILES ${CMAKE_SOURCE_DIR}/Shadertoy.m
 			DESTINATION ${ST_MATH_INSTALL_DIR}
 			COMPONENT st_mathematica)
