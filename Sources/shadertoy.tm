@@ -42,20 +42,20 @@ void st_set_input P(( ));
 
 :Begin:
 :Function:      st_set_input
-:Pattern:       SetShadertoyInput[id_String, input_String, image_Image]
-:Arguments:     { id, input, ImageData[image] }
+:Pattern:       SetShadertoyInput[id_String, inputs__Rule]
+:Arguments:     { id, Map[{#[[1]], ImageData[#[[2]]]} &, List[inputs]] }
 :ArgumentTypes: { Manual }
 :ReturnType:    Manual
 :End:
 
-:Evaluate: SetShadertoyInput::usage = "SetShadertoyInput[id, input, image] sets the input 'input' of the Shadertoy context 'id' to 'image'";
+:Evaluate: SetShadertoyInput::usage = "SetShadertoyInput[id, input -> image] sets the input 'input' of the Shadertoy context 'id' to 'image'";
 
 void st_reset_input P(( ));
 
 :Begin:
 :Function:      st_reset_input
-:Pattern:       ResetShadertoyInput[id_String, input_String]
-:Arguments:     { id, input }
+:Pattern:       ResetShadertoyInput[id_String, inputs__String]
+:Arguments:     { id, List[inputs] }
 :ArgumentTypes: { Manual }
 :ReturnType:    Manual
 :End:

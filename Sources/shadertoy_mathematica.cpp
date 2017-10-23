@@ -136,7 +136,10 @@ void st_render()
 		int mouseParamSize;
 
 		if (!MLGetReal32List(stdlink, &mouseParam, &mouseParamSize))
+		{
+			MLClearError(stdlink);
 			throw runtime_error("Could not get value for Mouse");
+		}
 
 		if (mouseParamSize != 2 && mouseParamSize != 4)
 		{
@@ -152,7 +155,10 @@ void st_render()
 		const char *formatName;
 		GLenum format;
 		if (!MLGetString(stdlink, &formatName))
+		{
+			MLClearError(stdlink);
 			throw runtime_error("Invalid Format parameter");
+		}
 
 		if (strcmp(formatName, "RGBA") == 0)
 			format = GL_RGBA;
@@ -176,18 +182,14 @@ void st_render()
 	}));
 }
 
-void st_input_args(string &id, string &buffer, int &channel)
+bool st_parse_input_name(string &buffer, int &channel)
 {
-	const char *idC;
-	if (!MLGetString(stdlink, &idC))
-		throw runtime_error("Failed to get context Id");
-
-	id = string(idC);
-	MLReleaseString(stdlink, idC);
-
 	const char *inputSpec;
 	if (!MLGetString(stdlink, &inputSpec))
-		throw runtime_error("Failed to get input name");
+	{
+		MLClearError(stdlink);
+		return false;
+	}
 
 	string inputStr(inputSpec);
 	MLReleaseString(stdlink, inputSpec);
@@ -202,49 +204,106 @@ void st_input_args(string &id, string &buffer, int &channel)
 
 	if (channel < 0 || channel > 3)
 		throw runtime_error("Invalid channel number");
+
+	return true;
+}
+
+bool st_parse_id(string &id)
+{
+	const char *idC;
+	if (!MLGetString(stdlink, &idC))
+	{
+		MLClearError(stdlink);
+		throw runtime_error("Failed to get context Id");
+	}
+
+	id = string(idC);
+	MLReleaseString(stdlink, idC);
 }
 
 void st_set_input()
 {
 	st_wrapper_exec(function<void(void)>([&]() {
 		string shaderId, bufferName;
-		int channelName;
-		st_input_args(shaderId, bufferName, channelName);
+		int channelName, cnt = 0;
 
-		float *data;
-		int *dims;
-		int d;
-		char **heads;
+		// Parse context id
+		st_parse_id(shaderId);
+		// Get the context
+		auto context(host.GetContext(shaderId));
 
-		if (!MLGetReal32Array(stdlink, &data, &dims, &heads, &d))
+		long ninputs;
+		if (!MLCheckFunction(stdlink, "List", &ninputs))
 		{
-			throw runtime_error("Failed to get image data");
+			MLClearError(stdlink);
+			throw runtime_error("Invalid input specification");
 		}
 
-		if (d <= 1 || d > 3)
+		// Process all flattened rules
+		for (long n = 0; n < ninputs; ++n)
 		{
+			long nargs;
+			if (!MLCheckFunction(stdlink, "List", &nargs))
+			{
+				MLClearError(stdlink);
+				throw runtime_error("Invalid input item specification");
+			}
+
+			if (!st_parse_input_name(bufferName, channelName))
+				throw runtime_error("Could not parse input name");
+
+			float *data;
+			int *dims;
+			int d;
+			char **heads;
+
+			if (!MLGetReal32Array(stdlink, &data, &dims, &heads, &d))
+			{
+				MLClearError(stdlink);
+
+				stringstream ss;
+				ss << "Failed to get image data for " << bufferName << "." << channelName;
+				throw runtime_error(ss.str());
+			}
+
+			if (d <= 1 || d > 3)
+			{
+				MLReleaseReal32Array(stdlink, data, dims, heads, d);
+				stringstream ss;
+				ss << "Invalid number of dimensions for " << bufferName
+				   << "." << channelName << ". Must be 2 or 3";
+				throw runtime_error(ss.str());
+			}
+
+			// Move image data in StImage structure
+			StImage img;
+			img.dims[0] = dims[0];
+			img.dims[1] = dims[1];
+			if (d == 3)
+				img.dims[2] = dims[2];
+			else
+				img.dims[2] = 1;
+			img.data = make_shared<vector<float>>(img.dims[0] * img.dims[1] * img.dims[2]);
+
+			// Copy data, vflip
+			size_t stride_size = sizeof(float) * img.dims[1] * img.dims[2];
+			for (int i = 0; i < img.dims[0]; ++i)
+			{
+				memcpy(&img.data->data()[i * stride_size / sizeof(float)],
+					   &data[(img.dims[0] - i - 1) * stride_size / sizeof(float)],
+					   stride_size);
+			}
+
+			// Release data
 			MLReleaseReal32Array(stdlink, data, dims, heads, d);
-			throw runtime_error("Invalid number of dimensions for image. Must be 2 or 3");
+
+			// Set context input
+			context->setInput(bufferName, channelName, img);
+			cnt++;
 		}
 
-		// Move image data in StImage structure
-		StImage img;
-		img.dims[0] = dims[0];
-		img.dims[1] = dims[1];
-		if (d == 3)
-			img.dims[2] = dims[2];
-		else
-			img.dims[2] = 1;
-		img.data = make_shared<vector<float>>();
-		img.data->assign(data, data + img.dims[0] * img.dims[1] * img.dims[2]);
-
-		// Release data
-		MLReleaseReal32Array(stdlink, data, dims, heads, d);
-
-		// Set input
-		host.GetContext(shaderId)->setInput(bufferName, channelName, img);
-
-		MLPutSymbol(stdlink, "True");
+		// Put the number of set inputs
+		MLPutInteger(stdlink, cnt);
 	}));
 }
 
@@ -252,13 +311,32 @@ void st_reset_input()
 {
 	st_wrapper_exec(function<void(void)>([&]() {
 		string shaderId, bufferName;
-		int channelName;
-		st_input_args(shaderId, bufferName, channelName);
+		int channelName, cnt = 0;
 
-		// Set input
-		host.GetContext(shaderId)->resetInput(bufferName, channelName);
+		// Parse context id
+		st_parse_id(shaderId);
+		// Get the context
+		auto context(host.GetContext(shaderId));
 
-		MLPutSymbol(stdlink, "True");
+		long ninputs;
+		if (!MLCheckFunction(stdlink, "List", &ninputs))
+		{
+			MLClearError(stdlink);
+			throw runtime_error("Invalid input specification");
+		}
+
+		// Parse all input IDs
+		for (long n = 0; n < ninputs; ++n)
+		{
+			if (!st_parse_input_name(bufferName, channelName))
+				throw runtime_error("Invalid input item specification");
+
+			context->resetInput(bufferName, channelName);
+			cnt++;
+		}
+
+		// Put the number of reset inputs
+		MLPutInteger(stdlink, cnt);
 	}));
 }
 

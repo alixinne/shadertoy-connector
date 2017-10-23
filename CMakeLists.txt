@@ -27,15 +27,15 @@ find_package(shadertoy REQUIRED)
 
 # shader settings
 include_directories(
-	${OPENGL_INCLUDE_DIRS}
-	${GLEW_INCLUDE_DIRS}
-	${glfw3_INCLUDE_DIRS}
-	${oglplus_INCLUDE_DIRS}
-	${Boost_INCLUDE_DIRS}
-	${CURL_INCLUDE_DIRS}
-	${jsoncpp_INCLUDE_DIRS}
+	${CMAKE_SOURCE_DIR}/Sources
 	${shadertoy_INCLUDE_DIRS}
-	${CMAKE_SOURCE_DIR}/Sources)
+	${jsoncpp_INCLUDE_DIRS}
+	${CURL_INCLUDE_DIRS}
+	${Boost_INCLUDE_DIRS}
+	${oglplus_INCLUDE_DIRS}
+	${glfw3_INCLUDE_DIRS}
+	${GLEW_INCLUDE_DIRS}
+	${OPENGL_INCLUDE_DIRS})
 
 # create the connector library
 add_library(shadertoy_connector

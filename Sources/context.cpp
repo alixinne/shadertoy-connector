@@ -31,11 +31,7 @@ StContext::StContext(const std::string &shaderId, const std::string &source, int
 	// Load the shader from a locally created file
 	loadLocal(shaderId, source, config);
 
-	// Create the rendering context
-	context = make_shared<shadertoy::RenderContext>(config);
-
-	// Initialize it
-	context->Initialize();
+	createContext(config);
 }
 
 void StContext::performRender(GLFWwindow *window, int frameCount, int width, int height, float mouse[4], GLenum format)
@@ -119,14 +115,29 @@ void StContext::setInput(const string &buffer, int channel, StImage &image)
 	{
 		// Change config type to the registered handler
 		auto &input(config.bufferConfigs.find(buffer)->second.inputConfig[channel]);
+
+		if (input.id.empty() || input.type.empty())
+		{
+			// input was not enabled, create an input
+			stringstream sid;
+			sid << buffer << "." << channel;
+			input.id = sid.str();
+			// set type to data
+			input.type = "data";
+		}
+		else
+		{
+			// input was already enabled, just override its type
+			input.type = "data-" + input.type;
+		}
+
+		// Ensure this enabled the input
 		if (!input.enabled())
 		{
 			stringstream ss;
 			ss << buffer << "." << channel << " input is not enabled";
 			throw runtime_error(ss.str());
 		}
-
-		input.type = "data-" + input.type;
 
 		// New override, reload config required
 		bufferOverrides.insert(make_pair(channel, image));
@@ -147,7 +158,19 @@ void StContext::resetInput(const string &buffer, int channel)
 	if (bufferOverrides.erase(channel) > 0)
 	{
 		auto &input(config.bufferConfigs.find(buffer)->second.inputConfig[channel]);
-		input.type = string(input.type.begin() + (sizeof("data-") - 1), input.type.end());
+
+		if (input.type.compare("data") == 0)
+		{
+			// This input used to be disabled
+			input.id = "";
+			input.type = "";
+		}
+		else
+		{
+			// This input was enabled before
+			input.type = string(input.type.begin() + (sizeof("data-") - 1), input.type.end());
+		}
+
 		reloadInputConfig = true;
 	}
 }
@@ -207,6 +230,7 @@ void StContext::createContext(shadertoy::ContextConfig &config)
 	auto handler(shadertoy::InputHandler(bind(&StContext::DataTextureHandler, this,
 		placeholders::_1, placeholders::_2, placeholders::_3, placeholders::_4)));
 
+	context->GetTextureEngine().RegisterHandler("data", handler);
 	context->GetTextureEngine().RegisterHandler("data-texture", handler);
 	context->GetTextureEngine().RegisterHandler("data-buffer", handler);
 }
