@@ -76,8 +76,10 @@ template <> void st_wrapper_exec(function<void(void)> &&fun)
 
 void st_compile(const char *source)
 {
-	string result(st_wrapper_exec(function<string(void)>([&]() { return host.CreateLocal(source); })));
-	MLPutString(stdlink, result.c_str());
+	st_wrapper_exec(function<void(void)>([&]() {
+		string shaderId(host.CreateLocal(source));
+		MLPutString(stdlink, shaderId.c_str());
+	}));
 }
 
 void st_reset(const char *id)
