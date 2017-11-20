@@ -137,8 +137,9 @@ void st_compile(const char *source)
 				}
 				else
 				{
-					unescaped << static_cast<char>(cnum) << source[i];
+					unescaped << static_cast<char>(cnum);
 					state = Standard;
+					i--;
 				}
 			}
 		}
