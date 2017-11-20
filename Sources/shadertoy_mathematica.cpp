@@ -77,7 +77,73 @@ template <> void st_wrapper_exec(function<void(void)> &&fun)
 void st_compile(const char *source)
 {
 	st_wrapper_exec(function<void(void)>([&]() {
-		string shaderId(host.CreateLocal(source));
+		// Process escapes
+		std::stringstream unescaped;
+		size_t len = strlen(source);
+		enum {
+			Standard,
+			ReadingEscape,
+			ReadingOctalEscape
+		} state = Standard;
+		int cnum;
+
+		for (size_t i = 0; i <= len; ++i)
+		{
+			if (state == Standard)
+			{
+				if (source[i] == '\\')
+				{
+					state = ReadingEscape;
+					cnum = 0;
+				}
+				else if (source[i])
+				{
+					unescaped << source[i];
+				}
+			}
+			else if (state == ReadingEscape)
+			{
+				if (source[i] == '0')
+				{
+					state = ReadingOctalEscape;
+				}
+				else if (source[i] == 'n')
+				{
+					unescaped << '\n';
+					state = Standard;
+				}
+				else if (source[i] == 'r')
+				{
+					unescaped << '\r';
+					state = Standard;
+				}
+				else if (source[i] == 't')
+				{
+					unescaped << '\t';
+					state = Standard;
+				}
+				else
+				{
+					unescaped << '\\';
+					unescaped << source[i];
+					state = Standard;
+				}
+			}
+			else if (state == ReadingOctalEscape)
+			{
+				if (source[i] >= '0' && source[i] <= '7')
+				{
+					cnum = cnum * 8 + (source[i] - '0');
+				}
+				else
+				{
+					unescaped << static_cast<char>(cnum) << source[i];
+					state = Standard;
+				}
+			}
+		}
+
+		string shaderId(host.CreateLocal(unescaped.str()));
 		MLPutString(stdlink, shaderId.c_str());
 	}));
 }
