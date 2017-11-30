@@ -79,7 +79,11 @@ functions from the correct file.
 % Tell octave to autoload the functions from the .oct file
 shadertoy_oct = 'shadertoy_octave.oct';
 autoload('st_render', shadertoy_oct);
+autoload('st_reset', shadertoy_oct);
 autoload('st_compile', shadertoy_oct);
+autoload('st_set_input', shadertoy_oct);
+autoload('st_set_input_filter', shadertoy_oct);
+autoload('st_reset_input', shadertoy_oct);
 
 % Render a shadertoy as a matrix
 img = st_render('llySRh');
