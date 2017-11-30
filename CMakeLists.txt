@@ -61,6 +61,7 @@ if(Mathematica_FOUND)
 	add_executable(shadertoy_mathematica
 		${SOURCES_DIR}/shadertoy_mathematica.cpp
 		${CMAKE_CURRENT_BINARY_DIR}/shadertoy_mathematica.c)
+	set_property(TARGET shadertoy_mathematica PROPERTY CXX_STANDARD 14)
 
 	if(WIN32)
 		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS")
@@ -95,13 +96,14 @@ if(Octave_FOUND)
 	octave_add_oct(shadertoy_octave
 		SOURCES ${SOURCES_DIR}/shadertoy_octave.cpp
 		LINK_LIBRARIES ${COMMON_LIBRARIES})
+	set_property(TARGET shadertoy_octave PROPERTY CXX_STANDARD 14)
 
 	install(TARGETS shadertoy_octave
 			DESTINATION ${OCTAVE_OCT_FILE_DIR}
 			COMPONENT st_octave)
 endif()
 
-# C++14 for the shadertoy_connector target. Others should be fine
+# C++14 for the targets
 set_property(TARGET shadertoy_connector PROPERTY CXX_STANDARD 14)
 
 # Required
