@@ -50,6 +50,18 @@ void st_set_input P(( ));
 
 :Evaluate: SetShadertoyInput::usage = "SetShadertoyInput[id, input -> image] sets the input 'input' of the Shadertoy context 'id' to 'image'";
 
+void st_set_input_filter P(( ));
+
+:Begin:
+:Function:      st_set_input_filter
+:Pattern:       SetShadertoyInputFilter[id_String, inputs__Rule]
+:Arguments:     { id, Map[{#[[1]], #[[2]]} &, List[inputs]] }
+:ArgumentTypes: { Manual }
+:ReturnType:    Manual
+:End:
+
+:Evaluate: SetShadertoyInputFilter::usage = "SetShadertoyInputFilter[id, input -> \"Linear\"|\"Nearest\"|\"Mipmap\"] sets the input 'input' filter method of the Shadertoy context 'id' to the specified value";
+
 void st_reset_input P(( ));
 
 :Begin:

@@ -82,6 +82,16 @@ struct StContext
 	void setInput(const std::string &buffer, int channel, StImage &image);
 
 	/**
+	 * Sets the filter for a given input.
+	 *
+	 * @param buffer    Name of the buffer to change the inputs
+	 * @param channel   Channel id (0 to 3) of the input to change
+	 * @param minFilter Filtering method for the given input
+	 */
+	void setInputFilter(const std::string &buffer, int channel,
+						oglplus::TextureMinFilter minFilter);
+
+	/**
 	 * Resets the values of the given input to the default as given by the context.
 	 *
 	 * @param buffer  Name of the buffer to change the inputs

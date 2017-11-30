@@ -153,6 +153,17 @@ void StContext::setInput(const string &buffer, int channel, StImage &image)
 	}
 }
 
+void StContext::setInputFilter(const string &buffer, int channel,
+							   oglplus::TextureMinFilter minFilter)
+{
+	auto &input(config.bufferConfigs.find(buffer)->second.inputConfig[channel]);
+
+	input.minFilter = minFilter;
+	input.magFilter = minFilter == oglplus::TextureMinFilter::Nearest ?
+									oglplus::TextureMagFilter::Nearest :
+									oglplus::TextureMagFilter::Linear;
+}
+
 void StContext::resetInput(const string &buffer, int channel)
 {
 	auto &bufferOverrides(getBufferInputOverrides(buffer));

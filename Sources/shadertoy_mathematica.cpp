@@ -21,6 +21,8 @@ extern "C"
 
 	void st_set_input();
 	void st_reset_input();
+
+	void st_set_input_filter();
 }
 
 // Render context host
@@ -405,6 +407,83 @@ void st_reset_input()
 		}
 
 		// Put the number of reset inputs
+		MLPutInteger(stdlink, cnt);
+	}));
+}
+
+void st_set_input_filter()
+{
+	st_wrapper_exec(function<void(void)>([&]() {
+		string shaderId, bufferName;
+		int channelName, cnt = 0;
+
+		// Parse context id
+		st_parse_id(shaderId);
+		// Get the context
+		auto context(host.GetContext(shaderId));
+
+		long ninputs;
+		if (!MLCheckFunction(stdlink, "List", &ninputs))
+		{
+			MLClearError(stdlink);
+			throw runtime_error("Invalid input specification");
+		}
+
+		// Process all flattened rules
+		for (long n = 0; n < ninputs; ++n)
+		{
+			long nargs;
+			if (!MLCheckFunction(stdlink, "List", &nargs))
+			{
+				MLClearError(stdlink);
+				throw runtime_error("Invalid input item specification");
+			}
+
+			if (!st_parse_input_name(bufferName, channelName))
+				throw runtime_error("Could not parse input name");
+
+			const char *filterMethod;
+			if (!MLGetString(stdlink, &filterMethod))
+			{
+				MLClearError(stdlink);
+
+				stringstream ss;
+				ss << "Failed to get filter type for " << bufferName << "." << channelName;
+				throw runtime_error(ss.str());
+			}
+
+			oglplus::TextureMinFilter minFilter;
+
+			if (strcmp(filterMethod, "Linear") == 0)
+			{
+				minFilter = oglplus::TextureMinFilter::Linear;
+			}
+			else if (strcmp(filterMethod, "Nearest") == 0)
+			{
+				minFilter = oglplus::TextureMinFilter::Nearest;
+			}
+			else if (strcmp(filterMethod, "Mipmap") == 0)
+			{
+				minFilter = oglplus::TextureMinFilter::LinearMipmapLinear;
+			}
+			else
+			{
+				MLReleaseString(stdlink, filterMethod);
+
+				stringstream ss;
+				ss << "Invalid filter type '" << filterMethod << "' for " << bufferName << "." << channelName;
+				throw runtime_error(ss.str());
+			}
+
+			// Release data
+			MLReleaseString(stdlink, filterMethod);
+
+			// Set context input filter
+			context->setInputFilter(bufferName, channelName, minFilter);
+			cnt++;
+		}
+
+		// Put the number of set inputs
 		MLPutInteger(stdlink, cnt);
 	}));
 }
