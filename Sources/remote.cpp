@@ -11,8 +11,6 @@
 
 #include <GL/glew.h>
 
-#include <oglplus/enumerations.hpp>
-
 #include "remote.hpp"
 
 using namespace std;
@@ -148,27 +146,27 @@ void loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::C
 
 				if (sampler["filter"].compare("mipmap") == 0)
 				{
-					conf.minFilter = oglplus::TextureMinFilter::LinearMipmapLinear;
-					conf.magFilter = oglplus::TextureMagFilter::Linear;
+					conf.minFilter = GL_LINEAR_MIPMAP_LINEAR;
+					conf.magFilter = GL_LINEAR;
 				}
 				else if (sampler["filter"].compare("linear") == 0)
 				{
-					conf.minFilter = oglplus::TextureMinFilter::Linear;
-					conf.magFilter = oglplus::TextureMagFilter::Linear;
+					conf.minFilter = GL_LINEAR;
+					conf.magFilter = GL_LINEAR;
 				}
 				else if (sampler["filter"].compare("nearest") == 0)
 				{
-					conf.minFilter = oglplus::TextureMinFilter::Nearest;
-					conf.magFilter = oglplus::TextureMagFilter::Nearest;
+					conf.minFilter = GL_NEAREST;
+					conf.magFilter = GL_NEAREST;
 				}
 
 				if (sampler["wrap"].compare("repeat") == 0)
 				{
-					conf.wrap = oglplus::TextureWrap::Repeat;
+					conf.wrap = GL_REPEAT;
 				}
 				else if (sampler["wrap"].compare("clamp") == 0)
 				{
-					conf.wrap = oglplus::TextureWrap::ClampToEdge;
+					conf.wrap = GL_CLAMP_TO_EDGE;
 				}
 
 				conf.vflip = sampler["vflip"].compare("true") == 0;

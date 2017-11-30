@@ -18,12 +18,8 @@ set(SOURCES_DIR "${CMAKE_SOURCE_DIR}/Sources")
 # Set link directories
 link_directories(${glfw3_LIBRARY_DIRS} ${jsoncpp_LIBRARY_DIRS})
 
-# oglplus config
-set(oglplus_CONFIGURE_EXTRA_ARGS --use-glew --use-glfw3)
-set(shadertoy_LOAD_OGLPLUS ON)
-
 # libshadertoy
-find_package(shadertoy REQUIRED)
+find_package(shadertoy REQUIRED 0.1.0)
 
 # shader settings
 include_directories(
@@ -32,7 +28,6 @@ include_directories(
 	${jsoncpp_INCLUDE_DIRS}
 	${CURL_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
-	${oglplus_INCLUDE_DIRS}
 	${glfw3_INCLUDE_DIRS}
 	${GLEW_INCLUDE_DIRS}
 	${OPENGL_INCLUDE_DIRS})

@@ -6,8 +6,6 @@
 #include <alloca.h>
 #endif
 
-#include <oglplus/dsa/ext/texture.hpp>
-
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 using namespace std;
@@ -72,8 +70,8 @@ void StContext::performRender(GLFWwindow *window, int frameCount, int width, int
 
 	//  iDate
 	boost::posix_time::ptime dt = boost::posix_time::microsec_clock::local_time();
-	state.V<shadertoy::iDate>() = oglplus::Vec4f(dt.date().year() - 1, dt.date().month(), dt.date().day(),
-												 dt.time_of_day().total_nanoseconds() / 1e9f);
+	state.V<shadertoy::iDate>() = glm::vec4(dt.date().year() - 1, dt.date().month(), dt.date().day(),
+											dt.time_of_day().total_nanoseconds() / 1e9f);
 
 	//  iMouse
 	for (int i = 0; i < 4; ++i)
@@ -84,7 +82,7 @@ void StContext::performRender(GLFWwindow *window, int frameCount, int width, int
 	context->Render();
 
 	// Read the current texture
-	GLint tex;
+	GLuint tex;
 	context->DoReadCurrentFrame(tex);
 
 	// Store it in a suitably sized array
@@ -154,14 +152,12 @@ void StContext::setInput(const string &buffer, int channel, StImage &image)
 }
 
 void StContext::setInputFilter(const string &buffer, int channel,
-							   oglplus::TextureMinFilter minFilter)
+							   GLint minFilter)
 {
 	auto &input(config.bufferConfigs.find(buffer)->second.inputConfig[channel]);
 
 	input.minFilter = minFilter;
-	input.magFilter = minFilter == oglplus::TextureMinFilter::Nearest ?
-									oglplus::TextureMagFilter::Nearest :
-									oglplus::TextureMagFilter::Linear;
+	input.magFilter = minFilter == GL_NEAREST ? GL_NEAREST : GL_LINEAR;
 }
 
 void StContext::resetInput(const string &buffer, int channel)
@@ -216,17 +212,17 @@ int StContext::formatDepth(GLenum format)
 	}
 }
 
-oglplus::PixelDataFormat StContext::depthFormat(int depth)
+GLint StContext::depthFormat(int depth)
 {
 	switch (depth)
 	{
 	case 4:
-		return oglplus::PixelDataFormat::RGBA;
+		return GL_RGBA;
 	case 3:
-		return oglplus::PixelDataFormat::RGB;
+		return GL_RGB;
 	case 1:
 	case 0: // no 3rd dimension
-		return oglplus::PixelDataFormat::Red;
+		return GL_RED;
 	default:
 		throw runtime_error("Invalid depth");
 	}
@@ -269,7 +265,7 @@ map<int, StImage> &StContext::getBufferInputOverrides(const string &buffer)
 	return it->second;
 }
 
-shared_ptr<oglplus::Texture> StContext::DataTextureHandler(const shadertoy::InputConfig &inputConfig,
+shared_ptr<shadertoy::OpenGL::Texture> StContext::DataTextureHandler(const shadertoy::InputConfig &inputConfig,
 	bool &skipTextureOptions,
 	bool &skipCache,
 	bool &framebufferSized)
@@ -290,13 +286,11 @@ shared_ptr<oglplus::Texture> StContext::DataTextureHandler(const shadertoy::Inpu
 	if (img.changed)
 	{
 		// Get the format of this image
-		oglplus::PixelDataFormat fmt(depthFormat(img.dims[2]));
+		GLint fmt(depthFormat(img.dims[2]));
 
 		// Load into OpenGL
-		gl.DirectEXT(oglplus::TextureTarget::_2D, *texPtr)
-		.Image2D(0, oglplus::PixelDataInternalFormat::RGBA32F,
-			img.dims[1], img.dims[0], 0, fmt,
-			oglplus::PixelDataType::Float, img.data->data());
+		texPtr->Image2D(GL_TEXTURE_2D, 0, GL_RGBA32F, img.dims[1], img.dims[0],
+			0, fmt, GL_FLOAT, img.data->data());
 
 		// Reset flag
 		img.changed = false;
@@ -305,12 +299,13 @@ shared_ptr<oglplus::Texture> StContext::DataTextureHandler(const shadertoy::Inpu
 	return texPtr;
 }
 
-shared_ptr<oglplus::Texture> StContext::getDataTexture(const string &inputId)
+shared_ptr<shadertoy::OpenGL::Texture> StContext::getDataTexture(const string &inputId)
 {
 	auto it = textures.find(inputId);
 	if (it == textures.end())
 	{
-		shared_ptr<oglplus::Texture> tex(make_shared<oglplus::Texture>());
+		shared_ptr<shadertoy::OpenGL::Texture> tex(
+			make_shared<shadertoy::OpenGL::Texture>(GL_TEXTURE_2D));
 		textures.insert(make_pair(inputId, tex));
 
 		return tex;

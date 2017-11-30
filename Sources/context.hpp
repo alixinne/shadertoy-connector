@@ -7,7 +7,6 @@
 #include <GL/glew.h>
 
 #include <GLFW/glfw3.h>
-#include <oglplus/all.hpp>
 
 #include <shadertoy/Shadertoy.hpp>
 
@@ -31,9 +30,6 @@ struct StContext
 
 	/// Rendering context
 	std::shared_ptr<shadertoy::RenderContext> context;
-
-	/// GL wrapper
-	oglplus::Context gl;
 
 	/// Number of rendered frames
 	int frameCount;
@@ -89,7 +85,7 @@ struct StContext
 	 * @param minFilter Filtering method for the given input
 	 */
 	void setInputFilter(const std::string &buffer, int channel,
-						oglplus::TextureMinFilter minFilter);
+						GLint minFilter);
 
 	/**
 	 * Resets the values of the given input to the default as given by the context.
@@ -117,7 +113,7 @@ struct StContext
 	 *
 	 * @param  depth Depth of the image
 	 */
-	oglplus::PixelDataFormat depthFormat(int depth);
+	GLint depthFormat(int depth);
 
 	/**
 	 * Allocates the rendering context
@@ -137,18 +133,18 @@ struct StContext
 	std::map<std::string, std::map<int, StImage>> inputOverrides;
 
 	/// Data texture handler
-	std::shared_ptr<oglplus::Texture> DataTextureHandler(const shadertoy::InputConfig &inputConfig,
+	std::shared_ptr<shadertoy::OpenGL::Texture> DataTextureHandler(const shadertoy::InputConfig &inputConfig,
 		bool &skipTextureOptions,
 		bool &skipCache,
 		bool &framebufferSized);
 
 	/**
-	 * Get an oglplus::Texture instance for the given input id.
+	 * Get an shadertoy::OpenGL::Texture instance for the given input id.
 	 */
-	std::shared_ptr<oglplus::Texture> getDataTexture(const std::string &inputId);
+	std::shared_ptr<shadertoy::OpenGL::Texture> getDataTexture(const std::string &inputId);
 
 	/// List of input override textures OpenGL objects
-	std::map<std::string, std::shared_ptr<oglplus::Texture>> textures;
+	std::map<std::string, std::shared_ptr<shadertoy::OpenGL::Texture>> textures;
 
 	/// true if the set of input overrides has changed and textures need to be reloaded
 	bool reloadInputConfig;

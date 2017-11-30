@@ -8,8 +8,6 @@
 
 #include <GL/glew.h>
 
-#include <oglplus/enumerations.hpp>
-
 #include "local.hpp"
 
 using namespace std;

@@ -4,7 +4,6 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <oglplus/all.hpp>
 
 #include "context.hpp"
 #include "host.hpp"
@@ -46,19 +45,29 @@ template <typename TRet> TRet st_wrapper_exec(function<TRet(void)> &&fun)
 	{
 		return fun();
 	}
-	catch (oglplus::ProgramBuildError &pbe)
+	catch (shadertoy::OpenGL::ShaderCompilationError &ex)
 	{
 		stringstream ss;
-		ss << "Program build error: " << pbe.what() << " [" << pbe.SourceFile() << ":"
-			<< pbe.SourceLine() << "] " << pbe.Log();
+		ss << "Shader compilation error: " << ex.what();
 		st_fail("glerr", ss.str().c_str());
 	}
-	catch (oglplus::Error &err)
+	catch (shadertoy::OpenGL::ProgramLinkError &ex)
 	{
 		stringstream ss;
-		ss << "Error: " << err.what() << " [" << err.SourceFile() << ":" << err.SourceLine() << "] "
-			<< err.Log();
+		ss << "Program link error: " << ex.what();
 		st_fail("glerr", ss.str().c_str());
+	}
+	catch (shadertoy::OpenGL::OpenGLError &ex)
+	{
+		stringstream ss;
+		ss << "OpenGL error: " << ex.what();
+		st_fail("glerr", ss.str().c_str());
+	}
+	catch (shadertoy::ShadertoyError &ex)
+	{
+		stringstream ss;
+		ss << "Shadertoy error: " << ex.what();
+		st_fail("err", ss.str().c_str());
 	}
 	catch (runtime_error &ex)
 	{
@@ -452,19 +461,19 @@ void st_set_input_filter()
 				throw runtime_error(ss.str());
 			}
 
-			oglplus::TextureMinFilter minFilter;
+			GLint minFilter;
 
 			if (strcmp(filterMethod, "Linear") == 0)
 			{
-				minFilter = oglplus::TextureMinFilter::Linear;
+				minFilter = GL_LINEAR;
 			}
 			else if (strcmp(filterMethod, "Nearest") == 0)
 			{
-				minFilter = oglplus::TextureMinFilter::Nearest;
+				minFilter = GL_NEAREST;
 			}
 			else if (strcmp(filterMethod, "Mipmap") == 0)
 			{
-				minFilter = oglplus::TextureMinFilter::LinearMipmapLinear;
+				minFilter = GL_LINEAR_MIPMAP_LINEAR;
 			}
 			else
 			{
