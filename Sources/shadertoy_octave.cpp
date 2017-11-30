@@ -7,6 +7,7 @@
 #include "host.hpp"
 
 #include <oct.h>
+#include <parse.h>
 
 Host host;
 bool host_initialized;
@@ -51,6 +52,28 @@ TRet st_wrapper_exec(std::function<TRet(void)> &&fun)
 	}
 
 	return TRet();
+}
+
+void oct_autoload(const char *fname)
+{
+	octave_value_list args;
+	args(0) = std::string(fname);
+	args(1) = std::string("shadertoy_octave.oct");
+
+	feval("autoload", args);
+}
+
+DEFUN_DLD (shadertoy_octave, args, nargout,
+		   "shadertoy_octave() initializes the shadertoy oct file")
+{
+	oct_autoload("st_render");
+	oct_autoload("st_reset");
+	oct_autoload("st_compile");
+	oct_autoload("st_set_input");
+	oct_autoload("st_set_input_filter");
+	oct_autoload("st_reset_input");
+
+	return octave_value();
 }
 
 DEFUN_DLD (st_render, args, nargout,
