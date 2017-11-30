@@ -2,7 +2,6 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <oglplus/all.hpp>
 
 #include "context.hpp"
 #include "host.hpp"
@@ -30,19 +29,21 @@ TRet st_wrapper_exec(std::function<TRet(void)> &&fun)
 	{
 		return fun();
 	}
-	catch (oglplus::ProgramBuildError &pbe)
+	catch (shadertoy::OpenGL::ShaderCompilationError &ex)
 	{
-		std::stringstream ss;
-		ss << "Program build error: " << pbe.what() << " [" << pbe.SourceFile() << ":"
-		   << pbe.SourceLine() << "] " << pbe.Log();
-		octave_stdout << ss.str();
+		octave_stdout << "Shader compilation error: " << ex.what();
 	}
-	catch (oglplus::Error &err)
+	catch (shadertoy::OpenGL::ProgramLinkError &ex)
 	{
-		std::stringstream ss;
-		ss << "Error: " << err.what() << " [" << err.SourceFile() << ":" << err.SourceLine() << "] "
-		   << err.Log();
-		octave_stdout << ss.str();
+		octave_stdout << "Program link error: " << ex.what();
+	}
+	catch (shadertoy::OpenGL::OpenGLError &ex)
+	{
+		octave_stdout << "OpenGL error: " << ex.what();
+	}
+	catch (shadertoy::ShadertoyError &ex)
+	{
+		octave_stdout << "Shadertoy error: " << ex.what();
 	}
 	catch (std::runtime_error &ex)
 	{
@@ -50,51 +51,6 @@ TRet st_wrapper_exec(std::function<TRet(void)> &&fun)
 	}
 
 	return TRet();
-}
-
-DEFUN_DLD (st_compile, args, nargout,
-		   "st_compile('source') compiles the source of a program and returns its id for st_render")
-{
-	if (args.length() != 1)
-	{
-		print_usage();
-		return octave_value();
-	}
-	else
-	{
-		return st_wrapper_exec(std::function<octave_value(void)>([&]() {
-			// Get the source
-			std::string shaderSource(args(0).string_value());
-
-			// Compile
-			auto id(st_host().CreateLocal(shaderSource));
-
-			// Return value
-			return octave_value(id);
-		}));
-	}
-}
-
-DEFUN_DLD (st_reset, args, nargout,
-		   "st_reset('id') resets a context")
-{
-	if (args.length() != 1)
-	{
-		print_usage();
-		return octave_value();
-	}
-	else
-	{
-		return st_wrapper_exec(std::function<octave_value(void)>([&]() {
-			// Get the id
-			std::string id(args(0).string_value());
-
-			// Reset
-			host.Reset(id);
-
-			return octave_value();
-		}));
-	}
 }
 
 DEFUN_DLD (st_render, args, nargout,
@@ -177,6 +133,51 @@ DEFUN_DLD (st_render, args, nargout,
 					}
 
 			return octave_value(data);
+		}));
+	}
+}
+
+DEFUN_DLD (st_reset, args, nargout,
+		   "st_reset('id') resets a context")
+{
+	if (args.length() != 1)
+	{
+		print_usage();
+		return octave_value();
+	}
+	else
+	{
+		return st_wrapper_exec(std::function<octave_value(void)>([&]() {
+			// Get the id
+			std::string id(args(0).string_value());
+
+			// Reset
+			host.Reset(id);
+
+			return octave_value();
+		}));
+	}
+}
+
+DEFUN_DLD (st_compile, args, nargout,
+		   "st_compile('source') compiles the source of a program and returns its id for st_render")
+{
+	if (args.length() != 1)
+	{
+		print_usage();
+		return octave_value();
+	}
+	else
+	{
+		return st_wrapper_exec(std::function<octave_value(void)>([&]() {
+			// Get the source
+			std::string shaderSource(args(0).string_value());
+
+			// Compile
+			auto id(st_host().CreateLocal(shaderSource));
+
+			// Return value
+			return octave_value(id);
 		}));
 	}
 }
