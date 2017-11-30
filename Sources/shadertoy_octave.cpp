@@ -181,3 +181,179 @@ DEFUN_DLD (st_compile, args, nargout,
 		}));
 	}
 }
+
+bool st_parse_input_name(const std::string &inputStr, std::string &buffer, int &channel)
+{
+	auto dotPos(inputStr.find('.'));
+	if (dotPos == std::string::npos)
+		throw std::runtime_error("Invalid input specification");
+
+	buffer.assign(inputStr.begin(), inputStr.begin() + dotPos);
+	std::string inputChannelStr(inputStr.begin() + dotPos + 1, inputStr.end());
+	channel = atoi(inputChannelStr.c_str());
+
+	if (channel < 0 || channel > 3)
+		throw std::runtime_error("Invalid channel number");
+
+	return true;
+}
+
+DEFUN_DLD (st_set_input, args, nargout,
+			"st_set_input('id', 'image.0', matrix1[, 'image.1', matrix2[, ...]]])")
+{
+	if (args.length() < 3 || !(args.length() % 2 == 1))
+	{
+		print_usage();
+		return octave_value();
+	}
+	else
+	{
+		return st_wrapper_exec(std::function<octave_value(void)>([&]() {
+			// Get the context name
+			std::string id(args(0).string_value());
+			// Get the context
+			auto context(host.GetContext(id));
+
+			// Parse inputs
+			for (int i = 1; i < args.length(); i += 2)
+			{
+				// Get the input name
+				std::string inputName(args(i).string_value());
+				// Get the input data
+				NDArray img = args(i + 1).array_value();
+
+				if (error_state)
+					throw std::runtime_error("Failed to get the input specification");
+
+				// Create the image structure
+				int d = img.dims().length();
+				if (d <= 1 || d > 3)
+					throw std::runtime_error("Invalid number of dimensions for image array");
+
+				StImage im;
+				im.dims[0] = img.dim1();
+				im.dims[1] = img.dim2();
+				im.dims[2] = d == 3 ? img.dim3() : 1;
+				im.data = std::make_shared<std::vector<float>>(im.dims[0] * im.dims[1] * im.dims[2]);
+
+				// Copy data
+				for (size_t i = 0; i < im.dims[0]; ++i)
+					for (size_t j = 0; j < im.dims[1]; ++j)
+						for (size_t k = 0; k < im.dims[2]; ++k)
+						{
+							size_t idx = (i * im.dims[1] + j) * im.dims[2] + k;
+							if (d == 3)
+								(*im.data)[idx] = static_cast<float>(img(i, j, k));
+							else
+								(*im.data)[idx] = static_cast<float>(img(i, j));
+						}
+
+				// Set input
+				std::string bufferName;
+				int channel;
+				if (st_parse_input_name(inputName, bufferName, channel))
+					context->setInput(bufferName, channel, im);
+				else
+					throw std::runtime_error("Failed to parse input name.");
+			}
+
+			return octave_value();
+		}));
+	}
+}
+
+DEFUN_DLD (st_set_input_filter, args, nargout,
+			"st_set_input('id', 'image.0', 'linear'[, 'image.1', 'nearest'[, ...]]])")
+{
+	if (args.length() < 3 || !(args.length() % 2 == 1))
+	{
+		print_usage();
+		return octave_value();
+	}
+	else
+	{
+		return st_wrapper_exec(std::function<octave_value(void)>([&]() {
+			// Get the context name
+			std::string id(args(0).string_value());
+			// Get the context
+			auto context(host.GetContext(id));
+
+			// Parse inputs
+			for (int i = 1; i < args.length(); i += 2)
+			{
+				// Get the input name
+				std::string inputName(args(i).string_value());
+				// Get the filter type
+				std::string filterType(args(i + 1).string_value());
+
+				if (error_state)
+					throw std::runtime_error("Failed to get the input filter specification");
+
+				// Parse filter type
+				GLint filter;
+				if (filterType.compare("nearest") == 0)
+					filter = GL_NEAREST;
+				else if (filterType.compare("linear") == 0)
+					filter = GL_LINEAR;
+				else if (filterType.compare("mipmap") == 0)
+					filter = GL_LINEAR_MIPMAP_LINEAR;
+				else
+				{
+					std::stringstream ss;
+					ss << "Invalid filter type " << filterType << " for input "
+						<< inputName;
+					throw std::runtime_error(ss.str());
+				}
+
+				// Set input
+				std::string bufferName;
+				int channel;
+				if (st_parse_input_name(inputName, bufferName, channel))
+					context->setInputFilter(bufferName, channel, filter);
+				else
+					throw std::runtime_error("Failed to parse input name.");
+			}
+
+			return octave_value();
+		}));
+	}
+}
+
+DEFUN_DLD (st_reset_input, args, nargout,
+			"st_reset_input('id', 'image.0'[, 'image.1'[, ...]]])")
+{
+	if (args.length() < 2)
+	{
+		print_usage();
+		return octave_value();
+	}
+	else
+	{
+		return st_wrapper_exec(std::function<octave_value(void)>([&]() {
+			// Get the context name
+			std::string id(args(0).string_value());
+			// Get the context
+			auto context(host.GetContext(id));
+
+			// Parse inputs
+			for (int i = 1; i < args.length(); i++)
+			{
+				// Get the input name
+				std::string inputName(args(i).string_value());
+
+				if (error_state)
+					throw std::runtime_error("Failed to get the input filter specification");
+
+				// Set input
+				std::string bufferName;
+				int channel;
+				if (st_parse_input_name(inputName, bufferName, channel))
+					context->resetInput(bufferName, channel);
+				else
+					throw std::runtime_error("Failed to parse input name.");
+			}
+
+			return octave_value();
+		}));
+	}
+}
