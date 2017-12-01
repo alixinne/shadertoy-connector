@@ -19,12 +19,11 @@ set(SOURCES_DIR "${CMAKE_SOURCE_DIR}/Sources")
 link_directories(${glfw3_LIBRARY_DIRS} ${jsoncpp_LIBRARY_DIRS})
 
 # libshadertoy
-find_package(shadertoy REQUIRED 0.1.0)
+find_package(shadertoy REQUIRED 0.1.3)
 
 # shader settings
 include_directories(
 	${CMAKE_SOURCE_DIR}/Sources
-	${shadertoy_INCLUDE_DIRS}
 	${jsoncpp_INCLUDE_DIRS}
 	${CURL_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
@@ -47,7 +46,7 @@ set(COMMON_LIBRARIES
 	${Boost_LIBRARIES}
 	${CURL_LIBRARIES}
 	${jsoncpp_LIBRARIES}
-	${shadertoy_LIBRARIES}
+	shadertoy
 	shadertoy_connector)
 
 # Mathematica connector
