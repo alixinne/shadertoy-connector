@@ -32,7 +32,7 @@ include_directories(
 	${OPENGL_INCLUDE_DIRS})
 
 # create the connector library
-add_library(shadertoy_connector
+add_library(shadertoy_connector OBJECT
 	${SOURCES_DIR}/context.cpp
 	${SOURCES_DIR}/host.cpp
 	${SOURCES_DIR}/local.cpp
@@ -46,8 +46,7 @@ set(COMMON_LIBRARIES
 	${Boost_LIBRARIES}
 	${CURL_LIBRARIES}
 	${jsoncpp_LIBRARIES}
-	shadertoy
-	shadertoy_connector)
+	shadertoy)
 
 # Mathematica connector
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/FindMathematica/CMake/Mathematica")
@@ -59,7 +58,8 @@ if(Mathematica_FOUND)
 
 	add_executable(shadertoy_mathematica
 		${SOURCES_DIR}/shadertoy_mathematica.cpp
-		${CMAKE_CURRENT_BINARY_DIR}/shadertoy_mathematica.c)
+		${CMAKE_CURRENT_BINARY_DIR}/shadertoy_mathematica.c
+		$<TARGET_OBJECTS:shadertoy_connector>)
 	set_property(TARGET shadertoy_mathematica PROPERTY CXX_STANDARD 14)
 
 	if(WIN32)
@@ -94,6 +94,7 @@ find_package(Octave)
 if(Octave_FOUND)
 	octave_add_oct(shadertoy_octave
 		SOURCES ${SOURCES_DIR}/shadertoy_octave.cpp
+		$<TARGET_OBJECTS:shadertoy_connector>
 		LINK_LIBRARIES ${COMMON_LIBRARIES})
 	set_property(TARGET shadertoy_octave PROPERTY CXX_STANDARD 14)
 
