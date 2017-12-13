@@ -48,13 +48,15 @@ template <typename TRet> TRet st_wrapper_exec(function<TRet(void)> &&fun)
 	catch (shadertoy::OpenGL::ShaderCompilationError &ex)
 	{
 		stringstream ss;
-		ss << "Shader compilation error: " << ex.what();
+		ss << "Shader compilation error: " << ex.what() << endl
+		   << ex.log();
 		st_fail("glerr", ss.str().c_str());
 	}
 	catch (shadertoy::OpenGL::ProgramLinkError &ex)
 	{
 		stringstream ss;
-		ss << "Program link error: " << ex.what();
+		ss << "Program link error: " << ex.what() << endl
+		   << ex.log();
 		st_fail("glerr", ss.str().c_str());
 	}
 	catch (shadertoy::OpenGL::OpenGLError &ex)
