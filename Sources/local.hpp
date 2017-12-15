@@ -3,8 +3,7 @@
 
 #include <string>
 
-#include <shadertoy/BufferConfig.hpp>
-#include <shadertoy/ContextConfig.hpp>
+#include <shadertoy/Shadertoy.hpp>
 
 void loadLocal(const std::string &shaderId, const std::string &source, shadertoy::ContextConfig &contextConfig);
 
