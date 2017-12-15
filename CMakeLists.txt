@@ -1,7 +1,6 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.1)
 
 project(shadertoy-connector)
-include(FindPkgConfig)
 
 # GL libraries
 find_package(OpenGL REQUIRED)
@@ -9,8 +8,14 @@ find_package(GLEW REQUIRED)
 find_package(Boost 1.58 REQUIRED COMPONENTS filesystem log serialization
 	date_time program_options)
 find_package(CURL REQUIRED)
+
+find_package(PkgConfig REQUIRED)
+
 pkg_search_module(glfw3 REQUIRED glfw3)
+link_directories(${glfw3_LIBDIR})
+
 pkg_search_module(jsoncpp REQUIRED jsoncpp)
+link_directories(${jsoncpp_LIBDIR})
 
 # Directories
 set(SOURCES_DIR "${CMAKE_SOURCE_DIR}/Sources")
