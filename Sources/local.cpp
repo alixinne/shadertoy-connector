@@ -6,7 +6,7 @@
 
 #include <boost/filesystem.hpp>
 
-#include <GL/glew.h>
+#include <epoxy/gl.h>
 
 #include "local.hpp"
 

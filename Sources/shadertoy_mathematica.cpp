@@ -2,7 +2,7 @@
 #include <sstream>
 #include <string>
 
-#include <GL/glew.h>
+#include <epoxy/gl.h>
 #include <GLFW/glfw3.h>
 
 #include "context.hpp"

@@ -58,15 +58,8 @@ void Host::Allocate()
 		{
 			glfwMakeContextCurrent(st_window);
 
-			if (glewInit() == GLEW_OK)
-			{
-				// ok
-				return;
-			}
-			else
-			{
-				throw runtime_error("Could not initialize GLEW");
-			}
+			// ok
+			return;
 		}
 		else
 		{

@@ -4,7 +4,6 @@ project(shadertoy-connector)
 
 # GL libraries
 find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
 find_package(Boost 1.58 REQUIRED COMPONENTS filesystem log serialization
 	date_time program_options)
 find_package(CURL REQUIRED)
@@ -16,6 +15,9 @@ link_directories(${glfw3_LIBDIR})
 
 pkg_search_module(jsoncpp REQUIRED jsoncpp)
 link_directories(${jsoncpp_LIBDIR})
+
+pkg_search_module(EPOXY REQUIRED epoxy)
+link_directories(${epoxy_LBIDIR})
 
 # Directories
 set(SOURCES_DIR "${CMAKE_SOURCE_DIR}/Sources")
@@ -33,7 +35,7 @@ include_directories(
 	${CURL_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
 	${glfw3_INCLUDE_DIRS}
-	${GLEW_INCLUDE_DIRS}
+	${EPOXY_INCLUDE_DIRS}
 	${OPENGL_INCLUDE_DIRS})
 
 # create the connector library
@@ -46,7 +48,7 @@ add_library(shadertoy_connector OBJECT
 # list of libraries to link into all the targets
 set(COMMON_LIBRARIES
 	${OPENGL_LIBRARY}
-	${GLEW_LIBRARIES}
+	${EPOXY_LIBRARIES}
 	${glfw3_LIBRARIES}
 	${Boost_LIBRARIES}
 	${CURL_LIBRARIES}
