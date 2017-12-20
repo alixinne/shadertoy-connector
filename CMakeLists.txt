@@ -110,6 +110,12 @@ if(Octave_FOUND)
 			COMPONENT st_octave)
 endif()
 
+# Test program for the connector library
+add_executable(st_test
+	${SOURCES_DIR}/shadertoy_test.cpp
+	$<TARGET_OBJECTS:shadertoy_connector>)
+target_link_libraries(st_test ${COMMON_LIBRARIES})
+
 # C++14 for the targets
 set_property(TARGET shadertoy_connector PROPERTY CXX_STANDARD 14)
 
