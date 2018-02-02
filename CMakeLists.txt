@@ -98,7 +98,7 @@ endif()
 # Octave connector
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 find_package(Octave)
-if(Octave_FOUND)
+if(Octave_FOUND OR OCTAVE_EXECUTABLE)
 	octave_add_oct(shadertoy_octave
 		SOURCES ${SOURCES_DIR}/shadertoy_octave.cpp
 		$<TARGET_OBJECTS:shadertoy_connector>
