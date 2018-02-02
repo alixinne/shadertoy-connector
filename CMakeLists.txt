@@ -4,7 +4,7 @@ project(shadertoy-connector)
 
 # GL libraries
 find_package(OpenGL REQUIRED)
-find_package(Boost 1.58 REQUIRED COMPONENTS filesystem log serialization
+find_package(Boost 1.54 REQUIRED COMPONENTS filesystem log serialization
 	date_time program_options)
 find_package(CURL REQUIRED)
 
