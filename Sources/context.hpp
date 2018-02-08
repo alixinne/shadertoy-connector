@@ -18,6 +18,9 @@ struct StImage
 	// Flag to indicate the data in the data field has changed since the last
 	// rendering
 	bool changed = false;
+
+	// Rendering duration of the main buffer
+	unsigned long long frameTiming = 0;
 };
 
 struct StContext

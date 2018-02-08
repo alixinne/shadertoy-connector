@@ -101,6 +101,8 @@ void StContext::performRender(GLFWwindow *window, int frameCount, int width, int
 			   &(*texData)[(height - i - 1) * stride_size / sizeof(float)], stride_size);
 		memcpy(&(*texData)[(height - i - 1) * stride_size / sizeof(float)], stride, stride_size);
 	}
+
+	currentImage.frameTiming = context->GetBufferByName()->GetElapsedTime();
 }
 
 void StContext::setInput(const string &buffer, int channel, StImage &image)

@@ -256,8 +256,39 @@ void st_render()
 
 		MLReleaseString(stdlink, formatName);
 
+		// Read frame timing parameter
+		const char *frameTiming;
+		if (!MLGetSymbol(stdlink, &frameTiming))
+		{
+			MLClearError(stdlink);
+			throw runtime_error("Invalid FrameTiming parameter");
+		}
+
+		bool doFrameTiming;
+		if (strcmp(frameTiming, "True") == 0)
+		{
+			doFrameTiming = true;
+		}
+		else if (strcmp(frameTiming, "False") == 0)
+		{
+			doFrameTiming = false;
+		}
+		else
+		{
+			MLReleaseSymbol(stdlink, frameTiming);
+			throw runtime_error("Invalid FrameTiming parameter");
+		}
+
+		MLReleaseSymbol(stdlink, frameTiming);
+
 		// Render image
 		auto image(host.Render(id, frameCount, width, height, mouse, format));
+
+		if (doFrameTiming)
+		{
+			MLPutFunction(stdlink, "List", 2);
+			MLPutReal64(stdlink, image->frameTiming / 1e9);
+		}
 
 		MLPutFunction(stdlink, "Image", 1);
 		MLPutReal32Array(stdlink, image->data->data(), &image->dims[0], NULL, 3);
