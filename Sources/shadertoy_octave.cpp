@@ -125,18 +125,17 @@ DEFUN_DLD (st_render, args, nargout,
 			float mouse[4] = { 0.f, 0.f, 0.f, 0.f };
 			if (args.length() >= 6)
 			{
-				auto mouse_arg(args(6).array_value());
+				auto mouse_arg(args(5).array_value());
 				auto mouse_arg_dim(mouse_arg.dims());
-				const char err[] = "The mouse argument must be a 2 or 4 element 1D double array.";
 
-				if (mouse_arg_dim.length() != 1)
-					throw std::runtime_error(err);
+				if (mouse_arg_dim.length() != 2)
+					throw std::runtime_error("The mouse argument must be a 1D double array.");
 
-				if (mouse_arg_dim(0) != 2 && mouse_arg_dim(1) != 4)
-					throw std::runtime_error(err);
+				if (mouse_arg_dim(1) != 2 && mouse_arg_dim(1) != 4)
+					throw std::runtime_error("The mouse argument should have 2 or 4 elements.");
 
-				for (int i = 0; i < mouse_arg_dim(0); ++i)
-					mouse[i] = static_cast<float>(mouse_arg(i));
+				for (int i = 0; i < mouse_arg_dim(1); ++i)
+					mouse[i] = static_cast<float>(mouse_arg(0, i));
 			}
 
 			// Render the image
