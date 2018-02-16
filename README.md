@@ -46,7 +46,11 @@ $ cmake -DCOMPONENT=st_mathematica -P cmake_install.cmake
 $ sudo cmake -DCOMPONENT=st_octave -P cmake_install.cmake
 ```
 
-## Usage
+## Documentation
+
+See the full function reference at [docs/FUNCTIONS.md](docs/FUNCTIONS.md).
+
+## Example code
 
 ### Mathematica
 
@@ -77,13 +81,7 @@ functions from the correct file.
 
 ```matlab
 % Tell octave to autoload the functions from the .oct file
-shadertoy_oct = 'shadertoy_octave.oct';
-autoload('st_render', shadertoy_oct);
-autoload('st_reset', shadertoy_oct);
-autoload('st_compile', shadertoy_oct);
-autoload('st_set_input', shadertoy_oct);
-autoload('st_set_input_filter', shadertoy_oct);
-autoload('st_reset_input', shadertoy_oct);
+shadertoy_octave();
 
 % Render a shadertoy as a matrix
 img = st_render('llySRh');
