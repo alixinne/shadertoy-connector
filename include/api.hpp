@@ -139,15 +139,13 @@ template <typename TWrapper> void impl_st_compile(TWrapper &w)
 
 	std::string shaderId(host.CreateLocal(source));
 
-	w.template ConditionalRun<OMWrapper<OMWT_MATHEMATICA>>(
+	w.template EvaluateResult<OMWrapper<OMWT_MATHEMATICA>>(
 	[&]() { MLPutString(w.link, shaderId.c_str()); });
 }
 
 template <typename TWrapper> void impl_st_reset(TWrapper &w)
 {
 	host.Reset(w.template GetParam<std::string>(0, "ctxt"));
-
-	w.template ConditionalRun<OMWrapper<OMWT_MATHEMATICA>>([&]() { MLPutSymbol(w.link, "True"); });
 }
 
 template <typename TWrapper> void impl_st_render(TWrapper &w)
@@ -177,7 +175,7 @@ template <typename TWrapper> void impl_st_render(TWrapper &w)
 
 	auto image(host.Render(id, frameCount, width, height, mouse->data(), format));
 
-	w.template ConditionalRun<OMWrapper<OMWT_MATHEMATICA>>([&]() {
+	w.template EvaluateResult<OMWrapper<OMWT_MATHEMATICA>>([&]() {
 		if (doFrameTiming)
 		{
 			MLPutFunction(w.link, "List", 2);
@@ -256,9 +254,6 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 		// Set context input
 		context->setInput(bufferName, channelName, img);
 	}
-
-	// Return value (Mathematica)
-	w.template ConditionalRun<OMWrapper<OMWT_MATHEMATICA>>([&]() { MLPutInteger(w.link, ninputs); });
 }
 
 template <typename TWrapper> void impl_st_reset_input(TWrapper &w)
@@ -294,9 +289,6 @@ template <typename TWrapper> void impl_st_reset_input(TWrapper &w)
 		// Reset context input
 		context->resetInput(bufferName, channelName);
 	}
-
-	// Return value (Mathematica)
-	w.template ConditionalRun<OMWrapper<OMWT_MATHEMATICA>>([&]() { MLPutInteger(w.link, ninputs); });
 }
 
 template <typename TWrapper> void impl_st_set_input_filter(TWrapper &w)
@@ -349,9 +341,6 @@ template <typename TWrapper> void impl_st_set_input_filter(TWrapper &w)
 		// Set context input filter
 		context->setInputFilter(bufferName, channelName, minFilter);
 	}
-
-	// Return value (Mathematica)
-	w.template ConditionalRun<OMWrapper<OMWT_MATHEMATICA>>([&]() { MLPutInteger(w.link, ninputs); });
 }
 
 #endif /* _API_HPP_ */
