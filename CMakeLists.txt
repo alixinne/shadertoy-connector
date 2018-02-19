@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.1)
 
 project(shadertoy-connector)
 
+# Export compile_commands.json
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # GL libraries
 find_package(OpenGL REQUIRED)
 find_package(Boost 1.54 REQUIRED COMPONENTS filesystem log serialization
