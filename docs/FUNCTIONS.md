@@ -1,5 +1,13 @@
 # shadertoy-connector functions
 
+<!-- TOC depthFrom:2 depthTo:2 withLinks:1 updateOnSave:1 orderedList:0 -->
+
+- [Initialization](#initialization)
+- [st_compile: GLSL Compilation](#stcompile-glsl-compilation)
+- [st_render: Context rendering](#strender-context-rendering)
+
+<!-- /TOC -->
+
 ## Initialization
 
 ### Synopsis
@@ -24,7 +32,7 @@ None
 
 None
 
-## GLSL Compilation
+## st_compile: GLSL Compilation
 
 ### Synopsis
 
@@ -55,7 +63,7 @@ error messages (Mathematica).
 * `ctxt`: String that identifies the rendering context based on this fragment
 shader
 
-## Context rendering
+## st_render: Context rendering
 
 ### Synopsis
 
