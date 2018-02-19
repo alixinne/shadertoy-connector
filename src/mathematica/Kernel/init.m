@@ -1,2 +1,1 @@
-(* init.m *)
-Get["Shadertoy`Shadertoy`"]
+(*init.m *)Get["Shadertoy`Shadertoy`"]

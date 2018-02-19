@@ -9,7 +9,7 @@
 #include "context.hpp"
 #include "host.hpp"
 
-#include "mathlink.h"
+#include "om_wrapper.h"
 
 using namespace std;
 
@@ -25,7 +25,12 @@ void st_set_input_filter();
 }
 
 // Render context host
-Host host;
+static Host host;
+
+// Mathematica API wrapper
+static OMWrapper<OMWT_MATHEMATICA>
+wrapper("Shadertoy", stdlink, function<void(void)>([]() { host.Allocate(); }));
+
 
 // Failure callback
 void st_fail(const char *msgname, const char *arg)
@@ -527,39 +532,3 @@ void st_set_input_filter()
 		MLPutInteger(stdlink, cnt);
 	}));
 }
-
-// Shadertoy module entrypoint
-int st_main(int argc, char *argv[])
-{
-	host.Allocate();
-	return MLMain(argc, argv);
-}
-
-// Entry point for MathLink
-
-#if WINDOWS_MATHLINK
-
-#if __BORLANDC__
-#pragma argsused
-#endif
-
-int PASCAL WinMain(HINSTANCE hinstCurrent, HINSTANCE hinstPrevious, LPSTR lpszCmdLine, int nCmdShow)
-{
-	char buff[512];
-	char FAR *buff_start = buff;
-	char FAR *argv[32];
-	char FAR *FAR *argv_end = argv + 32;
-
-	hinstPrevious = hinstPrevious; /* suppress warning */
-
-	if (!MLInitializeIcon(hinstCurrent, nCmdShow))
-		return 1;
-	MLScanString(argv, &argv_end, &lpszCmdLine, &buff_start);
-	return st_main((int)(argv_end - argv), argv);
-}
-
-#else
-
-int main(int argc, char *argv[]) { return st_main(argc, argv); }
-
-#endif
