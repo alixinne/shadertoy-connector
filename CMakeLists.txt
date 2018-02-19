@@ -48,7 +48,8 @@ add_library(shadertoy_connector OBJECT
 	${SRC_DIR}/context.cpp
 	${SRC_DIR}/host.cpp
 	${SRC_DIR}/local.cpp
-	${SRC_DIR}/remote.cpp)
+	${SRC_DIR}/remote.cpp
+	${SRC_DIR}/api.cpp)
 
 # list of libraries to link into all the targets
 set(COMMON_LIBRARIES

@@ -10,7 +10,7 @@
 #include <oct.h>
 #include <parse.h>
 
-Host host;
+extern Host host;
 bool host_initialized;
 
 Host &st_host()
