@@ -5,8 +5,8 @@
 #include <memory>
 #include <string>
 
-#include <epoxy/gl.h>
 #include <GLFW/glfw3.h>
+#include <epoxy/gl.h>
 
 #include <boost/optional.hpp>
 
@@ -43,7 +43,8 @@ class Host
 	 * @param  format Format of the rendering (GL_RGBA, GL_RGB, or GL_LUMINANCE).
 	 * @return        Pointer to the rendered frame.
 	 */
-	StImage *Render(const std::string &id, boost::optional<int> frame, int width, int height, float mouse[4], GLenum format);
+	StImage *Render(const std::string &id, boost::optional<int> frame, int width, int height,
+					float mouse[4], GLenum format);
 
 	/**
 	 * Resets the context associated with this Shadertoy Id.
@@ -73,8 +74,7 @@ class Host
 	/**
 	 * Instantiate a new context from the given arguments.
 	 */
-	template<class... T> inline
-	std::shared_ptr<StContext> NewContext(T&&... args)
+	template <class... T> inline std::shared_ptr<StContext> NewContext(T &&... args)
 	{
 		// Get default size
 		int width, height;

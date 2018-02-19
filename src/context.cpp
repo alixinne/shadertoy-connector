@@ -32,7 +32,8 @@ StContext::StContext(const std::string &shaderId, const std::string &source, int
 	createContext(config);
 }
 
-void StContext::performRender(GLFWwindow *window, int frameCount, int width, int height, float mouse[4], GLenum format)
+void StContext::performRender(GLFWwindow *window, int frameCount, int width, int height,
+							  float mouse[4], GLenum format)
 {
 	// Ensure we are working at the right size
 	GLint depth = formatDepth(format);
@@ -153,8 +154,7 @@ void StContext::setInput(const string &buffer, int channel, StImage &image)
 	}
 }
 
-void StContext::setInputFilter(const string &buffer, int channel,
-							   GLint minFilter)
+void StContext::setInputFilter(const string &buffer, int channel, GLint minFilter)
 {
 	auto &input(config.bufferConfigs.find(buffer)->second.inputConfig[channel]);
 
@@ -203,14 +203,14 @@ int StContext::formatDepth(GLenum format)
 {
 	switch (format)
 	{
-		case GL_RGBA:
-			return 4;
-		case GL_RGB:
-			return 3;
-		case GL_LUMINANCE:
-			return 1;
-		default:
-			throw runtime_error("Invalid format");
+	case GL_RGBA:
+		return 4;
+	case GL_RGB:
+		return 3;
+	case GL_LUMINANCE:
+		return 1;
+	default:
+		throw runtime_error("Invalid format");
 	}
 }
 
@@ -239,8 +239,8 @@ void StContext::createContext(shadertoy::ContextConfig &config)
 	context->Initialize();
 
 	// Register data texture handlers
-	auto handler(shadertoy::InputHandler(bind(&StContext::DataTextureHandler, this,
-		placeholders::_1, placeholders::_2, placeholders::_3, placeholders::_4)));
+	auto handler(shadertoy::InputHandler(bind(&StContext::DataTextureHandler, this, placeholders::_1,
+											  placeholders::_2, placeholders::_3, placeholders::_4)));
 
 	context->GetTextureEngine().RegisterHandler("data", handler);
 	context->GetTextureEngine().RegisterHandler("data-texture", handler);
@@ -267,10 +267,9 @@ map<int, StImage> &StContext::getBufferInputOverrides(const string &buffer)
 	return it->second;
 }
 
-shared_ptr<shadertoy::OpenGL::Texture> StContext::DataTextureHandler(const shadertoy::InputConfig &inputConfig,
-	bool &skipTextureOptions,
-	bool &skipCache,
-	bool &framebufferSized)
+shared_ptr<shadertoy::OpenGL::Texture>
+StContext::DataTextureHandler(const shadertoy::InputConfig &inputConfig, bool &skipTextureOptions,
+							  bool &skipCache, bool &framebufferSized)
 {
 	skipCache = true;
 	framebufferSized = false;
@@ -280,7 +279,7 @@ shared_ptr<shadertoy::OpenGL::Texture> StContext::DataTextureHandler(const shade
 
 	// Find the override texture
 	string bufferName(inputConfig.id.begin(), inputConfig.id.begin() + inputConfig.id.find('.')),
-		   inputName(inputConfig.id.begin() + inputConfig.id.find('.') + 1, inputConfig.id.end());
+	inputName(inputConfig.id.begin() + inputConfig.id.find('.') + 1, inputConfig.id.end());
 	int channel = atoi(inputName.c_str());
 
 	StImage &img(getBufferInputOverrides(bufferName)[channel]);
@@ -291,8 +290,8 @@ shared_ptr<shadertoy::OpenGL::Texture> StContext::DataTextureHandler(const shade
 		GLint fmt(depthFormat(img.dims[2]));
 
 		// Load into OpenGL
-		texPtr->Image2D(GL_TEXTURE_2D, 0, GL_RGBA32F, img.dims[1], img.dims[0],
-			0, fmt, GL_FLOAT, img.data->data());
+		texPtr->Image2D(GL_TEXTURE_2D, 0, GL_RGBA32F, img.dims[1], img.dims[0], 0, fmt, GL_FLOAT,
+						img.data->data());
 
 		// Reset flag
 		img.changed = false;
@@ -306,8 +305,7 @@ shared_ptr<shadertoy::OpenGL::Texture> StContext::getDataTexture(const string &i
 	auto it = textures.find(inputId);
 	if (it == textures.end())
 	{
-		shared_ptr<shadertoy::OpenGL::Texture> tex(
-			make_shared<shadertoy::OpenGL::Texture>(GL_TEXTURE_2D));
+		shared_ptr<shadertoy::OpenGL::Texture> tex(make_shared<shadertoy::OpenGL::Texture>(GL_TEXTURE_2D));
 		textures.insert(make_pair(inputId, tex));
 
 		return tex;

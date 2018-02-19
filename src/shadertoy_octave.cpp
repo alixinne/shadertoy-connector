@@ -1,6 +1,7 @@
 #include <functional>
 
 #include <epoxy/gl.h>
+
 #include <GLFW/glfw3.h>
 
 #include "context.hpp"
@@ -23,8 +24,7 @@ Host &st_host()
 	return host;
 }
 
-template <typename TRet>
-TRet st_wrapper_exec(std::function<TRet(void)> &&fun)
+template <typename TRet> TRet st_wrapper_exec(std::function<TRet(void)> &&fun)
 {
 	try
 	{
@@ -63,8 +63,7 @@ void oct_autoload(const char *fname)
 	feval("autoload", args);
 }
 
-DEFUN_DLD (shadertoy_octave, args, nargout,
-		   "shadertoy_octave() initializes the shadertoy oct file")
+DEFUN_DLD(shadertoy_octave, args, nargout, "shadertoy_octave() initializes the shadertoy oct file")
 {
 	oct_autoload("st_render");
 	oct_autoload("st_reset");
@@ -76,8 +75,8 @@ DEFUN_DLD (shadertoy_octave, args, nargout,
 	return octave_value();
 }
 
-DEFUN_DLD (st_render, args, nargout,
-		   "st_render('id', [frame, [format, [width, [height, [mouse]]]]]) renders a Shadertoy as an image")
+DEFUN_DLD(st_render, args, nargout, "st_render('id', [frame, [format, [width, [height, "
+									"[mouse]]]]]) renders a Shadertoy as an image")
 {
 	if (args.length() < 1 || args.length() > 6)
 	{
@@ -159,8 +158,7 @@ DEFUN_DLD (st_render, args, nargout,
 	}
 }
 
-DEFUN_DLD (st_reset, args, nargout,
-		   "st_reset('id') resets a context")
+DEFUN_DLD(st_reset, args, nargout, "st_reset('id') resets a context")
 {
 	if (args.length() != 1)
 	{
@@ -181,8 +179,8 @@ DEFUN_DLD (st_reset, args, nargout,
 	}
 }
 
-DEFUN_DLD (st_compile, args, nargout,
-		   "st_compile('source') compiles the source of a program and returns its id for st_render")
+DEFUN_DLD(st_compile, args, nargout,
+		  "st_compile('source') compiles the source of a program and returns its id for st_render")
 {
 	if (args.length() != 1)
 	{
@@ -220,8 +218,8 @@ bool st_parse_input_name(const std::string &inputStr, std::string &buffer, int &
 	return true;
 }
 
-DEFUN_DLD (st_set_input, args, nargout,
-			"st_set_input('id', 'image.0', matrix1[, 'image.1', matrix2[, ...]]])")
+DEFUN_DLD(st_set_input, args, nargout,
+		  "st_set_input('id', 'image.0', matrix1[, 'image.1', matrix2[, ...]]])")
 {
 	if (args.length() < 3 || !(args.length() % 2 == 1))
 	{
@@ -284,8 +282,8 @@ DEFUN_DLD (st_set_input, args, nargout,
 	}
 }
 
-DEFUN_DLD (st_set_input_filter, args, nargout,
-			"st_set_input('id', 'image.0', 'linear'[, 'image.1', 'nearest'[, ...]]])")
+DEFUN_DLD(st_set_input_filter, args, nargout,
+		  "st_set_input('id', 'image.0', 'linear'[, 'image.1', 'nearest'[, ...]]])")
 {
 	if (args.length() < 3 || !(args.length() % 2 == 1))
 	{
@@ -322,8 +320,7 @@ DEFUN_DLD (st_set_input_filter, args, nargout,
 				else
 				{
 					std::stringstream ss;
-					ss << "Invalid filter type " << filterType << " for input "
-						<< inputName;
+					ss << "Invalid filter type " << filterType << " for input " << inputName;
 					throw std::runtime_error(ss.str());
 				}
 
@@ -341,8 +338,7 @@ DEFUN_DLD (st_set_input_filter, args, nargout,
 	}
 }
 
-DEFUN_DLD (st_reset_input, args, nargout,
-			"st_reset_input('id', 'image.0'[, 'image.1'[, ...]]])")
+DEFUN_DLD(st_reset_input, args, nargout, "st_reset_input('id', 'image.0'[, 'image.1'[, ...]]])")
 {
 	if (args.length() < 2)
 	{

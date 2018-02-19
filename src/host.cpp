@@ -72,7 +72,8 @@ void Host::Allocate()
 	}
 }
 
-StImage *Host::Render(const string &id, boost::optional<int> frame, int width, int height, float mouse[4], GLenum format)
+StImage *Host::Render(const string &id, boost::optional<int> frame, int width, int height,
+					  float mouse[4], GLenum format)
 {
 	// Ensure we are in the right context
 	glfwMakeContextCurrent(st_window);

@@ -3,6 +3,7 @@
 #include <string>
 
 #include <epoxy/gl.h>
+
 #include <GLFW/glfw3.h>
 
 #include "context.hpp"
@@ -12,16 +13,15 @@
 
 using namespace std;
 
-extern "C"
-{
-	void st_compile(const char *source);
-	void st_reset(const char *id);
-	void st_render();
+extern "C" {
+void st_compile(const char *source);
+void st_reset(const char *id);
+void st_render();
 
-	void st_set_input();
-	void st_reset_input();
+void st_set_input();
+void st_reset_input();
 
-	void st_set_input_filter();
+void st_set_input_filter();
 }
 
 // Render context host
@@ -48,15 +48,13 @@ template <typename TRet> TRet st_wrapper_exec(function<TRet(void)> &&fun)
 	catch (shadertoy::OpenGL::ShaderCompilationError &ex)
 	{
 		stringstream ss;
-		ss << "Shader compilation error: " << ex.what() << endl
-		   << ex.log();
+		ss << "Shader compilation error: " << ex.what() << endl << ex.log();
 		st_fail("glerr", ss.str().c_str());
 	}
 	catch (shadertoy::OpenGL::ProgramLinkError &ex)
 	{
 		stringstream ss;
-		ss << "Program link error: " << ex.what() << endl
-		   << ex.log();
+		ss << "Program link error: " << ex.what() << endl << ex.log();
 		st_fail("glerr", ss.str().c_str());
 	}
 	catch (shadertoy::OpenGL::OpenGLError &ex)
@@ -93,7 +91,8 @@ void st_compile(const char *source)
 		// Process escapes
 		std::stringstream unescaped;
 		size_t len = strlen(source);
-		enum {
+		enum
+		{
 			Standard,
 			ReadingEscape,
 			ReadingOctalEscape
@@ -383,8 +382,8 @@ void st_set_input()
 			{
 				MLReleaseReal32Array(stdlink, data, dims, heads, d);
 				stringstream ss;
-				ss << "Invalid number of dimensions for " << bufferName
-				   << "." << channelName << ". Must be 2 or 3";
+				ss << "Invalid number of dimensions for " << bufferName << "." << channelName
+				   << ". Must be 2 or 3";
 				throw runtime_error(ss.str());
 			}
 
@@ -403,8 +402,7 @@ void st_set_input()
 			for (int i = 0; i < img.dims[0]; ++i)
 			{
 				memcpy(&img.data->data()[i * stride_size / sizeof(float)],
-					   &data[(img.dims[0] - i - 1) * stride_size / sizeof(float)],
-					   stride_size);
+					   &data[(img.dims[0] - i - 1) * stride_size / sizeof(float)], stride_size);
 			}
 
 			// Release data

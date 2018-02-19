@@ -87,8 +87,7 @@ struct StContext
 	 * @param channel   Channel id (0 to 3) of the input to change
 	 * @param minFilter Filtering method for the given input
 	 */
-	void setInputFilter(const std::string &buffer, int channel,
-						GLint minFilter);
+	void setInputFilter(const std::string &buffer, int channel, GLint minFilter);
 
 	/**
 	 * Resets the values of the given input to the default as given by the context.
@@ -136,10 +135,9 @@ struct StContext
 	std::map<std::string, std::map<int, StImage>> inputOverrides;
 
 	/// Data texture handler
-	std::shared_ptr<shadertoy::OpenGL::Texture> DataTextureHandler(const shadertoy::InputConfig &inputConfig,
-		bool &skipTextureOptions,
-		bool &skipCache,
-		bool &framebufferSized);
+	std::shared_ptr<shadertoy::OpenGL::Texture>
+	DataTextureHandler(const shadertoy::InputConfig &inputConfig, bool &skipTextureOptions,
+					   bool &skipCache, bool &framebufferSized);
 
 	/**
 	 * Get an shadertoy::OpenGL::Texture instance for the given input id.

@@ -2,8 +2,8 @@
 #include <sstream>
 #include <string>
 
-#include <epoxy/gl.h>
 #include <epoxy/egl.h>
+#include <epoxy/gl.h>
 
 #include "context.hpp"
 #include "host.hpp"
@@ -22,7 +22,8 @@ void GetFirstNMessages(GLuint numMsgs)
 	std::vector<GLuint> ids(numMsgs);
 	std::vector<GLsizei> lengths(numMsgs);
 
-	GLuint numFound = glGetDebugMessageLog(numMsgs, msgData.size(), &sources[0], &types[0], &ids[0], &severities[0], &lengths[0], &msgData[0]);
+	GLuint numFound = glGetDebugMessageLog(numMsgs, msgData.size(), &sources[0], &types[0], &ids[0],
+										   &severities[0], &lengths[0], &msgData[0]);
 
 	sources.resize(numFound);
 	types.resize(numFound);
@@ -34,7 +35,7 @@ void GetFirstNMessages(GLuint numMsgs)
 	messages.reserve(numFound);
 
 	std::vector<GLchar>::iterator currPos = msgData.begin();
-	for(size_t msg = 0; msg < lengths.size(); ++msg)
+	for (size_t msg = 0; msg < lengths.size(); ++msg)
 	{
 		messages.push_back(std::string(currPos, currPos + lengths[msg] - 1));
 		currPos = currPos + lengths[msg];
@@ -57,18 +58,11 @@ int main(int argc, char *argv[])
 		cerr << "Trying to allocate the host context." << endl;
 		host.Allocate();
 
-		cerr << "Allocation succeeded, we are using OpenGL on "
-			<< glGetString(GL_VENDOR)
-			<< " "
-			<< glGetString(GL_RENDERER)
-			<< " "
-			<< glGetString(GL_VERSION)
-			<< " "
-			<< glGetString(GL_SHADING_LANGUAGE_VERSION)
-			<< endl;
+		cerr << "Allocation succeeded, we are using OpenGL on " << glGetString(GL_VENDOR) << " "
+			 << glGetString(GL_RENDERER) << " " << glGetString(GL_VERSION) << " "
+			 << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
 
-		cerr << "The following extensions are available: " <<
-			glGetString(GL_EXTENSIONS) << endl;
+		cerr << "The following extensions are available: " << glGetString(GL_EXTENSIONS) << endl;
 
 
 		cerr << "Now attempting to create a local context." << endl;
@@ -84,7 +78,7 @@ int main(int argc, char *argv[])
 		cerr << "Now attempting to render the context." << endl;
 
 		StImage *img = nullptr;
-		float mouse[4] = {0.f};
+		float mouse[4] = { 0.f };
 		img = host.Render(ctx, 0, 100, 100, mouse, GL_RGBA);
 
 		cerr << "The test completed successfully." << endl;
@@ -98,4 +92,3 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-
