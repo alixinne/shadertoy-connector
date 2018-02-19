@@ -214,7 +214,8 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 	for (long n = 0; n < ninputs; ++n)
 	{
 		// Get <name, image> tuple
-		auto inputSpec(w.template GetTupleParam<std::string, std::shared_ptr<OMMatrix<float>>>(n + 1, "InputSpec"));
+		auto inputSpec(
+		w.template GetParam<std::string, std::shared_ptr<OMMatrix<float>>>(n + 1, "InputSpec"));
 
 		// Parse name
 		std::string bufferName;
@@ -321,7 +322,7 @@ template <typename TWrapper> void impl_st_set_input_filter(TWrapper &w)
 	for (long n = 0; n < ninputs; ++n)
 	{
 		// Get <name, image> tuple
-		auto inputSpec(w.template GetTupleParam<std::string, std::string>(n + 1, "InputSpec"));
+		auto inputSpec(w.template GetParam<std::string, std::string>(n + 1, "InputSpec"));
 
 		// Parse name
 		std::string bufferName;
