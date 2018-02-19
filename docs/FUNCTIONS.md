@@ -72,7 +72,7 @@ shader
 img = RenderShadertoy[ctxt, Frame -> Null, Size -> { 640, 360 }, Mouse ->
 	{ 0, 0, 0, 0 }, Format -> "RGB", FrameTiming -> False];
 
-(* Octave *)
+% Octave
 img = st_render(ctxt, -1, 'RGB', 640, 360, [0 0 0 0]);
 ```
 
