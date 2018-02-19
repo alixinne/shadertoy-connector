@@ -1,15 +1,15 @@
 # shadertoy-connector functions
 
-<!-- MDTOC maxdepth:1 firsth1:0 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
+<!-- MDTOC maxdepth:1 firsth1:0 numbering:0 flatten:0 bullets:1 updateOnSave:0 -->
 
-- [Introduction](#Introduction)   
-- [Initialization](#Initialization)   
-- [st_compile: GLSL Compilation](#st_compile-GLSL-Compilation)   
-- [st_render: Context rendering](#st_render-Context-rendering)   
-- [st_set_input: Set input texture](#st_set_input-Set-input-texture)   
-- [st_set_input_filter: Set input texture filter](#st_set_input_filter-Set-input-texture-filter)   
-- [st_reset_input: Reset input texture](#st_reset_input-Reset-input-texture)   
-- [st_reset: Reset all inputs](#st_reset-Reset-all-inputs)   
+- [Introduction](#introduction)   
+- [Initialization](#initialization)   
+- [st_compile: GLSL Compilation](#st_compile-glsl-compilation)   
+- [st_render: Context rendering](#st_render-context-rendering)   
+- [st_set_input: Set input texture](#st_set_input-set-input-texture)   
+- [st_set_input_filter: Set input texture filter](#st_set_input_filter-set-input-texture-filter)   
+- [st_reset_input: Reset input texture](#st_reset_input-reset-input-texture)   
+- [st_reset: Reset all inputs](#st_reset-reset-all-inputs)   
 
 <!-- /MDTOC -->
 
