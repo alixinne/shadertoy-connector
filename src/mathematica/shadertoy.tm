@@ -11,25 +11,25 @@ void st_render P(( ));
 :Evaluate: RenderShadertoy::usage = "RenderShadertoy[id] renders a Shadertoy as an image";
 :Evaluate: Options[RenderShadertoy] = { Frame -> Null, Size -> { 640, 360 }, Mouse -> { 0, 0, 0, 0 }, Format -> "RGB", FrameTiming -> False };
 
-void st_reset P((const char *));
+void st_reset P(( ));
 
 :Begin:
 :Function:       st_reset
 :Pattern:        ResetShadertoy[id_String]
 :Arguments:      { id }
-:ArgumentTypes:  { String }
+:ArgumentTypes:  { Manual }
 :ReturnType:     Manual
 :End:
 
 :Evaluate: ResetShadertoy::usage = "ResetShadertoy[id] resets the rendering context of a Shadertoy";
 
-void st_compile P((const char *));
+void st_compile P(( ));
 
 :Begin:
 :Function:      st_compile
 :Pattern:       CompileShadertoy[source_String]
 :Arguments:     { source }
-:ArgumentTypes: { String }
+:ArgumentTypes: { Manual }
 :ReturnType:    Manual
 :End:
 
