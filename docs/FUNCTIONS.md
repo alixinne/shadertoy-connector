@@ -2,11 +2,38 @@
 
 <!-- TOC depthFrom:2 depthTo:2 withLinks:1 updateOnSave:1 orderedList:0 -->
 
+- [Introduction](#introduction)
 - [Initialization](#initialization)
 - [st_compile: GLSL Compilation](#stcompile-glsl-compilation)
 - [st_render: Context rendering](#strender-context-rendering)
+- [st_set_input: Set input texture](#stsetinput-set-input-texture)
+- [st_set_input_filter: Set input texture filter](#stsetinputfilter-set-input-texture-filter)
+- [st_reset_input: Reset input texture](#stresetinput-reset-input-texture)
+- [st_reset: Reset all inputs](#streset-reset-all-inputs)
 
 <!-- /TOC -->
+
+## Introduction
+
+Most functions in this toolkit operate on a *context*. A context defines the
+fragment shaders, buffers and inputs that are used to render frames for a given
+Shadertoy. It is identified by a string, which either refers to a local context
+(ie. a context you have manually provided the sources for) or a shadertoy.com
+context (ie. a context which has been/will be loaded from the shadertoy.com
+API).
+
+The function [st_compile/CompileShadertoy](#stcompile-glsl-compilation) can be
+used to compile GLSL code to create a local context.
+[st_set_input/SetShadertoyInput](#stsetinput-set-input-texture) can later be
+used to set the inputs of the resulting context buffers.
+
+If you use a Shadertoy id (from shadertoy.com) as a context id, and it is
+accessible through the API (access level: *public + API*), it will be loaded
+using the shadertoy.com API before rendering.
+
+If the context id does not exist, or if it cannot be loaded from the
+shadertoy.com API, an error message will be output to the standard output
+(Octave) or as error messages (Mathematica).
 
 ## Initialization
 
@@ -78,13 +105,7 @@ img = st_render(ctxt, -1, 'RGB', 640, 360, [0 0 0 0]);
 
 ### Description
 
-Renders a single frame of the given context `ctxt`. `ctxt` can either be the
-name of a local context compiled by the `st_compile/CompileShadertoy` function,
-or the id of a Shadertoy that is accessible through the shadertoy.com API.
-
-If the context does not exist, or if it cannot be loaded from the shadertoy.com
-API, an error message will be output to the standard output (Octave) or as
-error messages (Mathematica).
+Renders a single frame of the given context `ctxt`.
 
 ### Arguments
 
@@ -116,3 +137,141 @@ format (1, 3 or 4).
 In Mathematica, if `FrameTiming` is set to `True`, a list will be returned
 instead. The first element will be the runtime of the image buffer fragment
 shader invocation, in seconds. The second element will be the rendered image.
+
+## st_set_input: Set input texture
+
+### Synopsis
+
+```
+(* Mathematica *)
+input1 = ExampleData[{"TestImage", "Lena"}];
+SetShadertoyInput[ctxt, "image.0" -> input1, "a.0" -> input1];
+
+% Octave
+input1 = imread("lena512.png");
+st_set_input(ctxt, "image.0", input1, "a.0", input1);
+```
+
+### Description
+
+Sets the textures that will be used to render frames from the context `ctxt`. If
+`ctxt` is the identifier of a remote context, this function overrides the inputs
+specified on the shadertoy.com website.
+
+An error will be raised if the input identifier is invalid, either because it is
+malformed, or because the named buffer does not exist.
+
+### Arguments
+
+* `ctxt`: String that identifies the context.
+* *(may occur many times)* `InputName -> InputImage` (Mathematica) or
+`InputName, InputMatrix` (Octave): Sets the texture to use for the input named
+`InputName`. `InputName` has the form `bufferName.channel` where `bufferName` is
+one of the buffers defined in the context named `ctxt`, and `channel` is in the
+inclusive range 0-3. `InputImage` must be a gray-level, RGB or RGBA image
+object. `InputMatrix` must be a HxWxD matrix representing either a gray-level,
+RGB or RGBA image.
+
+### Return value
+
+None.
+
+### Additional notes
+
+*libshadertoy* uses GL_FLOAT/GL_RGBA32F textures internally, which means aside
+from the conversion of matrix elements to single-precision floating point
+numbers, no other changes are made to the inputs before being passed to the
+driver. If you want 8-bit textures to be scaled between 0 and 1, this has to
+be done manually, before calling `st_set_input/SetShadertoyInput`.
+
+## st_set_input_filter: Set input texture filter
+
+### Synopsis
+
+```
+(* Mathematica *)
+SetShadertoyInputFilter[ctxt, "image.0" -> "Linear", "a.0" -> "Mipmap"];
+
+% Octave
+st_set_input_filter(ctxt, 'image.0', 'Linear', 'a.0', 'Mipmap');
+```
+
+### Description
+
+Sets the texture unit filter to be used when rendering frames from the context
+`ctxt`. If `ctxt` is the identifier of a remote context, this function overrides
+the input filters specified on the shadertoy.com website.
+
+An error will be raised if the input identifier is invalid, either because it is
+malformed, or because the named buffer does not exist.
+
+### Arguments
+
+* `ctxt`: String that identifies the context.
+* *(may occur many times)* `InputName -> InputFilter` (Mathematica) or
+`InputName, InputFilter` (Octave): Sets the texture filter to use for the input
+named `InputName`. `InputName` has the form `bufferName.channel` where
+`bufferName` is one of the buffers defined in the context named `ctxt`, and
+`channel` is in the inclusive range 0-3. `InputImage` must be a string
+identifying the filtering mode to use, either `'Nearest'`, `'Linear'`, or
+`'Mipmap'`.
+
+### Return value
+
+None.
+
+## st_reset_input: Reset input texture
+
+### Synopsis
+
+```
+(* Mathematica *)
+ResetShadertoyInput[ctxt, "image.0", "a.0"];
+
+% Octave
+st_reset_input(ctxt, 'image.0', 'a.0');
+```
+
+### Description
+
+When used with a remote context, resets the input properties (texture and
+filter, as set by [st_set_input](#stsetinput-set-input-texture) and
+[st_set_input_filter](#stsetinputfilter-set-input-texture-filter)) to the
+defaults specified on the shadertoy.com website.
+
+### Arguments
+
+* `ctxt`: String that identifies the remote context.
+* *(may occur many times)* `InputName`: Name of the buffer input to reset. See
+[st_set_input/SetShadertoyInput](#stsetinput-set-input-texture) for details.
+
+### Return value
+
+None.
+
+## st_reset: Reset all inputs
+
+### Synopsis
+
+```
+(* Mathematica *)
+ResetShadertoy[ctxt];
+
+% Octave
+st_reset(ctxt);
+```
+
+### Description
+
+When used with a remote context, resets the input properties of all defined
+inputs. This has the same effect as calling
+[st_reset_input/ResetShadertoyInput](#stresetinput-reset-input-texture) on all
+inputs defined on the shadertoy.com website.
+
+### Arguments
+
+* `ctxt`: String that identifies the remote context.
+
+### Return value
+
+None.
