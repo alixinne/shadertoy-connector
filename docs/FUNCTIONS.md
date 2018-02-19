@@ -1,15 +1,15 @@
 # shadertoy-connector functions
 
-<!-- TOC depthFrom:2 depthTo:2 withLinks:1 updateOnSave:1 orderedList:0 -->
+<!-- TOC depthFrom:2 depthTo:2 withLinks:1 updateOnSave:0 orderedList:0 -->
 
 - [Introduction](#introduction)
 - [Initialization](#initialization)
-- [st_compile: GLSL Compilation](#stcompile-glsl-compilation)
-- [st_render: Context rendering](#strender-context-rendering)
-- [st_set_input: Set input texture](#stsetinput-set-input-texture)
-- [st_set_input_filter: Set input texture filter](#stsetinputfilter-set-input-texture-filter)
-- [st_reset_input: Reset input texture](#stresetinput-reset-input-texture)
-- [st_reset: Reset all inputs](#streset-reset-all-inputs)
+- [st_compile: GLSL Compilation](#st_compile-glsl-compilation)
+- [st_render: Context rendering](#st_render-context-rendering)
+- [st_set_input: Set input texture](#st_set_input-set-input-texture)
+- [st_set_input_filter: Set input texture filter](#st_set_input_filter-set-input-texture-filter)
+- [st_reset_input: Reset input texture](#st_reset_input-reset-input-texture)
+- [st_reset: Reset all inputs](#st_reset-reset-all-inputs)
 
 <!-- /TOC -->
 
@@ -22,9 +22,9 @@ Shadertoy. It is identified by a string, which either refers to a local context
 context (ie. a context which has been/will be loaded from the shadertoy.com
 API).
 
-The function [st_compile/CompileShadertoy](#stcompile-glsl-compilation) can be
+The function [st_compile/CompileShadertoy](#st_compile-glsl-compilation) can be
 used to compile GLSL code to create a local context.
-[st_set_input/SetShadertoyInput](#stsetinput-set-input-texture) can later be
+[st_set_input/SetShadertoyInput](#st_set_input-set-input-texture) can later be
 used to set the inputs of the resulting context buffers.
 
 If you use a Shadertoy id (from shadertoy.com) as a context id, and it is
@@ -235,15 +235,15 @@ st_reset_input(ctxt, 'image.0', 'a.0');
 ### Description
 
 When used with a remote context, resets the input properties (texture and
-filter, as set by [st_set_input](#stsetinput-set-input-texture) and
-[st_set_input_filter](#stsetinputfilter-set-input-texture-filter)) to the
+filter, as set by [st_set_input](#st_set_input-set-input-texture) and
+[st_set_input_filter](#st_set_input_filter-set-input-texture-filter)) to the
 defaults specified on the shadertoy.com website.
 
 ### Arguments
 
 * `ctxt`: String that identifies the remote context.
 * *(may occur many times)* `InputName`: Name of the buffer input to reset. See
-[st_set_input/SetShadertoyInput](#stsetinput-set-input-texture) for details.
+[st_set_input/SetShadertoyInput](#st_set_input-set-input-texture) for details.
 
 ### Return value
 
@@ -265,7 +265,7 @@ st_reset(ctxt);
 
 When used with a remote context, resets the input properties of all defined
 inputs. This has the same effect as calling
-[st_reset_input/ResetShadertoyInput](#stresetinput-reset-input-texture) on all
+[st_reset_input/ResetShadertoyInput](#st_reset_input-reset-input-texture) on all
 inputs defined on the shadertoy.com website.
 
 ### Arguments
