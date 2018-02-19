@@ -27,7 +27,7 @@ set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
 link_directories(${glfw3_LIBRARY_DIRS} ${jsoncpp_LIBRARY_DIRS})
 
 # libshadertoy
-find_package(shadertoy REQUIRED 0.1.3)
+find_package(shadertoy REQUIRED 0.1.7)
 
 # setup shared include directories
 include_directories(
