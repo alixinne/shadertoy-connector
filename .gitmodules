@@ -1,3 +1,6 @@
 [submodule "cmake/FindMathematica"]
 	path = cmake/FindMathematica
 	url = https://github.com/sakra/FindMathematica.git
+[submodule "ext/omw"]
+	path = ext/omw
+	url = https://github.com/vtavernier/omw.git

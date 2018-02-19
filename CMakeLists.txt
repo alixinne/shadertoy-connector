@@ -35,6 +35,7 @@ find_package(shadertoy REQUIRED 0.1.7)
 # setup shared include directories
 include_directories(
 	${INCLUDE_DIR}
+	${CMAKE_CURRENT_SOURCE_DIR}/ext/omw/include
 	${jsoncpp_INCLUDE_DIRS}
 	${CURL_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
@@ -70,6 +71,7 @@ if(Mathematica_FOUND)
 	add_executable(shadertoy_mathematica
 		${SRC_DIR}/shadertoy_mathematica.cpp
 		${ST_MATHEMATICA_MPREP_TARGET}
+		${CMAKE_CURRENT_SOURCE_DIR}/ext/omw/src/om_wrapper.cpp
 		$<TARGET_OBJECTS:shadertoy_connector>)
 	set_property(TARGET shadertoy_mathematica PROPERTY CXX_STANDARD 14)
 
@@ -96,6 +98,10 @@ if(Mathematica_FOUND)
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/Shadertoy/${Mathematica_SYSTEM_ID}/
 		COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:shadertoy_mathematica> ${CMAKE_CURRENT_BINARY_DIR}/Shadertoy/${Mathematica_SYSTEM_ID}/)
 
+	# Enable omw Mathemamtica
+	target_compile_definitions(shadertoy_mathematica PUBLIC
+		OMW_MATHEMATICA=1 OMW_INCLUDE_MAIN=1)
+
 	# Install resulting files
 	set(ST_MATH_INSTALL_DIR ${Mathematica_USERBASE_DIR}/Applications/Shadertoy)
 	install(DIRECTORY ${SRC_DIR}/mathematica/Kernel
@@ -115,9 +121,14 @@ find_package(Octave)
 if(Octave_FOUND OR OCTAVE_EXECUTABLE)
 	octave_add_oct(shadertoy_octave
 		SOURCES ${SRC_DIR}/shadertoy_octave.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/ext/omw/src/om_wrapper.cpp
 		$<TARGET_OBJECTS:shadertoy_connector>
 		LINK_LIBRARIES ${COMMON_LIBRARIES})
 	set_property(TARGET shadertoy_octave PROPERTY CXX_STANDARD 14)
+
+	# Enable omw Octave
+	target_compile_definitions(shadertoy_octave PUBLIC
+		OMW_OCTAVE=1)
 
 	install(TARGETS shadertoy_octave
 			DESTINATION ${OCTAVE_OCT_FILE_DIR}
@@ -127,6 +138,7 @@ endif()
 # Test program for the connector library
 add_executable(st_test
 	${SRC_DIR}/shadertoy_test.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/ext/omw/src/om_wrapper.cpp
 	$<TARGET_OBJECTS:shadertoy_connector>)
 target_link_libraries(st_test ${COMMON_LIBRARIES})
 set_property(TARGET st_test PROPERTY CXX_STANDARD 14)

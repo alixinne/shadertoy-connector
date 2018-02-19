@@ -59,12 +59,15 @@ void oct_autoload(const std::string &);
 
 // Locates the current .oct file, from https://stackoverflow.com/q/1681060
 #include <dlfcn.h>
-class oct_locator_class {
+class oct_locator_class
+{
 	std::string _path;
-public:
-	oct_locator_class() {
+
+	public:
+	oct_locator_class()
+	{
 		Dl_info dl_info;
-		dladdr((void*)oct_autoload, &dl_info);
+		dladdr((void *)oct_autoload, &dl_info);
 		_path = std::string(dl_info.dli_fname);
 	}
 
