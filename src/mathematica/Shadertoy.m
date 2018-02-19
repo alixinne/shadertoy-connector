@@ -4,10 +4,10 @@ BeginPackage["Shadertoy`"]
 Begin["`Private`"]
 
 (* Find the binary location *)
-$programName = "shadertoy.bin" <> If[StringContainsQ[$SystemID, "Windows"], ".exe", ""];
+$baseProgramName = "@ST_MATHEMATICA_OUTPUT_NAME@";
+$programName = $baseProgramName <> If[StringContainsQ[$SystemID, "Windows"], ".exe", ""];
 $executable = FileNameJoin[{
 	DirectoryName[$InputFileName],
-	"shadertoy.bin",
 	$SystemID,
 	$programName
 }];

@@ -63,13 +63,13 @@ set(COMMON_LIBRARIES
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/FindMathematica/CMake/Mathematica")
 find_package(Mathematica COMPONENTS MathLink)
 if(Mathematica_FOUND)
-	Mathematica_MathLink_MPREP_TARGET(
-		${SRC_DIR}/shadertoy.tm
-		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/shadertoy_mathematica.c)
+	set(ST_MATHEMATICA_MPREP_TARGET ${CMAKE_CURRENT_BINARY_DIR}/mathematica/st_tm.c)
+	Mathematica_MathLink_MPREP_TARGET(${SRC_DIR}/mathematica/shadertoy.tm
+		OUTPUT ${ST_MATHEMATICA_MPREP_TARGET})
 
 	add_executable(shadertoy_mathematica
 		${SRC_DIR}/shadertoy_mathematica.cpp
-		${CMAKE_CURRENT_BINARY_DIR}/shadertoy_mathematica.c
+		${ST_MATHEMATICA_MPREP_TARGET}
 		$<TARGET_OBJECTS:shadertoy_connector>)
 	set_property(TARGET shadertoy_mathematica PROPERTY CXX_STANDARD 14)
 
@@ -77,24 +77,28 @@ if(Mathematica_FOUND)
 		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS")
 	endif(WIN32)
 
-	set_property(TARGET shadertoy_mathematica PROPERTY OUTPUT_NAME "shadertoy.bin")
+	# Set output name and configure kernel file
+	set(ST_MATHEMATICA_OUTPUT_NAME "StConnectorMathematica")
+
+	configure_file(${SRC_DIR}/mathematica/Shadertoy.m
+				   ${CMAKE_CURRENT_BINARY_DIR}/mathematica/Shadertoy.m)
+	set_property(TARGET shadertoy_mathematica PROPERTY OUTPUT_NAME ${ST_MATHEMATICA_OUTPUT_NAME})
+
+	# Add Mathematica include directory and dependencies to the built program
 	target_include_directories(shadertoy_mathematica PUBLIC ${Mathematica_MathLink_INCLUDE_DIR})
 	target_link_libraries(shadertoy_mathematica
 						  ${COMMON_LIBRARIES}
 						  ${Mathematica_MathLink_LIBRARIES})
 
-	add_custom_command(TARGET shadertoy_mathematica POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:shadertoy_mathematica>" "${CMAKE_SOURCE_DIR}/shadertoy.bin/${Mathematica_SYSTEM_ID}/$<TARGET_FILE_NAME:shadertoy_mathematica>")
-
+	# Install resulting files
 	set(ST_MATH_INSTALL_DIR ${Mathematica_USERBASE_DIR}/Applications/Shadertoy)
-	install(DIRECTORY ${CMAKE_SOURCE_DIR}/Kernel
+	install(DIRECTORY ${SRC_DIR}/mathematica/Kernel
 			DESTINATION ${ST_MATH_INSTALL_DIR}
 			COMPONENT st_mathematica)
-	install(DIRECTORY ${CMAKE_SOURCE_DIR}/shadertoy.bin/${Mathematica_SYSTEM_ID}
-			DESTINATION ${ST_MATH_INSTALL_DIR}/shadertoy.bin
-			COMPONENT st_mathematica
-			USE_SOURCE_PERMISSIONS)
-	install(FILES ${CMAKE_SOURCE_DIR}/Shadertoy.m
+	install(TARGETS shadertoy_mathematica
+			DESTINATION ${ST_MATH_INSTALL_DIR}/${Mathematica_SYSTEM_ID}
+			COMPONENT st_mathematica)
+	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mathematica/Shadertoy.m
 			DESTINATION ${ST_MATH_INSTALL_DIR}
 			COMPONENT st_mathematica)
 endif()

@@ -64,7 +64,7 @@ load path, so it can be loaded directly from any session.
 (* Render a specific frame of a Shadertoy, with given inputs *)
 Manipulate[
 	RenderShadertoy["llySRh", Frame -> n, Mouse -> {x, y}],
-		{n, 0, 10, 1}, {x, 0, 640}, {y, 0, 360}];
+		{n, 0, 10, 1}, {x, 0, 640}, {y, 0, 360}]
 
 (* Compile some GLSL source and render it *)
 shaderId = CompileShadertoy["void mainImage(out vec4 O, in vec2 U){O = vec4(sin(iTime*.1), cos(iTime*.1), length(U/iResolution.xy));}"];
