@@ -20,7 +20,8 @@ pkg_search_module(EPOXY REQUIRED epoxy)
 link_directories(${epoxy_LBIDIR})
 
 # Directories
-set(SOURCES_DIR "${CMAKE_SOURCE_DIR}/Sources")
+set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
+set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
 
 # Set link directories
 link_directories(${glfw3_LIBRARY_DIRS} ${jsoncpp_LIBRARY_DIRS})
@@ -28,9 +29,9 @@ link_directories(${glfw3_LIBRARY_DIRS} ${jsoncpp_LIBRARY_DIRS})
 # libshadertoy
 find_package(shadertoy REQUIRED 0.1.3)
 
-# shader settings
+# setup shared include directories
 include_directories(
-	${CMAKE_SOURCE_DIR}/Sources
+	${INCLUDE_DIR}
 	${jsoncpp_INCLUDE_DIRS}
 	${CURL_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
@@ -40,10 +41,10 @@ include_directories(
 
 # create the connector library
 add_library(shadertoy_connector OBJECT
-	${SOURCES_DIR}/context.cpp
-	${SOURCES_DIR}/host.cpp
-	${SOURCES_DIR}/local.cpp
-	${SOURCES_DIR}/remote.cpp)
+	${SRC_DIR}/context.cpp
+	${SRC_DIR}/host.cpp
+	${SRC_DIR}/local.cpp
+	${SRC_DIR}/remote.cpp)
 
 # list of libraries to link into all the targets
 set(COMMON_LIBRARIES
@@ -60,11 +61,11 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/FindMathematica/CMake/Mathemati
 find_package(Mathematica COMPONENTS MathLink)
 if(Mathematica_FOUND)
 	Mathematica_MathLink_MPREP_TARGET(
-		${SOURCES_DIR}/shadertoy.tm
+		${SRC_DIR}/shadertoy.tm
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/shadertoy_mathematica.c)
 
 	add_executable(shadertoy_mathematica
-		${SOURCES_DIR}/shadertoy_mathematica.cpp
+		${SRC_DIR}/shadertoy_mathematica.cpp
 		${CMAKE_CURRENT_BINARY_DIR}/shadertoy_mathematica.c
 		$<TARGET_OBJECTS:shadertoy_connector>)
 	set_property(TARGET shadertoy_mathematica PROPERTY CXX_STANDARD 14)
@@ -100,7 +101,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 find_package(Octave)
 if(Octave_FOUND OR OCTAVE_EXECUTABLE)
 	octave_add_oct(shadertoy_octave
-		SOURCES ${SOURCES_DIR}/shadertoy_octave.cpp
+		SOURCES ${SRC_DIR}/shadertoy_octave.cpp
 		$<TARGET_OBJECTS:shadertoy_connector>
 		LINK_LIBRARIES ${COMMON_LIBRARIES})
 	set_property(TARGET shadertoy_octave PROPERTY CXX_STANDARD 14)
@@ -112,7 +113,7 @@ endif()
 
 # Test program for the connector library
 add_executable(st_test
-	${SOURCES_DIR}/shadertoy_test.cpp
+	${SRC_DIR}/shadertoy_test.cpp
 	$<TARGET_OBJECTS:shadertoy_connector>)
 target_link_libraries(st_test ${COMMON_LIBRARIES})
 set_property(TARGET st_test PROPERTY CXX_STANDARD 14)
