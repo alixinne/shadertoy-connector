@@ -114,9 +114,15 @@ void loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::C
 
 			// Create buffer
 			shadertoy::BufferConfig imageBuffer;
+
+			// Get buffer name from JSON object
 			imageBuffer.name = pass["name"].asString();
 			if (imageBuffer.name.empty())
 				imageBuffer.name = pass["type"].asString();
+
+			// Lowercase buffer name
+			std::transform(imageBuffer.name.begin(), imageBuffer.name.end(),
+				imageBuffer.name.begin(), ::tolower);
 
 			// Skip if sound buffer
 			if (pass["type"].asString().compare("sound") == 0)
