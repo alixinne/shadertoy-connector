@@ -130,3 +130,9 @@ set_property(TARGET shadertoy_connector PROPERTY CXX_STANDARD 14)
 
 # Required
 set_property(TARGET shadertoy_connector PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+# Test procedures
+enable_testing()
+file(GLOB TEST_FILES ${CMAKE_SOURCE_DIR}/??_*.sh)
+add_test(NAME all COMMAND prove -v --color ${TEST_FILES}
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
