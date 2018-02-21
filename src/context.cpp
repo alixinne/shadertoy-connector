@@ -33,7 +33,7 @@ StContext::StContext(const std::string &shaderId, const std::string &source, int
 }
 
 void StContext::performRender(GLFWwindow *window, int frameCount, int width, int height,
-							  float mouse[4], GLenum format)
+							  const float mouse[4], GLenum format)
 {
 	// Ensure we are working at the right size
 	GLint depth = formatDepth(format);

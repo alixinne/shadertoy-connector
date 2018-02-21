@@ -44,7 +44,7 @@ class Host
 	 * @return        Pointer to the rendered frame.
 	 */
 	StImage *Render(const std::string &id, boost::optional<int> frame, int width, int height,
-					float mouse[4], GLenum format);
+					const float mouse[4], GLenum format);
 
 	/**
 	 * Resets the context associated with this Shadertoy Id.

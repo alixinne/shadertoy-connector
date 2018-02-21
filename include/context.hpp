@@ -69,7 +69,7 @@ struct StContext
 	 * @param mouse      Values for the mouse uniform
 	 * @param format     Format of the rendering
 	 */
-	void performRender(GLFWwindow *window, int frameCount, int width, int height, float mouse[4], GLenum format);
+	void performRender(GLFWwindow *window, int frameCount, int width, int height, const float mouse[4], GLenum format);
 
 	/**
 	 * Sets the value of an input for the next renderings.

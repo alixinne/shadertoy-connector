@@ -83,7 +83,7 @@ void Host::Allocate()
 }
 
 StImage *Host::Render(const string &id, boost::optional<int> frame, int width, int height,
-					  float mouse[4], GLenum format)
+					  const float mouse[4], GLenum format)
 {
 	auto context(GetContext(id));
 
