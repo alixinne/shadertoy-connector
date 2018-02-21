@@ -75,9 +75,6 @@ void Host::Allocate()
 StImage *Host::Render(const string &id, boost::optional<int> frame, int width, int height,
 					  float mouse[4], GLenum format)
 {
-	// Ensure we are in the right context
-	glfwMakeContextCurrent(st_window);
-
 	auto context(GetContext(id));
 
 	// Default value for frame is the current frame count of the context
@@ -96,6 +93,9 @@ StImage *Host::Render(const string &id, boost::optional<int> frame, int width, i
 
 void Host::Reset(const string &id)
 {
+	// Ensure we are in the right context
+	glfwMakeContextCurrent(st_window);
+
 	const char local[] = "localshader-";
 	if (strncmp(id.c_str(), local, sizeof(local) - 1) == 0)
 	{
@@ -123,6 +123,9 @@ string Host::CreateLocal(const string &source)
 
 shared_ptr<StContext> Host::GetContext(const std::string &id)
 {
+	// Ensure we are in the right context
+	glfwMakeContextCurrent(st_window);
+
 	auto it = st_contexts.find(id);
 	if (it == st_contexts.end())
 	{
