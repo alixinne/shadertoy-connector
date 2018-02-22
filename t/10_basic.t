@@ -19,6 +19,6 @@ OCTAVE_CODE
 
 mathematica_ok 'Basic shader', <<MATHEMATICA_CODE;
 ctxt = CompileShadertoy["$shader"];
-img = RenderShadertoy[ctxt, Format -> "RGBA", Frame -> 0, Size -> { 2, 2 }];
-Exit[If[img[[1, 1]] == {0.0, 2.0, 0.5, 1.5},0,1]];
+img = ImageData[RenderShadertoy[ctxt, Format -> "RGBA", Frame -> 0, Size -> { 2, 2 }]];
+Assert[img[[1, 1]] == {0.0, 2.0, 0.5, 1.5}]
 MATHEMATICA_CODE
