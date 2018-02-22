@@ -156,7 +156,15 @@ void StContext::setInput(const string &buffer, int channel, StImage &image)
 
 void StContext::setInputFilter(const string &buffer, int channel, GLint minFilter)
 {
-	auto &input(config.bufferConfigs.find(buffer)->second.inputConfig[channel]);
+	auto it = config.bufferConfigs.find(buffer);
+	if (it == config.bufferConfigs.end())
+	{
+		std::stringstream ss;
+		ss << "Buffer " << buffer << " not found";
+		throw std::runtime_error(ss.str());
+	}
+
+	auto &input(it->second.inputConfig[channel]);
 
 	input.minFilter = minFilter;
 	input.magFilter = minFilter == GL_NEAREST ? GL_NEAREST : GL_LINEAR;
@@ -256,7 +264,7 @@ map<int, StImage> &StContext::getBufferInputOverrides(const string &buffer)
 		if (bufferConfigIt == config.bufferConfigs.end())
 		{
 			stringstream ss;
-			ss << buffer << " buffer not found";
+			ss << "Buffer " << buffer << " not found";
 			throw runtime_error(ss.str());
 		}
 
