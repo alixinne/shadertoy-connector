@@ -20,44 +20,50 @@
 
 extern Host host;
 
-template <typename TWrapper>
-void st_wrapper_exec(TWrapper &wrapper, std::function<void(TWrapper &)> fun)
+template<typename TWrapper>
+void st_wrapper_internal(TWrapper &wrapper, std::function<void(TWrapper &)> fun)
+{
+	try
+	{
+		fun(wrapper);
+	}
+	catch (shadertoy::OpenGL::ShaderCompilationError &ex)
+	{
+		std::stringstream ss;
+		ss << "Shader compilation error: " << ex.what() << std::endl << ex.log();
+		wrapper.SendFailure(ss.str(), "glerr");
+	}
+	catch (shadertoy::OpenGL::ProgramLinkError &ex)
+	{
+		std::stringstream ss;
+		ss << "Program link error: " << ex.what() << std::endl << ex.log();
+		wrapper.SendFailure(ss.str(), "glerr");
+	}
+	catch (shadertoy::OpenGL::OpenGLError &ex)
+	{
+		std::stringstream ss;
+		ss << "OpenGL error: " << ex.what();
+		wrapper.SendFailure(ss.str(), "glerr");
+	}
+	catch (shadertoy::ShadertoyError &ex)
+	{
+		std::stringstream ss;
+		ss << "Shadertoy error: " << ex.what();
+		wrapper.SendFailure(ss.str());
+	}
+	catch (std::runtime_error &ex)
+	{
+		wrapper.SendFailure(ex.what());
+	}
+}
+
+template <typename TWrapper, typename... ExtraArgs>
+auto st_wrapper_exec(TWrapper &wrapper, std::function<void(TWrapper &)> fun, ExtraArgs... args)
 {
 	wrapper.CheckInitialization();
 
-	wrapper.template RunFunction([&fun](TWrapper &wrapper) {
-		try
-		{
-			fun(wrapper);
-		}
-		catch (shadertoy::OpenGL::ShaderCompilationError &ex)
-		{
-			std::stringstream ss;
-			ss << "Shader compilation error: " << ex.what() << std::endl << ex.log();
-			wrapper.SendFailure(ss.str(), "glerr");
-		}
-		catch (shadertoy::OpenGL::ProgramLinkError &ex)
-		{
-			std::stringstream ss;
-			ss << "Program link error: " << ex.what() << std::endl << ex.log();
-			wrapper.SendFailure(ss.str(), "glerr");
-		}
-		catch (shadertoy::OpenGL::OpenGLError &ex)
-		{
-			std::stringstream ss;
-			ss << "OpenGL error: " << ex.what();
-			wrapper.SendFailure(ss.str(), "glerr");
-		}
-		catch (shadertoy::ShadertoyError &ex)
-		{
-			std::stringstream ss;
-			ss << "Shadertoy error: " << ex.what();
-			wrapper.SendFailure(ss.str());
-		}
-		catch (std::runtime_error &ex)
-		{
-			wrapper.SendFailure(ex.what());
-		}
+	return wrapper.template RunFunction(args..., [&fun](TWrapper &wrapper) {
+		st_wrapper_internal(wrapper, fun);
 	});
 }
 
@@ -139,8 +145,9 @@ template <typename TWrapper> void impl_st_compile(TWrapper &w)
 
 	std::string shaderId(host.CreateLocal(source));
 
-	w.template EvaluateResult<OMWrapper<OMWT_MATHEMATICA>>(
-	[&]() { MLPutString(w.link, shaderId.c_str()); });
+	OM_RESULT_MATHEMATICA(w, [&]() { MLPutString(w.link, shaderId.c_str()); });
+
+	OM_RESULT_OCTAVE(w, [&]() { w.Result().append(shaderId); });
 }
 
 template <typename TWrapper> void impl_st_reset(TWrapper &w)
@@ -154,12 +161,13 @@ template <typename TWrapper> void impl_st_render(TWrapper &w)
 
 	auto frameCount(w.template GetOptionalParam<int>(1, "Frame"));
 
-	auto width(w.template GetParam<int>(2, "Width"));
-	auto height(w.template GetParam<int>(3, "Height"));
+	auto width(w.template GetOptionalParam<int>(2, "Width").get_value_or(640));
+	auto height(w.template GetOptionalParam<int>(3, "Height").get_value_or(360));
 
-	auto mouse(w.template GetParam<std::shared_ptr<OMArray<float>>>(4, "Mouse"));
+	auto mouse(w.template GetOptionalParam<std::shared_ptr<OMArray<float>>>(4, "Mouse")
+			   .get_value_or(OMArray<float>::from_vector(4, 0.f)));
 
-	auto formatName(w.template GetParam<std::string>(5, "Format"));
+	auto formatName(w.template GetOptionalParam<std::string>(5, "Format").get_value_or("RGBA"));
 	GLenum format;
 
 	if (formatName.compare("RGBA") == 0)
@@ -171,11 +179,11 @@ template <typename TWrapper> void impl_st_render(TWrapper &w)
 	else
 		throw std::runtime_error("Invalid Format parameter");
 
-	auto doFrameTiming(w.template GetParam<bool>(6, "FrameTiming"));
+	auto doFrameTiming(w.template GetOptionalParam<bool>(6, "FrameTiming").get_value_or(false));
 
 	auto image(host.Render(id, frameCount, width, height, mouse->data(), format));
 
-	w.template EvaluateResult<OMWrapper<OMWT_MATHEMATICA>>([&]() {
+	OM_RESULT_MATHEMATICA(w, [&]() {
 		if (doFrameTiming)
 		{
 			MLPutFunction(w.link, "List", 2);
@@ -184,6 +192,30 @@ template <typename TWrapper> void impl_st_render(TWrapper &w)
 
 		MLPutFunction(w.link, "Image", 1);
 		MLPutReal32Array(w.link, image->data->data(), &image->dims[0], NULL, 3);
+	});
+
+	OM_RESULT_OCTAVE(w, [&]() {
+		auto &res(w.Result());
+
+		// Return the image
+		auto dims(dim_vector(image->dims[0], image->dims[1], image->dims[2]));
+		NDArray data(dims);
+
+		// Need to copy from float* to double*
+		for (size_t i = 0; i < image->dims[0]; ++i)
+			for (size_t j = 0; j < image->dims[1]; ++j)
+				for (size_t k = 0; k < image->dims[2]; ++k)
+				{
+					size_t idx = (i * image->dims[1] + j) * image->dims[2] + k;
+					data(i, j, k) = static_cast<double>((*image->data)[idx]);
+				}
+
+		if (doFrameTiming)
+		{
+			res.append(image->frameTiming / 1e9);
+		}
+
+		res.append(data);
 	});
 }
 
@@ -200,7 +232,7 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 	long ninputs;
 
 	// Get number of inputs (Mathematica)
-	w.template ConditionalRun<OMWrapper<OMWT_MATHEMATICA>>([&]() {
+	OM_MATHEMATICA(w, [&]() {
 		if (!MLCheckFunction(w.link, "List", &ninputs))
 		{
 			MLClearError(w.link);
@@ -208,12 +240,22 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 		}
 	});
 
+	// Get number of inputs (Octave)
+	OM_OCTAVE(w, [&]() {
+		ninputs = (w.Args().length() - 1) / 2;
+	});
+
+	// Get size of fetched tuples
+	int tupleSize = 1;
+	OM_OCTAVE(w, [&]() {
+		tupleSize = 2;
+	});
+
 	// Process all inputs
 	for (long n = 0; n < ninputs; ++n)
 	{
 		// Get <name, image> tuple
-		auto inputSpec(
-		w.template GetParam<std::string, std::shared_ptr<OMMatrix<float>>>(n + 1, "InputSpec"));
+		auto inputSpec(w.template GetParam<std::string, std::shared_ptr<OMMatrix<float>>>(tupleSize * n + 1, "InputSpec"));
 
 		// Parse name
 		std::string bufferName;
@@ -267,12 +309,17 @@ template <typename TWrapper> void impl_st_reset_input(TWrapper &w)
 	long ninputs;
 
 	// Get number of inputs (Mathematica)
-	w.template ConditionalRun<OMWrapper<OMWT_MATHEMATICA>>([&]() {
+	OM_MATHEMATICA(w, [&]() {
 		if (!MLCheckFunction(w.link, "List", &ninputs))
 		{
 			MLClearError(w.link);
 			throw std::runtime_error("Invalid input specification");
 		}
+	});
+
+	// Get number of inputs (Octave)
+	OM_OCTAVE(w, [&]() {
+		ninputs = (w.Args().length() - 1) / 2;
 	});
 
 	// Process all inputs
@@ -301,20 +348,23 @@ template <typename TWrapper> void impl_st_set_input_filter(TWrapper &w)
 	// Number of defined inputs
 	long ninputs;
 
-	// Get number of inputs (Mathematica)
-	w.template ConditionalRun<OMWrapper<OMWT_MATHEMATICA>>([&]() {
-		if (!MLCheckFunction(w.link, "List", &ninputs))
-		{
-			MLClearError(w.link);
-			throw std::runtime_error("Invalid input specification");
-		}
+	// Get number of inputs (Octave)
+	OM_OCTAVE(w, [&]() {
+		ninputs = (w.Args().length() - 1) / 2;
+	});
+
+	// Get size of fetched tuples
+	int tupleSize = 1;
+	OM_OCTAVE(w, [&]() {
+		tupleSize = 2;
 	});
 
 	// Process all inputs
 	for (long n = 0; n < ninputs; ++n)
 	{
 		// Get <name, image> tuple
-		auto inputSpec(w.template GetParam<std::string, std::string>(n + 1, "InputSpec"));
+		auto inputSpec(
+		w.template GetParam<std::string, std::string>(tupleSize * n + 1, "InputSpec"));
 
 		// Parse name
 		std::string bufferName;
