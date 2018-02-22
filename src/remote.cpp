@@ -132,7 +132,7 @@ void loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::C
 
 			// Load code
 			stringstream sspath;
-			sspath << shaderId << "-" << i << ".glsl";
+			sspath << "stcode_remoteshader-" << getpid() << "-" << shaderId << "-" << i << ".glsl";
 			fs::path p(basedir / sspath.str());
 
 			ofstream ofs(p.string());
@@ -183,7 +183,7 @@ void loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::C
 
 					fs::path srcpath(input["src"].asString());
 					string url = string("https://www.shadertoy.com") + input["src"].asString();
-					fs::path dstpath(basedir / srcpath.filename());
+					fs::path dstpath(basedir / fs::path(std::string("stinput_") + srcpath.filename().string()));
 
 					if (!fs::exists(dstpath))
 					{

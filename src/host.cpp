@@ -120,7 +120,7 @@ string Host::CreateLocal(const string &source)
 
 	// Generate unique name
 	stringstream name;
-	name << "localshader-" << local_counter++;
+	name << "localshader-" << getpid() << "-" << local_counter++;
 	string shaderId(name.str());
 
 	// Create local context

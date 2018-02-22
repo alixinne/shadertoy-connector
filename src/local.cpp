@@ -26,7 +26,7 @@ void loadLocal(const string &shaderId, const string &source, shadertoy::ContextC
 
 		// Load code
 		stringstream sspath;
-		sspath << shaderId << ".glsl";
+		sspath << "stcode_" << shaderId << ".glsl";
 		fs::path p(basedir / sspath.str());
 
 		ofstream ofs(p.string());
