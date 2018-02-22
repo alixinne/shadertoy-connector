@@ -133,6 +133,9 @@ set_property(TARGET shadertoy_connector PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 # Test procedures
 enable_testing()
-file(GLOB TEST_FILES ${CMAKE_SOURCE_DIR}/??_*.sh)
-add_test(NAME all COMMAND prove -v --color ${TEST_FILES}
-	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+file(GLOB TEST_FILES ${CMAKE_SOURCE_DIR}/t/*.t)
+foreach(TEST_FILE ${TEST_FILES})
+	get_filename_component(TEST_FILE_NAME ${TEST_FILE} NAME_WE)
+	add_test(NAME ${TEST_FILE_NAME} COMMAND prove -v --color ${TEST_FILE}
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+endforeach()
