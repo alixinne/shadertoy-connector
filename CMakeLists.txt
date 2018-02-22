@@ -135,14 +135,6 @@ if(Octave_FOUND OR OCTAVE_EXECUTABLE)
 			COMPONENT st_octave)
 endif()
 
-# Test program for the connector library
-add_executable(st_test
-	${SRC_DIR}/shadertoy_test.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/ext/omw/src/om_wrapper.cpp
-	$<TARGET_OBJECTS:shadertoy_connector>)
-target_link_libraries(st_test ${COMMON_LIBRARIES})
-set_property(TARGET st_test PROPERTY CXX_STANDARD 14)
-
 # C++14 for the targets
 set_property(TARGET shadertoy_connector PROPERTY CXX_STANDARD 14)
 
