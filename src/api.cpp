@@ -3,6 +3,79 @@
 /// Shadertoy Connector context host
 Host host;
 
+std::string mathematica_unescape(const std::string &source)
+{
+	// Process escapes
+	std::stringstream unescaped;
+	size_t len = source.size();
+	enum
+	{
+		Standard,
+		ReadingEscape,
+		ReadingOctalEscape
+	} state = Standard;
+	int cnum;
+
+	for (size_t i = 0; i <= len; ++i)
+	{
+		if (state == Standard)
+		{
+			if (source[i] == '\\')
+			{
+				state = ReadingEscape;
+				cnum = 0;
+			}
+			else if (source[i])
+			{
+				unescaped << source[i];
+			}
+		}
+		else if (state == ReadingEscape)
+		{
+			if (source[i] == '0')
+			{
+				state = ReadingOctalEscape;
+			}
+			else if (source[i] == 'n')
+			{
+				unescaped << '\n';
+				state = Standard;
+			}
+			else if (source[i] == 'r')
+			{
+				unescaped << '\r';
+				state = Standard;
+			}
+			else if (source[i] == 't')
+			{
+				unescaped << '\t';
+				state = Standard;
+			}
+			else
+			{
+				unescaped << '\\';
+				unescaped << source[i];
+				state = Standard;
+			}
+		}
+		else if (state == ReadingOctalEscape)
+		{
+			if (source[i] >= '0' && source[i] <= '7')
+			{
+				cnum = cnum * 8 + (source[i] - '0');
+			}
+			else
+			{
+				unescaped << static_cast<char>(cnum);
+				state = Standard;
+				i--;
+			}
+		}
+	}
+
+	return unescaped.str();
+}
+
 bool impl_st_parse_input(std::string &inputSpecName, std::string &buffer, int &channel)
 {
 	auto dotPos(inputSpecName.find('.'));
@@ -29,7 +102,7 @@ bool impl_st_parse_input(std::string &inputSpecName, std::string &buffer, int &c
 
 #if OMW_OCTAVE
 
-static OMWrapper<OMWT_OCTAVE> wrapper([]() { host.Allocate(); });
+static OMWrapperOctave wrapper([]() { host.Allocate(); });
 
 // Function predeclaration
 void oct_autoload(const std::string &);
@@ -74,15 +147,16 @@ DEFUN_DLD(shadertoy_octave, args, , "shadertoy_octave() initializes the shaderto
 	return octave_value();
 }
 
-octave_value_list st_octave_run(const octave_value_list &args, std::function<void(OMWrapper<OMWT_OCTAVE> &)> fun)
+octave_value_list st_octave_run(const octave_value_list &args,
+	std::function<void(OMWrapperOctave&)> fun)
 {
-	return st_wrapper_exec<OMWrapper<OMWT_OCTAVE>, const octave_value_list &>(wrapper, fun, args);
+	return st_wrapper_exec<OMWrapperOctave, const octave_value_list &>(wrapper, fun, args);
 }
 
-#define OM_DEFUN(name, oct_usage)                                        \
-	DEFUN_DLD(name, args, , oct_usage)                                   \
-	{                                                                    \
-		return st_octave_run(args, impl_##name<OMWrapper<OMWT_OCTAVE>>); \
+#define OM_DEFUN(name,oct_usage) \
+	DEFUN_DLD(name, args, , oct_usage) \
+	{ \
+		return st_octave_run(args, impl_ ## name <OMWrapperOctave>); \
 	}
 
 #endif /* OMW_OCTAVE */
@@ -90,13 +164,13 @@ octave_value_list st_octave_run(const octave_value_list &args, std::function<voi
 #if OMW_MATHEMATICA
 
 // Mathematica API wrapper
-static OMWrapper<OMWT_MATHEMATICA> wrapper("Shadertoy", stdlink, []() { host.Allocate(); });
+static OMWrapperMathematica wrapper("Shadertoy", stdlink, []() { host.Allocate(); });
 
-#define OM_DEFUN(name, oct_usage)                                                                        \
-	extern "C" void name();                                                                              \
-	void name()                                                                                          \
-	{                                                                                                    \
-		st_wrapper_exec<OMWrapper<OMWT_MATHEMATICA>>(wrapper, impl_##name<OMWrapper<OMWT_MATHEMATICA>>); \
+#define OM_DEFUN(name,oct_usage) \
+	extern "C" void name (); \
+	void name () \
+ 	{ \
+		st_wrapper_exec<OMWrapperMathematica>(wrapper, impl_ ## name <OMWrapperMathematica>); \
 	}
 
 #endif /* OMW_MATHEMATICA */
