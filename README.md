@@ -6,9 +6,7 @@ and Octave.
 
 ## Documentation
 
-### [Installation](docs/INSTALL.md)
-### [Examples](docs/EXAMPLES.md)
-### [Function reference](docs/FUNCTIONS.md)
+See the [documentation index](docs/README.md).
 
 ## Author
 
