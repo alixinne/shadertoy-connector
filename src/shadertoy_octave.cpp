@@ -54,11 +54,28 @@ template <typename TRet> TRet st_wrapper_exec(std::function<TRet(void)> &&fun)
 	return TRet();
 }
 
-void oct_autoload(const char *fname)
+// Function predeclaration
+void oct_autoload(const std::string &);
+
+// Locates the current .oct file, from https://stackoverflow.com/q/1681060
+#include <dlfcn.h>
+class oct_locator_class {
+	std::string _path;
+public:
+	oct_locator_class() {
+		Dl_info dl_info;
+		dladdr((void*)oct_autoload, &dl_info);
+		_path = std::string(dl_info.dli_fname);
+	}
+
+	inline const std::string &path() const { return _path; }
+} oct_locator_default;
+
+void oct_autoload(const std::string &fname)
 {
 	octave_value_list args;
-	args(0) = std::string(fname);
-	args(1) = std::string("shadertoy_octave.oct");
+	args(0) = fname;
+	args(1) = oct_locator_default.path();
 
 	feval("autoload", args);
 }
