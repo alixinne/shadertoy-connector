@@ -57,18 +57,17 @@ sub octave_ok {
 	my ($message, $code) = @_;
 	$message = "Octave: $message";
 
+	# Add code to load the library
+	$code = <<OCTAVE_CODE;
+shadertoy_octave();
+$code
+OCTAVE_CODE
+
 	# Append code to load the current testing version
 	if (defined binary_path) {
 		my $path = File::Spec->catfile(binary_path, 'shadertoy_octave.oct');
 		$code = <<OCTAVE_CODE;
 autoload("shadertoy_octave", "$path");
-shadertoy_octave();
-$code
-OCTAVE_CODE
-	} else {
-		# Just load the library
-		$code = <<OCTAVE_CODE;
-shadertoy_octave();
 $code
 OCTAVE_CODE
 	}
