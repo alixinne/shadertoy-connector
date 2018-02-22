@@ -3,12 +3,12 @@ void st_render P(( ));
 :Begin:
 :Function:       st_render
 :Pattern:        RenderShadertoy[id_String, OptionsPattern[]]
-:Arguments:      { id, OptionValue[Frame], With[{ size = OptionValue[Size] }, If[ListQ[size], size[[1]], size]], With[{ size = OptionValue[Size] }, If[ListQ[size], size[[2]], size]], OptionValue[Mouse], OptionValue[Format], OptionValue[FrameTiming] }
+:Arguments:      { id, OptionValue[Frame], With[{ size = OptionValue[Size] }, If[ListQ[size], size[[1]], size]], With[{ size = OptionValue[Size] }, If[ListQ[size], size[[2]], size]], OptionValue[Format], OptionValue[Mouse], OptionValue[FrameTiming] }
 :ArgumentTypes:  { Manual }
 :ReturnType:     Manual
 :End:
 
-:Evaluate: RenderShadertoy::usage = "RenderShadertoy[id] renders a Shadertoy as an image";
+:Evaluate: RenderShadertoy::usage = "RenderShadertoy[id, Frame -> Null, Size -> { 640, 360 }, Mouse -> { 0, 0, 0, 0 }, FrameTiming -> False] renders a Shadertoy as an image";
 :Evaluate: Options[RenderShadertoy] = { Frame -> Null, Size -> { 640, 360 }, Mouse -> { 0, 0, 0, 0 }, Format -> "RGB", FrameTiming -> False };
 
 void st_reset P(( ));

@@ -97,10 +97,10 @@ shader
 ```
 (* Mathematica *)
 img = RenderShadertoy[ctxt, Frame -> Null, Size -> { 640, 360 }, Mouse ->
-	{ 0, 0, 0, 0 }, Format -> "RGB", FrameTiming -> False];
+	Format -> "RGB", { 0, 0, 0, 0 }, FrameTiming -> False];
 
 % Octave
-img = st_render(ctxt, -1, 'RGB', 640, 360, [0 0 0 0]);
+img = st_render(ctxt, -1, 640, 360, 'RGB', [0 0 0 0], false);
 ```
 
 ### Description
@@ -110,19 +110,22 @@ Renders a single frame of the given context `ctxt`.
 ### Arguments
 
 * `ctxt`: String that identifies the context to render
-* *(optional)* `Frame` (Mathematica) or 2nd arg (Octave): Number of the frame to render
-(`iFrame/iTime` uniforms). Use `Null` (Mathematica) or `-1` (Octave) to render
-the next frame following the previous render call.
-* *(optional)* `Size` (Mathematica) or 3rd and 4th args (Octave): Size of the rendering
-viewport. If `Size` is a single number, a square viewport will be assumed.
-* *(optional)* `Format` (Mathematica) or 5th arg (Octave): Format of the rendering. Can
-either be `'Luminance'` (one-channel), `'RGB'` (three-channel) or `'RGBA'`
-(four-channel). Defines the number of channels in the returned value.
-* *(optional)* `Mouse` (Mathematica) or 6th arg (Octave): Value of the `iMouse` uniform, as
-a 2 or 4 component vector of floats.
-* *(optional)* `FrameTiming` (Mathematica only): set to `True` to return a list containing
-the running time of the shader, queried using glBeginQuery(GL_TIMESTAMP), and
-the rendered image. Defaults to `False` (only return the rendered image).
+* *(optional)* `Frame` (Mathematica) or 2nd arg (Octave): Number of the frame to
+render (`iFrame/iTime` uniforms). Use `Null` (Mathematica) or `-1` (Octave) to
+render the next frame following the previous render call.
+* *(optional)* `Size` (Mathematica) or 3rd (width) and 4th (height) args
+(Octave): Size of the rendering viewport. If `Size` is a single number, a square
+viewport will be assumed. Use `Null` (Mathematica) or `-1` (Octave) for the
+default size.
+* *(optional)* `Format` (Mathematica) or 5th arg (Octave): Format of the
+rendering. Can either be `'Luminance'` (one-channel), `'RGB'` (three-channel) or
+`'RGBA'` (four-channel). Defines the number of channels in the returned value.
+* *(optional)* `Mouse` (Mathematica) or 6th arg (Octave): Value of the `iMouse`
+uniform, as a 2 or 4 component vector of floats.
+* *(optional)* `FrameTiming` (Mathematica) or 7th arg (Octave): set to `True` to
+return a list containing the running time of the shader, queried using
+glBeginQuery(GL_TIMESTAMP), and the rendered image. Defaults to `False`
+(only return the rendered image).
 
 ### Return value
 
