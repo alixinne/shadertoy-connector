@@ -12,7 +12,6 @@ GLSL
 $shader =~ s/\n//g;
 
 octave_ok 'Basic shader', <<OCTAVE_CODE;
-shadertoy_octave();
 ctxt = st_compile("$shader");
 img = st_render(ctxt, 0, 'RGBA', 2, 2);
 exit(ifelse(all(diag(img(1,1,:)(:) == [0.0 2.0 0.5 1.5])),0,2))
