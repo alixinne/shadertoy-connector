@@ -32,9 +32,6 @@ link_directories(${glfw3_LIBRARY_DIRS} ${jsoncpp_LIBRARY_DIRS})
 # libshadertoy
 find_package(shadertoy REQUIRED 0.1.7)
 
-# Fix omw errors
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
-
 # setup shared include directories
 include_directories(
 	${INCLUDE_DIR}
