@@ -13,6 +13,14 @@ Host::~Host()
 {
 	if (st_window)
 	{
+		// We first need to delete all the StContexts or else GL destructors will
+		// fail because there is no current OpenGL context
+		glfwMakeContextCurrent(st_window);
+
+		// Destroy contexts
+		st_contexts.clear();
+
+		// Destroy window
 		glfwDestroyWindow(st_window);
 		st_window = nullptr;
 	}
