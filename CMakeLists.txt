@@ -48,8 +48,7 @@ add_library(shadertoy_connector OBJECT
 	${SRC_DIR}/context.cpp
 	${SRC_DIR}/host.cpp
 	${SRC_DIR}/local.cpp
-	${SRC_DIR}/remote.cpp
-	${SRC_DIR}/api.cpp)
+	${SRC_DIR}/remote.cpp)
 
 # list of libraries to link into all the targets
 set(COMMON_LIBRARIES
@@ -70,7 +69,7 @@ if(Mathematica_FOUND)
 		OUTPUT ${ST_MATHEMATICA_MPREP_TARGET})
 
 	add_executable(shadertoy_mathematica
-		${SRC_DIR}/shadertoy_mathematica.cpp
+		${SRC_DIR}/api.cpp
 		${ST_MATHEMATICA_MPREP_TARGET}
 		${CMAKE_CURRENT_SOURCE_DIR}/ext/omw/src/om_wrapper.cpp
 		$<TARGET_OBJECTS:shadertoy_connector>)
@@ -121,7 +120,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 find_package(Octave)
 if(Octave_FOUND OR OCTAVE_EXECUTABLE)
 	octave_add_oct(shadertoy_octave
-		SOURCES ${SRC_DIR}/shadertoy_octave.cpp
+		SOURCES ${SRC_DIR}/api.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/ext/omw/src/om_wrapper.cpp
 		$<TARGET_OBJECTS:shadertoy_connector>
 		LINK_LIBRARIES ${COMMON_LIBRARIES})
