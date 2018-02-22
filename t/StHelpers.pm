@@ -48,10 +48,17 @@ OCTAVE_CODE
 
 sub mathematica_ok {
 	my ($message, $code) = @_;
-	diag $code;
 	SKIP: {
+		$code = <<MATHEMATICA_CODE;
+On[Assert];
+Exit[If[FailureQ[Check[Module[{},
+<<Shadertoy`;
+$code],\$Failed]],1,0]]
+MATHEMATICA_CODE
+		$code =~ s/;(?!\n)/;\n/g;
+		diag $code;
 		# Start Mathematica process
-		open my $proc, '|math' or skip($message, 1);
+		open my $proc, '|math' or skip("$message (skipped because math is missing)", 1);
 		# Forward code
 		print $proc $code;
 		# Wait for exit and build test

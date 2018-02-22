@@ -18,7 +18,6 @@ exit(ifelse(all(diag(img(1,1,:)(:) == [0.0 2.0 0.5 1.5])),0,2))
 OCTAVE_CODE
 
 mathematica_ok 'Basic shader', <<MATHEMATICA_CODE;
-<<Shadertoy`;
 ctxt = CompileShadertoy["$shader"];
 img = RenderShadertoy[ctxt, Format -> "RGBA", Frame -> 0, Size -> { 2, 2 }];
 Exit[If[img[[1, 1]] == {0.0, 2.0, 0.5, 1.5},0,1]];
