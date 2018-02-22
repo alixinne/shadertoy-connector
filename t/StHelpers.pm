@@ -87,6 +87,17 @@ Exit[If[FailureQ[Check[Module[{},
 <<Shadertoy`;
 $code],\$Failed]],1,0]]
 MATHEMATICA_CODE
+
+	# Append code to load the current testing version
+	if (defined binary_path) {
+		my $path = binary_path;
+		$code = <<MATHEMATICA_CODE;
+PrependTo[\$Path, "$path"];
+$code
+MATHEMATICA_CODE
+	}
+
+	# Reformat code
 	$code =~ s/;(?!\n)/;\n/g;
 
 	command_run 'math', $code, $message;

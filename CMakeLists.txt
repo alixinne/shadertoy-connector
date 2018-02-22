@@ -81,7 +81,7 @@ if(Mathematica_FOUND)
 	set(ST_MATHEMATICA_OUTPUT_NAME "StConnectorMathematica")
 
 	configure_file(${SRC_DIR}/mathematica/Shadertoy.m
-				   ${CMAKE_CURRENT_BINARY_DIR}/mathematica/Shadertoy.m)
+				   ${CMAKE_CURRENT_BINARY_DIR}/Shadertoy/Shadertoy.m)
 	set_property(TARGET shadertoy_mathematica PROPERTY OUTPUT_NAME ${ST_MATHEMATICA_OUTPUT_NAME})
 
 	# Add Mathematica include directory and dependencies to the built program
@@ -89,6 +89,12 @@ if(Mathematica_FOUND)
 	target_link_libraries(shadertoy_mathematica
 						  ${COMMON_LIBRARIES}
 						  ${Mathematica_MathLink_LIBRARIES})
+
+	# Make a copy of the install tree in the build directory
+	add_custom_command(TARGET shadertoy_mathematica POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_directory ${SRC_DIR}/mathematica/Kernel ${CMAKE_CURRENT_BINARY_DIR}/Shadertoy/Kernel/
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/Shadertoy/${Mathematica_SYSTEM_ID}/
+		COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:shadertoy_mathematica> ${CMAKE_CURRENT_BINARY_DIR}/Shadertoy/${Mathematica_SYSTEM_ID}/)
 
 	# Install resulting files
 	set(ST_MATH_INSTALL_DIR ${Mathematica_USERBASE_DIR}/Applications/Shadertoy)
@@ -98,7 +104,7 @@ if(Mathematica_FOUND)
 	install(TARGETS shadertoy_mathematica
 			DESTINATION ${ST_MATH_INSTALL_DIR}/${Mathematica_SYSTEM_ID}
 			COMPONENT st_mathematica)
-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/mathematica/Shadertoy.m
+	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Shadertoy/Shadertoy.m
 			DESTINATION ${ST_MATH_INSTALL_DIR}
 			COMPONENT st_mathematica)
 endif()
