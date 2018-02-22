@@ -164,10 +164,7 @@ template <typename TWrapper> void impl_st_render(TWrapper &w)
 	auto width(w.template GetOptionalParam<int>(2, "Width").get_value_or(640));
 	auto height(w.template GetOptionalParam<int>(3, "Height").get_value_or(360));
 
-	auto mouse(w.template GetOptionalParam<std::shared_ptr<OMArray<float>>>(4, "Mouse")
-			   .get_value_or(OMArray<float>::from_vector(4, 0.f)));
-
-	auto formatName(w.template GetOptionalParam<std::string>(5, "Format").get_value_or("RGBA"));
+	auto formatName(w.template GetOptionalParam<std::string>(4, "Format").get_value_or("RGBA"));
 	GLenum format;
 
 	if (formatName.compare("RGBA") == 0)
@@ -178,6 +175,9 @@ template <typename TWrapper> void impl_st_render(TWrapper &w)
 		format = GL_LUMINANCE;
 	else
 		throw std::runtime_error("Invalid Format parameter");
+
+	auto mouse(w.template GetOptionalParam<std::shared_ptr<OMArray<float>>>(5, "Mouse")
+			   .get_value_or(OMArray<float>::from_vector(4, 0.f)));
 
 	auto doFrameTiming(w.template GetOptionalParam<bool>(6, "FrameTiming").get_value_or(false));
 

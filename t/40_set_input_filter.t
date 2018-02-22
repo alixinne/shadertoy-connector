@@ -16,9 +16,9 @@ m = [0 1];
 ctxt = st_compile("$shader");
 st_set_input(ctxt, "image.0", m);
 st_set_input_filter(ctxt, "image.0", "Linear");
-imgl = st_render(ctxt, 0, 'Luminance', 1, 1);
+imgl = st_render(ctxt, 0, 1, 1, 'Luminance');
 st_set_input_filter(ctxt, "image.0", "Nearest");
-imgn = st_render(ctxt, 0, 'Luminance', 1, 1);
+imgn = st_render(ctxt, 0, 1, 1, 'Luminance');
 disp("imgl")
 disp(imgl)
 disp("imgn")

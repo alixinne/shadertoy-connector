@@ -46,5 +46,5 @@ img = st_render('llySRh');
 imshow(img);
 
 % Grayscale render, next frame
-img = st_render('llySRh', -1, 'Luminance');
+img = st_render('llySRh', -1, -1, -1, 'Luminance');
 ```

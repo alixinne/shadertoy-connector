@@ -50,8 +50,8 @@ octave_value_list st_octave_run(const octave_value_list &args, std::function<voi
 	return st_wrapper_exec<OMWrapper<OMWT_OCTAVE>, const octave_value_list &>(wrapper, fun, args);
 }
 
-DEFUN_DLD(st_render, args, , "st_render('id', [frame, [format, [width, [height, "
-							 "[mouse]]]]]) renders a Shadertoy as an image")
+DEFUN_DLD(st_render, args, , "st_render('id', [frame, [width, [height, [format, "
+							 "[mouse, [timing]]]]]]) renders a Shadertoy as an image")
 {
 	return st_octave_run(args, impl_st_render<OMWrapper<OMWT_OCTAVE>>);
 }
