@@ -32,10 +32,13 @@ link_directories(${glfw3_LIBRARY_DIRS} ${jsoncpp_LIBRARY_DIRS})
 # libshadertoy
 find_package(shadertoy REQUIRED 0.1.7)
 
+# Load omw
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ext/omw)
+
 # setup shared include directories
 include_directories(
 	${INCLUDE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/ext/omw/include
+	${OMW_INCLUDE_DIR}
 	${jsoncpp_INCLUDE_DIRS}
 	${CURL_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
@@ -71,7 +74,7 @@ if(Mathematica_FOUND)
 	add_executable(shadertoy_mathematica
 		${SRC_DIR}/api.cpp
 		${ST_MATHEMATICA_MPREP_TARGET}
-		${CMAKE_CURRENT_SOURCE_DIR}/ext/omw/src/om_wrapper.cpp
+		${OMW_SOURCES}
 		$<TARGET_OBJECTS:shadertoy_connector>)
 	set_property(TARGET shadertoy_mathematica PROPERTY CXX_STANDARD 14)
 
@@ -121,7 +124,7 @@ find_package(Octave)
 if(Octave_FOUND OR OCTAVE_EXECUTABLE)
 	octave_add_oct(shadertoy_octave
 		SOURCES ${SRC_DIR}/api.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/ext/omw/src/om_wrapper.cpp
+		${OMW_SOURCES}
 		$<TARGET_OBJECTS:shadertoy_connector>
 		LINK_LIBRARIES ${COMMON_LIBRARIES})
 	set_property(TARGET shadertoy_octave PROPERTY CXX_STANDARD 14)
