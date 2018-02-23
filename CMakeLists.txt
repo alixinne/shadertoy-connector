@@ -38,7 +38,6 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ext/omw)
 # setup shared include directories
 include_directories(
 	${INCLUDE_DIR}
-	${OMW_INCLUDE_DIR}
 	${jsoncpp_INCLUDE_DIRS}
 	${CURL_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
@@ -64,79 +63,18 @@ set(COMMON_LIBRARIES
 	shadertoy)
 
 # Mathematica connector
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/FindMathematica/CMake/Mathematica")
-find_package(Mathematica COMPONENTS MathLink)
-if(Mathematica_FOUND)
-	set(ST_MATHEMATICA_MPREP_TARGET ${CMAKE_CURRENT_BINARY_DIR}/st_tm.c)
-	Mathematica_MathLink_MPREP_TARGET(${SRC_DIR}/mathematica/shadertoy.tm
-		OUTPUT ${ST_MATHEMATICA_MPREP_TARGET})
-
-	add_executable(shadertoy_mathematica
-		${SRC_DIR}/api.cpp
-		${ST_MATHEMATICA_MPREP_TARGET}
-		${OMW_SOURCES}
-		$<TARGET_OBJECTS:shadertoy_connector>)
-	set_property(TARGET shadertoy_mathematica PROPERTY CXX_STANDARD 14)
-
-	if(WIN32)
-		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS")
-	endif(WIN32)
-
-	# Set output name and configure kernel file
-	set(ST_MATHEMATICA_OUTPUT_NAME "StConnectorMathematica")
-
-	configure_file(${SRC_DIR}/mathematica/Shadertoy.m
-				   ${CMAKE_CURRENT_BINARY_DIR}/Shadertoy/Shadertoy.m)
-	set_property(TARGET shadertoy_mathematica PROPERTY OUTPUT_NAME ${ST_MATHEMATICA_OUTPUT_NAME})
-
-	# Add Mathematica include directory and dependencies to the built program
-	target_include_directories(shadertoy_mathematica PUBLIC ${Mathematica_MathLink_INCLUDE_DIR})
-	target_link_libraries(shadertoy_mathematica
-						  ${COMMON_LIBRARIES}
-						  ${Mathematica_MathLink_LIBRARIES})
-
-	# Make a copy of the install tree in the build directory
-	add_custom_command(TARGET shadertoy_mathematica POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_directory ${SRC_DIR}/mathematica/Kernel ${CMAKE_CURRENT_BINARY_DIR}/Shadertoy/Kernel/
-		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/Shadertoy/${Mathematica_SYSTEM_ID}/
-		COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:shadertoy_mathematica> ${CMAKE_CURRENT_BINARY_DIR}/Shadertoy/${Mathematica_SYSTEM_ID}/)
-
-	# Enable omw Mathemamtica
-	target_compile_definitions(shadertoy_mathematica PUBLIC
-		OMW_MATHEMATICA=1 OMW_INCLUDE_MAIN=1)
-
-	# Install resulting files
-	set(ST_MATH_INSTALL_DIR ${Mathematica_USERBASE_DIR}/Applications/Shadertoy)
-	install(DIRECTORY ${SRC_DIR}/mathematica/Kernel
-			DESTINATION ${ST_MATH_INSTALL_DIR}
-			COMPONENT st_mathematica)
-	install(TARGETS shadertoy_mathematica
-			DESTINATION ${ST_MATH_INSTALL_DIR}/${Mathematica_SYSTEM_ID}
-			COMPONENT st_mathematica)
-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Shadertoy/Shadertoy.m
-			DESTINATION ${ST_MATH_INSTALL_DIR}
-			COMPONENT st_mathematica)
-endif()
+omw_add_mathematica(shadertoy_mathematica
+	PACKAGE_NAME Shadertoy
+	INSTALL st_mathematica
+	MPREP_SOURCES ${SRC_DIR}/mathematica/Shadertoy.tm
+	SOURCES ${SRC_DIR}/api.cpp $<TARGET_OBJECTS:shadertoy_connector>
+	LINK_LIBRARIES ${COMMON_LIBRARIES})
 
 # Octave connector
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-find_package(Octave)
-if(Octave_FOUND OR OCTAVE_EXECUTABLE)
-	octave_add_oct(shadertoy_octave
-		SOURCES ${SRC_DIR}/api.cpp
-		${OMW_SOURCES}
-		$<TARGET_OBJECTS:shadertoy_connector>
-		LINK_LIBRARIES ${COMMON_LIBRARIES})
-	set_property(TARGET shadertoy_octave PROPERTY CXX_STANDARD 14)
-
-	# Enable omw Octave
-	target_compile_definitions(shadertoy_octave PUBLIC
-		OMW_OCTAVE=1)
-
-	install(TARGETS shadertoy_octave
-			DESTINATION ${OCTAVE_OCT_FILE_DIR}
-			COMPONENT st_octave)
-endif()
+omw_add_octave(shadertoy_octave
+	SOURCES ${SRC_DIR}/api.cpp $<TARGET_OBJECTS:shadertoy_connector>
+	LINK_LIBRARIES ${COMMON_LIBRARIES}
+	INSTALL st_octave)
 
 # C++14 for the targets
 set_property(TARGET shadertoy_connector PROPERTY CXX_STANDARD 14)
