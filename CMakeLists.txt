@@ -29,9 +29,6 @@ link_directories(${epoxy_LBIDIR})
 set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
 
-# Set link directories
-link_directories(${glfw3_LIBRARY_DIRS} ${jsoncpp_LIBRARY_DIRS})
-
 # libshadertoy
 find_package(shadertoy REQUIRED 0.1.7)
 
@@ -70,7 +67,7 @@ set(COMMON_LIBRARIES
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/FindMathematica/CMake/Mathematica")
 find_package(Mathematica COMPONENTS MathLink)
 if(Mathematica_FOUND)
-	set(ST_MATHEMATICA_MPREP_TARGET ${CMAKE_CURRENT_BINARY_DIR}/mathematica/st_tm.c)
+	set(ST_MATHEMATICA_MPREP_TARGET ${CMAKE_CURRENT_BINARY_DIR}/st_tm.c)
 	Mathematica_MathLink_MPREP_TARGET(${SRC_DIR}/mathematica/shadertoy.tm
 		OUTPUT ${ST_MATHEMATICA_MPREP_TARGET})
 
