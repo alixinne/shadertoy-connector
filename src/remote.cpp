@@ -110,9 +110,9 @@ void loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::C
 		// Create buffer configs for each render pass
 		regex rxChar("\\bchar\\b");
 
-		for (int i = 0; i < shaderSpec["Shader"]["renderpass"].size(); ++i)
+		for (size_t i = 0; i < shaderSpec["Shader"]["renderpass"].size(); ++i)
 		{
-			auto &pass(shaderSpec["Shader"]["renderpass"][i]);
+			auto &pass(shaderSpec["Shader"]["renderpass"][static_cast<int>(i)]);
 
 			// Create buffer
 			shadertoy::BufferConfig imageBuffer;
@@ -142,9 +142,9 @@ void loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::C
 			ofs.close();
 
 			// Load inputs
-			for (int j = 0; j < pass["inputs"].size(); ++j)
+			for (size_t j = 0; j < pass["inputs"].size(); ++j)
 			{
-				auto &input(pass["inputs"][j]);
+				auto &input(pass["inputs"][static_cast<int>(j)]);
 				auto &conf(imageBuffer.inputConfig[input["channel"].asInt()]);
 				auto &sampler(input["sampler"]);
 
