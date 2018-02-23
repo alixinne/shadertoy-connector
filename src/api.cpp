@@ -102,47 +102,19 @@ bool impl_st_parse_input(std::string &inputSpecName, std::string &buffer, int &c
 
 #if OMW_OCTAVE
 
-static OMWrapperOctave wrapper([]() { host.Allocate(); });
-
-// Function predeclaration
-void oct_autoload(const std::string &);
-
-// Locates the current .oct file, from https://stackoverflow.com/q/1681060
-#include <dlfcn.h>
-class oct_locator_class
-{
-	std::string _path;
-
-	public:
-	oct_locator_class()
-	{
-		Dl_info dl_info;
-		dladdr((void *)oct_autoload, &dl_info);
-		_path = std::string(dl_info.dli_fname);
-	}
-
-	inline const std::string &path() const { return _path; }
-} oct_locator_default;
-
-void oct_autoload(const std::string &fname)
-{
-	octave_value_list args;
-	args(0) = fname;
-	args(1) = oct_locator_default.path();
-
-	feval("autoload", args);
-}
+static OMWrapperOctave wrapper(reinterpret_cast<void*>(&impl_st_parse_input),
+	[]() { host.Allocate(); });
 
 DEFUN_DLD(shadertoy_octave, args, , "shadertoy_octave() initializes the shadertoy oct file")
 {
 	wrapper.CheckInitialization();
 
-	oct_autoload("st_render");
-	oct_autoload("st_reset");
-	oct_autoload("st_compile");
-	oct_autoload("st_set_input");
-	oct_autoload("st_set_input_filter");
-	oct_autoload("st_reset_input");
+	wrapper.SetAutoload("st_render");
+	wrapper.SetAutoload("st_reset");
+	wrapper.SetAutoload("st_compile");
+	wrapper.SetAutoload("st_set_input");
+	wrapper.SetAutoload("st_set_input_filter");
+	wrapper.SetAutoload("st_reset_input");
 
 	return octave_value();
 }
