@@ -5,6 +5,9 @@ project(shadertoy-connector)
 # Export compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# -Wall
+set(CMAKE_CXX_FLAGS "-Wall ${CMAKE_CXX_FLAGS}")
+
 # GL libraries
 find_package(OpenGL REQUIRED)
 find_package(Boost 1.54 REQUIRED COMPONENTS filesystem log serialization

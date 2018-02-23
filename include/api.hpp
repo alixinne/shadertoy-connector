@@ -136,9 +136,9 @@ template <typename TWrapper> void impl_st_render(TWrapper &w)
 		NDArray data(dims);
 
 		// Need to copy from float* to double*
-		for (size_t i = 0; i < image->dims[0]; ++i)
-			for (size_t j = 0; j < image->dims[1]; ++j)
-				for (size_t k = 0; k < image->dims[2]; ++k)
+		for (int i = 0; i < image->dims[0]; ++i)
+			for (int j = 0; j < image->dims[1]; ++j)
+				for (int k = 0; k < image->dims[2]; ++k)
 				{
 					size_t idx = (i * image->dims[1] + j) * image->dims[2] + k;
 					data(i, j, k) = static_cast<double>((*image->data)[idx]);
@@ -193,7 +193,7 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 
 		// Parse name
 		std::string bufferName;
-		int channelName;
+		int channelName(0);
 		impl_st_parse_input(std::get<0>(inputSpec), bufferName, channelName);
 
 		// Get depth for tests
@@ -264,7 +264,7 @@ template <typename TWrapper> void impl_st_reset_input(TWrapper &w)
 
 		// Parse name
 		std::string bufferName;
-		int channelName;
+		int channelName(0);
 		impl_st_parse_input(inputName, bufferName, channelName);
 
 		// Reset context input
@@ -281,6 +281,15 @@ template <typename TWrapper> void impl_st_set_input_filter(TWrapper &w)
 
 	// Number of defined inputs
 	long ninputs;
+
+	// Get number of inputs (Mathematica)
+	OM_MATHEMATICA(w, [&]() {
+		if (!MLCheckFunction(w.link, "List", &ninputs))
+		{
+			MLClearError(w.link);
+			throw std::runtime_error("Invalid input specification");
+		}
+	});
 
 	// Get number of inputs (Octave)
 	OM_OCTAVE(w, [&]() {
@@ -302,7 +311,7 @@ template <typename TWrapper> void impl_st_set_input_filter(TWrapper &w)
 
 		// Parse name
 		std::string bufferName;
-		int channelName;
+		int channelName(0);
 		impl_st_parse_input(std::get<0>(inputSpec), bufferName, channelName);
 
 		// Parse format
