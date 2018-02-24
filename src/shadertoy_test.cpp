@@ -2,7 +2,6 @@
 #include <sstream>
 #include <string>
 
-#include <epoxy/egl.h>
 #include <epoxy/gl.h>
 
 #include "context.hpp"
