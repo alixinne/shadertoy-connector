@@ -62,7 +62,7 @@ auto st_wrapper_exec(TWrapper &wrapper, std::function<void(TWrapper &)> fun, Ext
 {
 	wrapper.CheckInitialization();
 
-	return wrapper.template RunFunction(args..., [&fun](TWrapper &wrapper) {
+	return wrapper.RunFunction(args..., [&fun](TWrapper &wrapper) {
 		st_wrapper_internal(wrapper, fun);
 	});
 }
