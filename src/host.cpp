@@ -1,6 +1,8 @@
 #include <sstream>
 #include <stdexcept>
 
+#include "getpid.h"
+
 #include "context.hpp"
 #include "host.hpp"
 #include "remote.hpp"

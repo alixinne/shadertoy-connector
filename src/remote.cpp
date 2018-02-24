@@ -11,6 +11,8 @@
 
 #include <epoxy/gl.h>
 
+#include "getpid.h"
+
 #include "remote.hpp"
 
 using namespace std;

@@ -92,3 +92,13 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+
+#ifdef _MSC_VER
+#include <Windows.h>
+
+int WinMain(HINSTANCE hinstCurrent, HINSTANCE hinstPrevious, LPSTR lpszCmdLine, int nCmdShow)
+{
+	return main(0, NULL);
+}
+
+#endif
