@@ -280,9 +280,9 @@ DEFUN_DLD(st_set_input, args, nargout,
 						{
 							size_t idx = (i * im.dims[1] + j) * im.dims[2] + k;
 							if (d == 3)
-								(*im.data)[idx] = static_cast<float>(img(i, j, k));
+								(*im.data)[idx] = static_cast<float>(img((im.dims[0] - i - 1), j, k));
 							else
-								(*im.data)[idx] = static_cast<float>(img(i, j));
+								(*im.data)[idx] = static_cast<float>(img((im.dims[0] - i - 1), j));
 						}
 
 				// Set input
