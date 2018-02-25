@@ -20,7 +20,7 @@ m(:,:,3) = 100*mb;
 m(:,:,4) = 1000*mb;
 ctxt = st_compile("$shader");
 st_set_input(ctxt, "image.0", m);
-img = st_render(ctxt, 0, 3, 2, 'RGBA');
+img = st_render(ctxt, 0, 3, 2, 'rgba');
 disp("m")
 disp(m)
 disp("img")

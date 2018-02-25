@@ -12,7 +12,7 @@ GLSL
 $shader =~ s/\n//g;
 
 octave_ok 'RGBA format', <<OCTAVE_CODE;
-img = st_render(st_compile("$shader"), 0, 2, 2, 'RGBA');
+img = st_render(st_compile("$shader"), 0, 2, 2, 'rgba');
 exit(ifelse(all(diag(img(1,1,:)(:) == [0.0 2.0 0.5 1.5])),0,2))
 OCTAVE_CODE
 
@@ -22,7 +22,7 @@ Assert[img[[1, 1]] == {0.0, 2.0, 0.5, 1.5}]
 MATHEMATICA_CODE
 
 octave_ok 'RGB format', <<OCTAVE_CODE;
-img = st_render(st_compile("$shader"), 0, 2, 2, 'RGB');
+img = st_render(st_compile("$shader"), 0, 2, 2, 'rgb');
 exit(ifelse(all(diag(img(1,1,:)(:) == [0.0 2.0 0.5])),0,2))
 OCTAVE_CODE
 
@@ -32,7 +32,7 @@ Assert[img[[1, 1]] == {0.0, 2.0, 0.5}]
 MATHEMATICA_CODE
 
 octave_ok 'Luminance format', <<OCTAVE_CODE;
-img = st_render(st_compile("$shader"), 0, 2, 2, 'Luminance');
+img = st_render(st_compile("$shader"), 0, 2, 2, 'luminance');
 exit(ifelse(all(diag(img(1,1,1)(:) == [0.0])),0,2))
 OCTAVE_CODE
 
