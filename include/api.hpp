@@ -99,13 +99,15 @@ template <typename TWrapper> void impl_st_render(TWrapper &w)
 	auto height(w.template GetOptionalParam<int>(3, "Height").get_value_or(360));
 
 	auto formatName(w.template GetOptionalParam<std::string>(4, "Format").get_value_or("RGBA"));
+	std::transform(formatName.begin(), formatName.end(),
+		formatName.begin(), ::tolower);
 	GLenum format;
 
-	if (formatName.compare("RGBA") == 0)
+	if (formatName.compare("rgba") == 0)
 		format = GL_RGBA;
-	else if (formatName.compare("RGB") == 0)
+	else if (formatName.compare("rgb") == 0)
 		format = GL_RGB;
-	else if (formatName.compare("Luminance") == 0)
+	else if (formatName.compare("luminance") == 0)
 		format = GL_LUMINANCE;
 	else
 		throw std::runtime_error("Invalid Format parameter");
@@ -316,13 +318,15 @@ template <typename TWrapper> void impl_st_set_input_filter(TWrapper &w)
 
 		// Parse format
 		auto filterMethod(std::get<1>(inputSpec));
+		std::transform(filterMethod.begin(), filterMethod.end(),
+			filterMethod.begin(), ::tolower);
 		GLint minFilter;
 
-		if (filterMethod.compare("Linear") == 0)
+		if (filterMethod.compare("linear") == 0)
 			minFilter = GL_LINEAR;
-		else if (filterMethod.compare("Nearest") == 0)
+		else if (filterMethod.compare("nearest") == 0)
 			minFilter = GL_NEAREST;
-		else if (filterMethod.compare("Mipmap") == 0)
+		else if (filterMethod.compare("mipmap") == 0)
 			minFilter = GL_LINEAR_MIPMAP_LINEAR;
 		else
 		{

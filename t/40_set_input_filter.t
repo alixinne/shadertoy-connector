@@ -15,10 +15,10 @@ octave_ok 'Passthrough texture test', <<OCTAVE_CODE;
 m = [0 1];
 ctxt = st_compile("$shader");
 st_set_input(ctxt, "image.0", m);
-st_set_input_filter(ctxt, "image.0", "Linear");
-imgl = st_render(ctxt, 0, 1, 1, 'Luminance');
-st_set_input_filter(ctxt, "image.0", "Nearest");
-imgn = st_render(ctxt, 0, 1, 1, 'Luminance');
+st_set_input_filter(ctxt, "image.0", "linear");
+imgl = st_render(ctxt, 0, 1, 1, 'luminance');
+st_set_input_filter(ctxt, "image.0", "nearest");
+imgn = st_render(ctxt, 0, 1, 1, 'luminance');
 disp("imgl")
 disp(imgl)
 disp("imgn")
