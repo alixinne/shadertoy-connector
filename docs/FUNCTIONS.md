@@ -9,7 +9,7 @@
 - [st_set_input: Set input texture](#st_set_input-set-input-texture)   
 - [st_set_input_filter: Set input texture filter](#st_set_input_filter-set-input-texture-filter)   
 - [st_reset_input: Reset input texture](#st_reset_input-reset-input-texture)   
-- [st_reset: Reset all inputs](#st_reset-reset-all-inputs)   
+- [st_reset: Reset context](#st_reset-reset-context)   
 
 <!-- /MDTOC -->
 
@@ -249,7 +249,7 @@ defaults specified on the shadertoy.com website.
 
 None.
 
-## st_reset: Reset all inputs
+## st_reset: Reset context
 
 ### Synopsis
 
@@ -263,10 +263,8 @@ st_reset(ctxt);
 
 ### Description
 
-When used with a remote context, resets the input properties of all defined
-inputs. This has the same effect as calling
-[st_reset_input/ResetShadertoyInput](#st_reset_input-reset-input-texture) on all
-inputs defined on the shadertoy.com website.
+When used with a remote context, clears all cached state. The next call
+using this context id will reload the context from shadertoy.com.
 
 ### Arguments
 
