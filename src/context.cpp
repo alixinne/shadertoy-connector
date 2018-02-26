@@ -106,12 +106,15 @@ void StContext::performRender(GLFWwindow *window, int frameCount, int width, int
 	currentImage.frameTiming = context->GetBufferByName()->GetElapsedTime();
 }
 
-void StContext::setInput(const string &buffer, int channel, StImage &image)
+void StContext::setInput(const std::string &buffer, int channel, const boost::variant<std::string, StImage> &data)
 {
 	auto &bufferOverrides(getBufferInputOverrides(buffer));
 
-	// Changed flag will propagate to the instance in the map
-	image.changed = true;
+	if (const StImage *img = boost::get<const StImage>(&data))
+	{
+		// Changed flag will propagate to the instance in the map
+		const_cast<StImage*>(img)->changed = true;
+	}
 
 	// Override channel for this buffer
 	auto it = bufferOverrides.find(channel);
@@ -144,13 +147,13 @@ void StContext::setInput(const string &buffer, int channel, StImage &image)
 		}
 
 		// New override, reload config required
-		bufferOverrides.insert(make_pair(channel, image));
+		bufferOverrides.insert(make_pair(channel, data));
 		reloadInputConfig = true;
 	}
 	else
 	{
 		// Override already exists, do not reload config
-		bufferOverrides[channel] = image;
+		bufferOverrides[channel] = data;
 	}
 }
 
@@ -255,7 +258,7 @@ void StContext::createContext(shadertoy::ContextConfig &config)
 	context->GetTextureEngine().RegisterHandler("data-buffer", handler);
 }
 
-map<int, StImage> &StContext::getBufferInputOverrides(const string &buffer)
+StContext::BufferOverrideMap &StContext::getBufferInputOverrides(const string &buffer)
 {
 	auto it = inputOverrides.find(buffer);
 	if (it == inputOverrides.end())
@@ -268,7 +271,7 @@ map<int, StImage> &StContext::getBufferInputOverrides(const string &buffer)
 			throw runtime_error(ss.str());
 		}
 
-		inputOverrides.insert(make_pair(buffer, map<int, StImage>()));
+		inputOverrides.insert(make_pair(buffer, BufferOverrideMap()));
 		it = inputOverrides.find(buffer);
 	}
 
@@ -283,26 +286,40 @@ StContext::DataTextureHandler(const shadertoy::InputConfig &inputConfig, bool &s
 	framebufferSized = false;
 
 	// Get the texture object
-	auto texPtr(getDataTexture(inputConfig.id));
+	shared_ptr<shadertoy::OpenGL::Texture> texPtr;
 
 	// Find the override texture
 	string bufferName(inputConfig.id.begin(), inputConfig.id.begin() + inputConfig.id.find('.')),
 	inputName(inputConfig.id.begin() + inputConfig.id.find('.') + 1, inputConfig.id.end());
 	int channel = atoi(inputName.c_str());
 
-	StImage &img(getBufferInputOverrides(bufferName)[channel]);
+	boost::variant<std::string, StImage> &data(getBufferInputOverrides(bufferName)[channel]);
 
-	if (img.changed)
+	if (std::string *bufferName = boost::get<std::string>(&data))
 	{
-		// Get the format of this image
-		GLint fmt(depthFormat(img.dims[2]));
+		auto bufPtr = context->GetBufferByName(*bufferName);
+		
+		if (bufPtr)
+			texPtr = bufPtr->GetSourceTexture();
+	}
+	else
+	{
+		auto &img(boost::get<StImage>(data));
 
-		// Load into OpenGL
-		texPtr->Image2D(GL_TEXTURE_2D, 0, GL_RGBA32F, img.dims[1], img.dims[0], 0, fmt, GL_FLOAT,
-						img.data->data());
+		texPtr = getDataTexture(inputConfig.id);
 
-		// Reset flag
-		img.changed = false;
+		if (img.changed)
+		{
+			// Get the format of this image
+			GLint fmt(depthFormat(img.dims[2]));
+
+			// Load into OpenGL
+			texPtr->Image2D(GL_TEXTURE_2D, 0, GL_RGBA32F, img.dims[1], img.dims[0], 0, fmt, GL_FLOAT,
+							img.data->data());
+
+			// Reset flag
+			img.changed = false;
+		}
 	}
 
 	return texPtr;
