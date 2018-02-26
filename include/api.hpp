@@ -191,46 +191,59 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 	for (long n = 0; n < ninputs; ++n)
 	{
 		// Get <name, image> tuple
-		auto inputSpec(w.template GetParam<std::tuple<std::string, std::shared_ptr<OMMatrix<float>>>>(tupleSize * n + 1, "InputSpec"));
+		auto inputSpec(w.template GetParam<std::tuple<std::string, boost::variant<std::string, std::shared_ptr<OMMatrix<float>>>>>(tupleSize * n + 1, "InputSpec"));
 
 		// Parse name
 		std::string bufferName;
 		int channelName(0);
 		impl_st_parse_input(std::get<0>(inputSpec), bufferName, channelName);
 
-		// Get depth for tests
-		int d = std::get<1>(inputSpec)->depth();
+		// Get the input value
+		auto inputValue(std::get<1>(inputSpec));
 
-		// Check dimensions
-		if (d <= 1 || d > 3)
+		if (std::string *inputBufferName = boost::get<std::string>(&inputValue))
 		{
-			std::stringstream ss;
-			ss << "Invalid number of dimensions for " << std::get<0>(inputSpec)
-			   << ". Must be 2 or 3";
-			throw std::runtime_error(ss.str());
+			std::transform(inputBufferName->begin(), inputBufferName->end(),
+				inputBufferName->begin(), ::tolower);
+			context->setInput(bufferName, channelName, boost::variant<std::string, StImage>(*inputBufferName));
 		}
-
-		// Move image data in StImage structure
-		StImage img;
-		img.dims[0] = std::get<1>(inputSpec)->dims()[0];
-		img.dims[1] = std::get<1>(inputSpec)->dims()[1];
-		if (d == 3)
-			img.dims[2] = std::get<1>(inputSpec)->dims()[2];
 		else
-			img.dims[2] = 1;
-		img.data = std::make_shared<std::vector<float>>(img.dims[0] * img.dims[1] * img.dims[2]);
-
-		// Copy data, vflip
-		size_t stride_size = sizeof(float) * img.dims[1] * img.dims[2];
-		for (int i = 0; i < img.dims[0]; ++i)
 		{
-			memcpy(&img.data->data()[i * stride_size / sizeof(float)],
-				   &std::get<1>(inputSpec)->data()[(img.dims[0] - i - 1) * stride_size / sizeof(float)],
-				   stride_size);
-		}
+			// Get depth for tests
+			auto imageValue(boost::get<std::shared_ptr<OMMatrix<float>>>(inputValue));
+			int d = imageValue->depth();
 
-		// Set context input
-		context->setInput(bufferName, channelName, img);
+			// Check dimensions
+			if (d <= 1 || d > 3)
+			{
+				std::stringstream ss;
+				ss << "Invalid number of dimensions for " << std::get<0>(inputSpec)
+				   << ". Must be 2 or 3";
+				throw std::runtime_error(ss.str());
+			}
+
+			// Move image data in StImage structure
+			StImage img;
+			img.dims[0] = imageValue->dims()[0];
+			img.dims[1] = imageValue->dims()[1];
+			if (d == 3)
+				img.dims[2] = imageValue->dims()[2];
+			else
+				img.dims[2] = 1;
+			img.data = std::make_shared<std::vector<float>>(img.dims[0] * img.dims[1] * img.dims[2]);
+
+			// Copy data, vflip
+			size_t stride_size = sizeof(float) * img.dims[1] * img.dims[2];
+			for (int i = 0; i < img.dims[0]; ++i)
+			{
+				memcpy(&img.data->data()[i * stride_size / sizeof(float)],
+					   &imageValue->data()[(img.dims[0] - i - 1) * stride_size / sizeof(float)],
+					   stride_size);
+			}
+
+			// Set context input
+			context->setInput(bufferName, channelName, img);
+		}
 	}
 }
 

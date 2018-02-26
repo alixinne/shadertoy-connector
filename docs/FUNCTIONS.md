@@ -148,11 +148,11 @@ shader invocation, in seconds. The second element will be the rendered image.
 ```
 (* Mathematica *)
 input1 = ExampleData[{"TestImage", "Lena"}];
-SetShadertoyInput[ctxt, "image.0" -> input1, "a.0" -> input1];
+SetShadertoyInput[ctxt, "image.0" -> "a", "a.0" -> input1];
 
 % Octave
 input1 = imread("lena512.png");
-st_set_input(ctxt, "image.0", input1, "a.0", input1);
+st_set_input(ctxt, "image.0", "a", "a.0", input1);
 ```
 
 ### Description
@@ -174,6 +174,10 @@ one of the buffers defined in the context named `ctxt`, and `channel` is in the
 inclusive range 0-3. `InputImage` must be a gray-level, RGB or RGBA image
 object. `InputMatrix` must be a HxWxD matrix representing either a gray-level,
 RGB or RGBA image.
+* *(may occur many times)* `InputName -> BufferName` (Mathematica) or
+`InputName, BufferName` (Octave): Sets the texture to use for the input named
+`InputName`. `InputName` is defined as above. `BufferName` is the name of one
+of the buffers defined in the context `ctxt`.
 
 ### Return value
 
