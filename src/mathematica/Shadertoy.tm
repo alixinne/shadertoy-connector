@@ -43,12 +43,12 @@ void st_set_input P(( ));
 :Begin:
 :Function:      st_set_input
 :Pattern:       SetShadertoyInput[id_String, inputs__Rule]
-:Arguments:     { id, Map[{#[[1]], ImageData[#[[2]]]} &, List[inputs]] }
+:Arguments:     { id, Map[{#[[1]], If[StringQ[#[[2]]], #[[2]], ImageData[#[[2]]]]} &, List[inputs]] }
 :ArgumentTypes: { Manual }
 :ReturnType:    Manual
 :End:
 
-:Evaluate: SetShadertoyInput::usage = "SetShadertoyInput[id, input -> image] sets the input 'input' of the Shadertoy context 'id' to 'image'";
+:Evaluate: SetShadertoyInput::usage = "SetShadertoyInput[id, input -> image|\"buffer\"] sets the input 'input' of the Shadertoy context 'id' to 'image' or to the output of the named buffer \"buffer\"";
 
 void st_set_input_filter P(( ));
 
