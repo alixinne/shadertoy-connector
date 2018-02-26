@@ -66,17 +66,28 @@ None
 ```
 (* Mathematica *)
 code = "void mainImage(out vec4 O, in vec2 U){O = U.xyxy;}";
-ctxt = CompileShadertoy[code];
+ctxta = CompileShadertoy[code];
+
+codeImage = "void mainImage(out vec4 O, in vec2 U){O = texelFetch(iChannel0, ivec2(U-.5), 0);}";
+ctxtb = CompileShadertoy[codeImage, "a" -> code];
 
 % Octave
 code = 'void mainImage(out vec4 O, in vec2 U){O = U.xyxy;}';
-ctxt = st_compile(code);
+ctxta = st_compile(code);
+
+code_image = "void mainImage(out vec4 O, in vec2 U){O = texelFetch(iChannel0, ivec2(U-.5), 0);}";
+ctxtb = st_compile(code_image, 'a', code);
 ```
 
 ### Description
 
-Compiles a fragment shader as if it was the code for the image buffer of a
-Shadertoy context. The return value is the identifier for the rendering context.
+Compiles one or more fragment shaders as if they were the code for the buffers of
+a Shadertoy context. The return value is the identifier for the built rendering
+context.
+
+Only the code for the image buffer is required. Other buffer definitions will be
+rendered before the image buffer, in the order they were defined in the call to
+`st_compile/CompileShadertoy`.
 
 Any GLSL compilation errors will be output to the standard output (Octave) or as
 error messages (Mathematica).
@@ -84,6 +95,11 @@ error messages (Mathematica).
 ### Arguments
 
 * `code`: GLSL fragment shader to compile, with mainImage as its entry point
+* *(may occur 0 or more times)* `BufferName -> Source` (Mathematica) or
+`BufferName, Source` (Octave): GLSL fragment shader to compile and render
+as an extra buffer named `BufferName`. The buffer can be used as an input
+using the [st_set_input/SetShadertoyInput](#st_set_input-set-input-texture)
+function.
 
 ### Return value
 
