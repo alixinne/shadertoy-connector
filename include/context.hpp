@@ -76,9 +76,9 @@ struct StContext
 	 *
 	 * @param buffer   Name of the buffer to change the inputs
 	 * @param channel  Channel id (0 to 3) of the input to change
-	 * @param image    Image data to feed to the channel
+	 * @param data     Image data (or buffer name) to feed to the channel
 	 */
-	void setInput(const std::string &buffer, int channel, StImage &image);
+	void setInput(const std::string &buffer, int channel, const boost::variant<std::string, StImage> &data);
 
 	/**
 	 * Sets the filter for a given input.
@@ -124,15 +124,17 @@ struct StContext
 	 */
 	void createContext(shadertoy::ContextConfig &config);
 
+	typedef std::map<int, boost::variant<std::string, StImage>> BufferOverrideMap;
+
 	/**
 	 * Gets the map of input overrides for a given buffer.
 	 *
 	 * @param buffer Name of the buffer to get the overrides for.
 	 */
-	std::map<int, StImage> &getBufferInputOverrides(const std::string &buffer);
+	BufferOverrideMap &getBufferInputOverrides(const std::string &buffer);
 
 	/// Input override map
-	std::map<std::string, std::map<int, StImage>> inputOverrides;
+	std::map<std::string, BufferOverrideMap> inputOverrides;
 
 	/// Data texture handler
 	std::shared_ptr<shadertoy::OpenGL::Texture>
