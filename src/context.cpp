@@ -21,13 +21,14 @@ StContext::StContext(const std::string &shaderId, int width, int height)
 	createContext(config);
 }
 
-StContext::StContext(const std::string &shaderId, const std::string &source, int width, int height)
+StContext::StContext(const std::string &shaderId,
+					 const std::map<std::string, std::string> &bufferSources, int width, int height)
 : shaderId(shaderId), config(), context(), frameCount(0), reloadInputConfig(false)
 {
 	initialize(shaderId, width, height);
 
 	// Load the shader from a locally created file
-	loadLocal(shaderId, source, config);
+	loadLocal(shaderId, bufferSources, config);
 
 	createContext(config);
 }

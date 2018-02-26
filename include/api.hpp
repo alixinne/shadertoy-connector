@@ -71,13 +71,62 @@ std::string mathematica_unescape(const std::string &source);
 
 template <typename TWrapper> void impl_st_compile(TWrapper &w)
 {
+	// Image buffer source
 	std::string source(w.template GetParam<std::string>(0, "code"));
 
-	OM_MATHEMATICA(w, [&source]() {
-		source = mathematica_unescape(source);
+	// Unescape image buffer source
+	OM_MATHEMATICA(w, [&source]() { source = mathematica_unescape(source); });
+
+	// Fetch sources for extra buffers
+	long nbuffers;
+
+	// Get number of buffer sources (Mathematica)
+	OM_MATHEMATICA(w, [&]() {
+		if (!MLCheckFunction(w.link, "List", &nbuffers))
+		{
+			MLClearError(w.link);
+			throw std::runtime_error("Invalid buffer source specification");
+		}
 	});
 
-	std::string shaderId(host.CreateLocal(source));
+	// Get number of buffer sources (Octave)
+	OM_OCTAVE(w, [&]() { nbuffers = (w.Args().length() - 1) / 2; });
+
+	// Get size of fetched tuples
+	int tupleSize = 1;
+	OM_OCTAVE(w, [&]() { tupleSize = 2; });
+
+	// Map of buffer sources
+	std::map<std::string, std::string> bufferSources;
+	bufferSources.insert(std::make_pair(std::string("image"), source));
+
+	for (long n = 0; n < nbuffers; ++n)
+	{
+		auto bufferSpec(w.template GetParam<std::tuple<std::string, std::string>>(tupleSize * n + 1, "BufferSpec"));
+
+		// Lowercase buffer name
+		std::string bufferName(std::get<0>(bufferSpec));
+		std::transform(bufferName.begin(), bufferName.end(), bufferName.begin(), ::tolower);
+
+		// Unescape extra buffer source
+		OM_MATHEMATICA(w, [&]() {
+			std::get<1>(bufferSpec) = mathematica_unescape(std::get<1>(bufferSpec));
+		});
+
+		// Check for duplicates
+		auto it = bufferSources.find(bufferName);
+		if (it != bufferSources.end())
+		{
+			std::stringstream ss;
+			ss << "Duplicate buffer name " << bufferName;
+			throw std::runtime_error(ss.str());
+		}
+
+		bufferSources.insert(std::make_pair<std::string, std::string>(std::move(bufferName),
+																	  std::move(std::get<1>(bufferSpec))));
+	}
+
+	std::string shaderId(host.CreateLocal(bufferSources));
 
 	OM_RESULT_MATHEMATICA(w, [&]() { MLPutString(w.link, shaderId.c_str()); });
 

@@ -27,13 +27,13 @@ void st_compile P(( ));
 
 :Begin:
 :Function:      st_compile
-:Pattern:       CompileShadertoy[source_String]
-:Arguments:     { source }
+:Pattern:       CompileShadertoy[source_String, buffers__Rule | PatternSequence[]]
+:Arguments:     { source, Map[{#[[1]], #[[2]]} &, List[buffers]] }
 :ArgumentTypes: { Manual }
 :ReturnType:    Manual
 :End:
 
-:Evaluate: CompileShadertoy::usage = "CompileShadertoy[source] compiles source as a Shadertoy and returns its id";
+:Evaluate: CompileShadertoy::usage = "CompileShadertoy[source, \"a\" -> sourceA] compiles source as a Shadertoy and returns its id";
 
 :Evaluate: Shadertoy::glerr = "OpenGL error: `1`";
 :Evaluate: Shadertoy::err = "Error: `1`";
