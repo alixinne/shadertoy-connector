@@ -93,12 +93,12 @@ template <typename TWrapper> void impl_st_render(TWrapper &w)
 {
 	auto id(w.template GetParam<std::string>(0, "ctxt"));
 
-	auto frameCount(w.template GetOptionalParam<int>(1, "Frame"));
+	auto frameCount(w.template GetParam<boost::optional<int>>(1, "Frame"));
 
-	auto width(w.template GetOptionalParam<int>(2, "Width").get_value_or(640));
-	auto height(w.template GetOptionalParam<int>(3, "Height").get_value_or(360));
+	auto width(w.template GetParam<boost::optional<int>>(2, "Width").get_value_or(640));
+	auto height(w.template GetParam<boost::optional<int>>(3, "Height").get_value_or(360));
 
-	auto formatName(w.template GetOptionalParam<std::string>(4, "Format").get_value_or("RGBA"));
+	auto formatName(w.template GetParam<boost::optional<std::string>>(4, "Format").get_value_or("RGBA"));
 	std::transform(formatName.begin(), formatName.end(),
 		formatName.begin(), ::tolower);
 	GLenum format;
@@ -112,10 +112,10 @@ template <typename TWrapper> void impl_st_render(TWrapper &w)
 	else
 		throw std::runtime_error("Invalid Format parameter");
 
-	auto mouse(w.template GetOptionalParam<std::shared_ptr<OMArray<float>>>(5, "Mouse")
-			   .get_value_or(OMArray<float>::from_vector(4, 0.f)));
+	auto mouse(w.template GetParam<boost::optional<std::shared_ptr<OMArray<float>>>>(5, "Mouse")
+		.get_value_or(OMArray<float>::from_vector(4, 0.f)));
 
-	auto doFrameTiming(w.template GetOptionalParam<bool>(6, "FrameTiming").get_value_or(false));
+	auto doFrameTiming(w.template GetParam<boost::optional<bool>>(6, "FrameTiming").get_value_or(false));
 
 	auto image(host.Render(id, frameCount, width, height, mouse->data(), format));
 
@@ -191,7 +191,7 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 	for (long n = 0; n < ninputs; ++n)
 	{
 		// Get <name, image> tuple
-		auto inputSpec(w.template GetParam<std::string, std::shared_ptr<OMMatrix<float>>>(tupleSize * n + 1, "InputSpec"));
+		auto inputSpec(w.template GetParam<std::tuple<std::string, std::shared_ptr<OMMatrix<float>>>>(tupleSize * n + 1, "InputSpec"));
 
 		// Parse name
 		std::string bufferName;
@@ -308,8 +308,7 @@ template <typename TWrapper> void impl_st_set_input_filter(TWrapper &w)
 	for (long n = 0; n < ninputs; ++n)
 	{
 		// Get <name, image> tuple
-		auto inputSpec(
-		w.template GetParam<std::string, std::string>(tupleSize * n + 1, "InputSpec"));
+		auto inputSpec(w.template GetParam<std::tuple<std::string, std::string>>(tupleSize * n + 1, "InputSpec"));
 
 		// Parse name
 		std::string bufferName;
