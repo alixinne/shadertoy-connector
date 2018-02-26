@@ -157,7 +157,8 @@ OM_DEFUN(st_render, "st_render('id', [frame, [width, [height, [format, [mouse, [
 
 OM_DEFUN(st_reset, "st_reset('id') resets a context")
 
-OM_DEFUN(st_compile, "st_compile('source') compiles the source of a program and returns its id for st_render")
+OM_DEFUN(st_compile, "st_compile('source', 'a', 'sourceA') compiles the source of a program and "
+					 "returns its id for st_render")
 
 OM_DEFUN(st_set_input, "st_set_input('id', 'image.0', matrix1[, 'image.1', matrix2[, ...]]])")
 

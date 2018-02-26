@@ -50,14 +50,19 @@ struct StContext
 	StContext(const std::string &shaderId, int width, int height);
 
 	/**
-	 * Builds a single-buffer rendering context from source.
+	 * Builds a multi-buffer rendering context from source.
 	 *
-	 * @param shaderId Identifier for this rendering context.
-	 * @param source   Source contents for the file to render.
-	 * @param width    Initial width of the rendering context.
-	 * @param height   Initial height of the rendering context.
+	 * @param shaderId      Identifier for this rendering context.
+	 * @param bufferSources Source for all of the buffers to render. The image
+	 *                      buffer must be present.
+	 * @param width         Initial width of the rendering context.
+	 * @param height        Initial height of the rendering context.
+	 * @throws std::runtime_error If an error occurs during the construction of
+	 *                            the local context, or if the image buffer is
+	 *                            missing from the definition.
 	 */
-	StContext(const std::string &shaderId, const std::string &source, int width, int height);
+	StContext(const std::string &shaderId, const std::map<std::string, std::string> &bufferSources,
+			  int width, int height);
 
 	/**
 	 * Renders the next frame of this Shadertoy into the currentImage field.

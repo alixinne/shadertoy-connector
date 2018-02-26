@@ -115,7 +115,7 @@ void Host::Reset(const string &id)
 	st_contexts.erase(id);
 }
 
-string Host::CreateLocal(const string &source)
+string Host::CreateLocal(const map<string, string> &bufferSources)
 {
 	// Ensure we are in the right context
 	glfwMakeContextCurrent(st_window);
@@ -126,7 +126,7 @@ string Host::CreateLocal(const string &source)
 	string shaderId(name.str());
 
 	// Create local context
-	NewContext(shaderId, source);
+	NewContext(shaderId, bufferSources);
 
 	return shaderId;
 }

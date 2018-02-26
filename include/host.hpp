@@ -56,10 +56,11 @@ class Host
 	/**
 	 * Create a new local context from the give source code.
 	 *
-	 * @param  source Source of the main program for this context.
+	 * @param  bufferSources Sources for all the buffers of the local context to create. An "image"
+	 * buffer must be present.
 	 * @return        Unique identifier for this context.
 	 */
-	std::string CreateLocal(const std::string &source);
+	std::string CreateLocal(const std::map<std::string, std::string> &bufferSources);
 
 	/**
 	 * Get or allocate a new remote context. Throws if no local context exists
