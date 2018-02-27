@@ -57,8 +57,8 @@ $ cmake ..
 # Build
 $ make -j8
 
-# Install the Mathematica package in the user directory
-$ cmake -DCOMPONENT=st_mathematica -P cmake_install.cmake
+# Install the Mathematica package in the system directory
+$ sudo cmake -DCOMPONENT=st_mathematica -P cmake_install.cmake
 ```
 
 ### Building the Octave package
