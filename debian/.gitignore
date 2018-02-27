@@ -1,0 +1,8 @@
+*.ex
+*.log
+*.substvars
+shadertoy-connector-octave/
+shadertoy-connector-mathematica/
+tmp/
+debhelper-build-stamp
+files
