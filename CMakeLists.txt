@@ -5,9 +5,6 @@ project(shadertoy-connector)
 # Export compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# -Wall
-set(CMAKE_CXX_FLAGS "-Wall ${CMAKE_CXX_FLAGS}")
-
 # GL libraries
 find_package(OpenGL REQUIRED)
 find_package(Boost 1.54 REQUIRED COMPONENTS filesystem log serialization
@@ -68,19 +65,24 @@ omw_add_mathematica(shadertoy_mathematica
 	INSTALL st_mathematica
 	MPREP_SOURCES ${SRC_DIR}/mathematica/Shadertoy.tm
 	SOURCES ${SRC_DIR}/api.cpp $<TARGET_OBJECTS:shadertoy_connector>
-	LINK_LIBRARIES ${COMMON_LIBRARIES})
+	LINK_LIBRARIES ${COMMON_LIBRARIES}
+	COMPILE_OPTIONS "-Wall")
 
 # Octave connector
 omw_add_octave(shadertoy_octave
 	SOURCES ${SRC_DIR}/api.cpp $<TARGET_OBJECTS:shadertoy_connector>
 	LINK_LIBRARIES ${COMMON_LIBRARIES}
-	INSTALL st_octave)
+	INSTALL st_octave
+	COMPILE_OPTIONS "-Wall")
 
 # C++14 for the targets
 set_property(TARGET shadertoy_connector PROPERTY CXX_STANDARD 14)
 
 # Required
 set_property(TARGET shadertoy_connector PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+# Set -Wall for connector
+target_compile_options(shadertoy_connector PRIVATE "-Wall")
 
 # Test procedures
 enable_testing()
