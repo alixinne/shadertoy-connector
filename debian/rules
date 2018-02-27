@@ -13,6 +13,8 @@
 # package maintainers to append LDFLAGS
 #export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
+BUILD_OCTAVE := $(shell hash octave-config 2>/dev/null && echo -n 1 || echo -n 0)
+BUILD_MATHEMATICA := $(shell PATH="$$PATH:/usr/local/bin" hash math 2>/dev/null && echo -n 1 || echo -n 0)
 
 %:
 	dh $@ --buildsystem=cmake --parallel
@@ -21,16 +23,42 @@
 # dh_make generated override targets
 # This is example for Cmake (See https://bugs.debian.org/641051 )
 override_dh_auto_configure:
-	dh_auto_configure -- -DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH)
+	dh_auto_configure -- -DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH) \
+		-DST_BUILD_MATHEMATICA=$(BUILD_MATHEMATICA) -DST_BUILD_OCTAVE=$(BUILD_OCTAVE)
 
 override_dh_auto_clean:
 	rm -rf obj-$(DEB_HOST_MULTIARCH)/*
 
+override_dh_install:
+ifeq ($(BUILD_OCTAVE),1)
+	dh_install -pshadertoy-connector-octave
+endif
+ifeq ($(BUILD_MATHEMATICA),1)
+	dh_install -pshadertoy-connector-mathematica
+endif
+
+override_dh_builddeb:
+ifeq ($(BUILD_OCTAVE),1)
+	dh_builddeb -pshadertoy-connector-octave
+endif
+ifeq ($(BUILD_MATHEMATICA),1)
+	dh_builddeb -pshadertoy-connector-mathematica
+endif
+
 override_dh_shlibdeps:
+ifeq ($(BUILD_OCTAVE),1)
 	dpkg-shlibdeps -Tdebian/shadertoy-connector-octave.substvars \
 		debian/tmp/usr/lib/*/octave/*/oct/*/shadertoy_octave.oct
+endif
+ifeq ($(BUILD_MATHEMATICA),1)
 	dpkg-shlibdeps -Tdebian/shadertoy-connector-mathematica.substvars \
 		debian/tmp/usr/share/Mathematica/Applications/Shadertoy/*/shadertoy_mathematica
+endif
 
 override_dh_gencontrol:
-	dh_gencontrol -- -Voctave:Version=$(shell dpkg --list octave | awk '/^ii/{print $$3}')
+ifeq ($(BUILD_OCTAVE),1)
+	dh_gencontrol -pshadertoy-connector-octave -- -Voctave:Version=$(shell dpkg --list octave | awk '/^ii/{print $$3}')
+endif
+ifeq ($(BUILD_MATHEMATICA),1)
+	dh_gencontrol -pshadertoy-connector-mathematica
+endif

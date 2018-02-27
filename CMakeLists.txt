@@ -61,21 +61,28 @@ set(COMMON_LIBRARIES
 	${jsoncpp_LIBRARIES}
 	shadertoy)
 
+option(ST_BUILD_MATHEMATICA "Build the Mathematica target" ON)
+option(ST_BUILD_OCTAVE "Build the Octave target" ON)
+
 # Mathematica connector
-omw_add_mathematica(shadertoy_mathematica
-	PACKAGE_NAME Shadertoy
-	INSTALL st_mathematica
-	MPREP_SOURCES ${SRC_DIR}/mathematica/Shadertoy.tm
-	SOURCES ${SRC_DIR}/api.cpp $<TARGET_OBJECTS:shadertoy_connector>
-	LINK_LIBRARIES ${COMMON_LIBRARIES}
-	COMPILE_OPTIONS "-Wall")
+if(ST_BUILD_MATHEMATICA)
+	omw_add_mathematica(shadertoy_mathematica
+		PACKAGE_NAME Shadertoy
+		INSTALL st_mathematica
+		MPREP_SOURCES ${SRC_DIR}/mathematica/Shadertoy.tm
+		SOURCES ${SRC_DIR}/api.cpp $<TARGET_OBJECTS:shadertoy_connector>
+		LINK_LIBRARIES ${COMMON_LIBRARIES}
+		COMPILE_OPTIONS "-Wall")
+endif()
 
 # Octave connector
-omw_add_octave(shadertoy_octave
-	SOURCES ${SRC_DIR}/api.cpp $<TARGET_OBJECTS:shadertoy_connector>
-	LINK_LIBRARIES ${COMMON_LIBRARIES}
-	INSTALL st_octave
-	COMPILE_OPTIONS "-Wall")
+if(ST_BUILD_OCTAVE)
+	omw_add_octave(shadertoy_octave
+		SOURCES ${SRC_DIR}/api.cpp $<TARGET_OBJECTS:shadertoy_connector>
+		LINK_LIBRARIES ${COMMON_LIBRARIES}
+		INSTALL st_octave
+		COMPILE_OPTIONS "-Wall")
+endif()
 
 # C++14 for the targets
 set_property(TARGET shadertoy_connector PROPERTY CXX_STANDARD 14)
