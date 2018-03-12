@@ -49,7 +49,6 @@ version_suffix () {
 }
 
 perform_build () {
-	rm -rf "$TARGETDIR"
 	mkdir -p "$TARGETDIR"
 
 	echo "[==== BUILDING $DISTRIBUTION-$ARCH ====]" >&2
