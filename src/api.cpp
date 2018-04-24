@@ -102,33 +102,33 @@ bool impl_st_parse_input(std::string &inputSpecName, std::string &buffer, int &c
 
 #if OMW_OCTAVE
 
-static OMWrapperOctave wrapper(reinterpret_cast<void*>(&impl_st_parse_input),
+static omw::octave wrapper(reinterpret_cast<void*>(&impl_st_parse_input),
 	[]() { host.Allocate(); });
 
 DEFUN_DLD(shadertoy_octave, args, , "shadertoy_octave() initializes the shadertoy oct file")
 {
-	wrapper.CheckInitialization();
+	wrapper.check_initialization();
 
-	wrapper.SetAutoload("st_render");
-	wrapper.SetAutoload("st_reset");
-	wrapper.SetAutoload("st_compile");
-	wrapper.SetAutoload("st_set_input");
-	wrapper.SetAutoload("st_set_input_filter");
-	wrapper.SetAutoload("st_reset_input");
+	wrapper.set_autoload("st_render");
+	wrapper.set_autoload("st_reset");
+	wrapper.set_autoload("st_compile");
+	wrapper.set_autoload("st_set_input");
+	wrapper.set_autoload("st_set_input_filter");
+	wrapper.set_autoload("st_reset_input");
 
 	return octave_value();
 }
 
 octave_value_list st_octave_run(const octave_value_list &args,
-	std::function<void(OMWrapperOctave&)> fun)
+	std::function<void(omw::octave&)> fun)
 {
-	return st_wrapper_exec<OMWrapperOctave, const octave_value_list &>(wrapper, fun, args);
+	return st_wrapper_exec<omw::octave, const octave_value_list &>(wrapper, fun, args);
 }
 
 #define OM_DEFUN(name,oct_usage) \
 	DEFUN_DLD(name, args, , oct_usage) \
 	{ \
-		return st_octave_run(args, impl_ ## name <OMWrapperOctave>); \
+		return st_octave_run(args, impl_ ## name <omw::octave>); \
 	}
 
 #endif /* OMW_OCTAVE */
@@ -136,13 +136,13 @@ octave_value_list st_octave_run(const octave_value_list &args,
 #if OMW_MATHEMATICA
 
 // Mathematica API wrapper
-static OMWrapperMathematica wrapper("Shadertoy", stdlink, []() { host.Allocate(); });
+static omw::mathematica wrapper("Shadertoy", stdlink, []() { host.Allocate(); });
 
 #define OM_DEFUN(name,oct_usage) \
 	extern "C" void name (); \
 	void name () \
  	{ \
-		st_wrapper_exec<OMWrapperMathematica>(wrapper, impl_ ## name <OMWrapperMathematica>); \
+		st_wrapper_exec<omw::mathematica>(wrapper, impl_ ## name <omw::mathematica>); \
 	}
 
 #endif /* OMW_MATHEMATICA */
