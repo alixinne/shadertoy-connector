@@ -111,17 +111,20 @@ template part will be replaced by the specified sources.
 
 The default parts of the buffer template are as follows:
   * `glsl:header`: Fragment shader header
-```
+
+```glsl
 #version 330
 ```
   * `glsl:defines`: List of pre-processor defines
-```
+
+```glsl
 // Generated on the fly depending on its value
 // Example:
 #define MY_VALUE 10
 ```
   * `shadertoy:header`: Header for Shadertoy compatibility
-```
+
+```glsl
 precision highp float;
 precision highp int;
 precision highp sampler2D;
@@ -132,25 +135,29 @@ in vec2 vtexCoord;
 out vec4 fragColor;
 ```
   * `shadertoy:uniforms`: Uniform variables defined by the render context
-```
+
+```glsl
 // Generated on the fly from the definitions in uniform_state.hpp
 uniform vec3 iResolution;
 uniform vec4 iMouse;
 // etc.
 ```
   * `buffer:inputs`: Sampler uniforms defined by the buffer being compiled
-```
+
+```glsl
 // Generated on the fly from the input definitions
 uniform sampler2D myTexture;
 uniform sampler3D my3DTexture;
 ```
   * `buffer:sources`: Sources provided by the buffer being compiled
-```
+
+```glsl
 // Should define mainImage, as in a Shadertoy
 void mainImage(out vec4 O, in vec2 U) { O = vec4(1.); }
 ```
   * `shadertoy:footer`: Footer for Shadertoy compatibility
-```
+
+```glsl
 // GLSL entry point
 void main(void) {
     fragColor = vec4(0.,0.,0.,1.);
