@@ -101,6 +101,68 @@ as an extra buffer named `BufferName`. The buffer can be used as an input
 using the [st_set_input/SetShadertoyInput](#st_set_input-set-input-texture)
 function.
 
+### Additional notes
+
+The final fragment shader which is compiled by OpenGL for rendering is created
+from a template, which is itself made of template parts. The additional source
+name in the sources may either be a simple buffer name, or a template part
+name.  If the additional source name is a template part name, the corresponding
+template part will be replaced by the specified sources.
+
+The default parts of the buffer template are as follows:
+  * `glsl:header`: Fragment shader header
+```
+#version 330
+```
+  * `glsl:defines`: List of pre-processor defines
+```
+// Generated on the fly depending on its value
+// Example:
+#define MY_VALUE 10
+```
+  * `shadertoy:header`: Header for Shadertoy compatibility
+```
+precision highp float;
+precision highp int;
+precision highp sampler2D;
+
+// Input texture coordinate
+in vec2 vtexCoord;
+// Output fragment color
+out vec4 fragColor;
+```
+  * `shadertoy:uniforms`: Uniform variables defined by the render context
+```
+// Generated on the fly from the definitions in uniform_state.hpp
+uniform vec3 iResolution;
+uniform vec4 iMouse;
+// etc.
+```
+  * `buffer:inputs`: Sampler uniforms defined by the buffer being compiled
+```
+// Generated on the fly from the input definitions
+uniform sampler2D myTexture;
+uniform sampler3D my3DTexture;
+```
+  * `buffer:sources`: Sources provided by the buffer being compiled
+```
+// Should define mainImage, as in a Shadertoy
+void mainImage(out vec4 O, in vec2 U) { O = vec4(1.); }
+```
+  * `shadertoy:footer`: Footer for Shadertoy compatibility
+```
+// GLSL entry point
+void main(void) {
+    fragColor = vec4(0.,0.,0.,1.);
+    mainImage(fragColor, vtexCoord.xy * iResolution.xy);
+}
+```
+
+These parts may be overriden in order to fully control how the resulting
+shaders are built.  Note that the `buffer:*` parts are filled in from the
+sources specified in the st_compile method call so they should not be replaced.
+Other parts are not mandatory and can be replaced.
+
 ### Return value
 
 * `ctxt`: String that identifies the rendering context based on this fragment

@@ -55,11 +55,30 @@ void loadLocal(const std::string &shaderId, const std::vector<std::pair<std::str
 
 	try
 	{
+		// Apply overrides to the template specification
+		for (auto it = bufferSources.begin(); it != bufferSources.end(); ++it)
+		{
+			bool is_override = it->first.find(":") != std::string::npos;
+			if (is_override)
+			{
+				// Make sure the part ends with a newline
+				auto contents(it->second);
+				if (contents.back() != '\n')
+					contents += "\n";
+
+				context.buffer_template().replace(it->first, shadertoy::compiler::template_part(it->first, contents));
+			}
+		}
+
 		// Add all auxiliary buffers
 		for (auto it = bufferSources.begin(); it != bufferSources.end(); ++it)
 		{
-			auto buffer(get_buffer(shaderId, *it));
-			chain.emplace_back(buffer, shadertoy::make_size_ref(render_size));
+			bool is_override = it->first.find(":") != std::string::npos;
+			if (!is_override)
+			{
+				auto buffer(get_buffer(shaderId, *it));
+				chain.emplace_back(buffer, shadertoy::make_size_ref(render_size));
+			}
 		}
 	}
 	catch (std::exception &ex)
