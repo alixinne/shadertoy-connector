@@ -10,65 +10,61 @@
 
 #include "local.hpp"
 
-using namespace std;
 namespace fs = boost::filesystem;
 
-shadertoy::BufferConfig getBufferConfig(const string &shaderId, const pair<string, string> &bufferSource)
+std::shared_ptr<shadertoy::buffers::toy_buffer> get_buffer(const std::string &shaderId, const std::pair<std::string, std::string> &bufferSource)
 {
 	// tmp directory
 	fs::path basedir(fs::temp_directory_path());
 
-	// Resulting config
-	shadertoy::BufferConfig buffer;
-
 	// Get lowercase name as buffer name
-	buffer.name = bufferSource.first;
-	transform(buffer.name.begin(), buffer.name.end(), buffer.name.begin(), ::tolower);
+	auto buffer_name(bufferSource.first);
+	transform(buffer_name.begin(), buffer_name.end(), buffer_name.begin(), ::tolower);
 
 	// Write shader code in file
-	stringstream sspath;
-	sspath << "stcode_" << shaderId << "-" << buffer.name << ".glsl";
+	std::stringstream sspath;
+	sspath << "stcode_" << shaderId << "-" << buffer_name << ".glsl";
 	fs::path p(basedir / sspath.str());
 
-	ofstream ofs(p.string());
+	std::ofstream ofs(p.string());
 	ofs << bufferSource.second;
 	ofs.close();
 
-	// Register file in config
-	buffer.shaderFiles.push_back(p);
+	// Create buffer
+	auto buffer(std::make_shared<shadertoy::buffers::toy_buffer>(buffer_name));
+
+	// Add source files
+	buffer->source_files().push_back(p.string());
+
+	// Create shadertoy inputs
+	for (size_t i = 0; i < SHADERTOY_ICHANNEL_COUNT; ++i)
+		buffer->inputs().emplace_back();
 
 	return buffer;
 }
 
-void loadLocal(const string &shaderId, const map<string, string> &bufferSources, shadertoy::ContextConfig &contextConfig)
+void loadLocal(const std::string &shaderId, const std::vector<std::pair<std::string, std::string>> &bufferSources,
+			   shadertoy::render_context &context, shadertoy::swap_chain &chain, const shadertoy::rsize &render_size)
 {
 	// Put everything in tmp
 	fs::path basedir(fs::temp_directory_path());
 
-	// The image buffer should be last
-	auto imageIt = bufferSources.find("image");
-	if (imageIt == bufferSources.end())
-		throw runtime_error("Could not find the image buffer for the local context.");
+	// The default buffer should be last, and it should be named image
+	// TODO: is this still relevant on 1.0.0?
+	assert(bufferSources.back().first == "image");
 
 	try
 	{
 		// Add all auxiliary buffers
 		for (auto it = bufferSources.begin(); it != bufferSources.end(); ++it)
 		{
-			if (it != imageIt)
-			{
-				shadertoy::BufferConfig buffer(getBufferConfig(shaderId, *it));
-				contextConfig.bufferConfigs.insert(make_pair(buffer.name, buffer));
-			}
+			auto buffer(get_buffer(shaderId, *it));
+			chain.emplace_back(buffer, shadertoy::make_size_ref(render_size));
 		}
-
-		// Add image buffer
-		shadertoy::BufferConfig imageBuffer(getBufferConfig(shaderId, *imageIt));
-		contextConfig.bufferConfigs.insert(make_pair(imageBuffer.name, imageBuffer));
 	}
-	catch (exception &ex)
+	catch (std::exception &ex)
 	{
 		// Rethrow
-		throw runtime_error(ex.what());
+		throw std::runtime_error(ex.what());
 	}
 }

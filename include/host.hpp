@@ -1,9 +1,10 @@
 #ifndef _HOST_HPP_
 #define _HOST_HPP_
 
-#include <map>
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include <GLFW/glfw3.h>
 #include <epoxy/gl.h>
@@ -43,7 +44,7 @@ class Host
 	 * @param  format Format of the rendering (GL_RGBA, GL_RGB, or GL_LUMINANCE).
 	 * @return        Pointer to the rendered frame.
 	 */
-	StImage *Render(const std::string &id, boost::optional<int> frame, int width, int height,
+	StImage *Render(const std::string &id, boost::optional<int> frame, size_t width, size_t height,
 					const float mouse[4], GLenum format);
 
 	/**
@@ -60,7 +61,7 @@ class Host
 	 * buffer must be present.
 	 * @return        Unique identifier for this context.
 	 */
-	std::string CreateLocal(const std::map<std::string, std::string> &bufferSources);
+	std::string CreateLocal(const std::vector<std::pair<std::string, std::string>> &bufferSources);
 
 	/**
 	 * Get or allocate a new remote context. Throws if no local context exists

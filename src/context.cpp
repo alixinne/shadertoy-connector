@@ -10,41 +10,42 @@
 
 using namespace std;
 
-StContext::StContext(const std::string &shaderId, int width, int height)
-: shaderId(shaderId), config(), context(), frameCount(0), reloadInputConfig(false)
+StContext::StContext(const std::string &shaderId, size_t width, size_t height)
+: shaderId(shaderId), render_size(width, height), context(), chain(), frameCount(0)
 {
 	initialize(shaderId, width, height);
 
 	// Load the shader from the remote source
-	loadRemote(shaderId, "fdnKWn", config);
+	loadRemote(shaderId, "fdnKWn", context, chain, render_size);
 
-	createContext(config);
+	createContext();
 }
 
 StContext::StContext(const std::string &shaderId,
-					 const std::map<std::string, std::string> &bufferSources, int width, int height)
-: shaderId(shaderId), config(), context(), frameCount(0), reloadInputConfig(false)
+					 const std::vector<std::pair<std::string, std::string>> &bufferSources,
+					 size_t width, size_t height)
+: shaderId(shaderId), render_size(width, height), context(), chain(), frameCount(0)
 {
 	initialize(shaderId, width, height);
 
 	// Load the shader from a locally created file
-	loadLocal(shaderId, bufferSources, config);
+	loadLocal(shaderId, bufferSources, context, chain, render_size);
 
-	createContext(config);
+	createContext();
 }
 
-void StContext::performRender(GLFWwindow *window, int frameCount, int width, int height,
+void StContext::performRender(GLFWwindow *window, int frameCount, size_t width, size_t height,
 							  const float mouse[4], GLenum format)
 {
 	// Ensure we are working at the right size
 	GLint depth = formatDepth(format);
-	if (width != config.width || height != config.height || depth != currentImage.dims[2])
+	if (width != render_size.width || height != render_size.height || depth != currentImage.dims[2])
 	{
-		if (width != config.width || height != config.height)
+		if (width != render_size.width || height != render_size.height)
 		{
-			config.width = width;
-			config.height = height;
-			context->AllocateTextures();
+			render_size.width = width;
+			render_size.height = height;
+			context.allocate_textures(chain);
 		}
 
 		currentImage.dims[0] = height;
@@ -53,50 +54,42 @@ void StContext::performRender(GLFWwindow *window, int frameCount, int width, int
 		currentImage.data = make_shared<vector<float>>(depth * width * height);
 	}
 
-	// Reload inputs if necessary
-	if (reloadInputConfig)
-	{
-		// Full reload
-		context->GetTextureEngine().ClearState(false);
-	}
-
-	auto &state(context->GetState());
+	auto &state(context.state());
 
 	// Poll events
 	glfwPollEvents();
 
 	// Update uniforms
 	//  iTime and iFrame
-	state.V<shadertoy::iTime>() = frameCount * (1.0 / config.targetFramerate);
-	state.V<shadertoy::iFrame>() = frameCount;
+	state.get<shadertoy::iTime>() = frameCount * (1.0 / state.get<shadertoy::iFrameRate>());
+	state.get<shadertoy::iFrame>() = frameCount;
 
 	//  iDate
 	boost::posix_time::ptime dt = boost::posix_time::microsec_clock::local_time();
-	state.V<shadertoy::iDate>() = glm::vec4(dt.date().year() - 1, dt.date().month(), dt.date().day(),
-											dt.time_of_day().total_nanoseconds() / 1e9f);
+	state.get<shadertoy::iDate>() = glm::vec4(dt.date().year() - 1, dt.date().month(), dt.date().day(),
+											  dt.time_of_day().total_nanoseconds() / 1e9f);
 
 	//  iMouse
 	for (int i = 0; i < 4; ++i)
-		state.V<shadertoy::iMouse>()[i] = mouse[i];
+		state.get<shadertoy::iMouse>()[i] = mouse[i];
 	// End update uniforms
 
 	// Render to texture
-	context->Render();
+	context.render(chain);
 
 	// Read the current texture
-	GLuint tex;
-	context->DoReadCurrentFrame(tex);
+	auto tex(chain.current()->output());
 
 	// Store it in a suitably sized array
 
 	// float textures
 	shared_ptr<vector<float>> texData = currentImage.data;
-	glGetTextureImage(tex, 0, format, GL_FLOAT, sizeof(float) * width * height * depth, texData->data());
+	tex->get_image(0, format, GL_FLOAT, sizeof(float) * width * height * depth, texData->data());
 
 	// Vertical flip
 	size_t stride_size = sizeof(float) * width * depth;
 	float *stride = static_cast<float *>(alloca(stride_size));
-	for (int i = 0; i < height / 2; ++i)
+	for (size_t i = 0; i < height / 2; ++i)
 	{
 		memcpy(stride, &(*texData)[i * stride_size / sizeof(float)], stride_size);
 		memcpy(&(*texData)[i * stride_size / sizeof(float)],
@@ -104,106 +97,111 @@ void StContext::performRender(GLFWwindow *window, int frameCount, int width, int
 		memcpy(&(*texData)[(height - i - 1) * stride_size / sizeof(float)], stride, stride_size);
 	}
 
-	currentImage.frameTiming = context->GetBufferByName()->GetElapsedTime();
+	currentImage.frameTiming = std::static_pointer_cast<shadertoy::members::buffer_member>(chain.current())->buffer()->elapsed_time();
 }
 
-void StContext::setInput(const std::string &buffer, int channel, const boost::variant<std::string, StImage> &data)
+void StContext::setInput(const std::string &buffer, size_t channel,
+						 const boost::variant<std::string, std::shared_ptr<StImage>> &data)
 {
-	auto &bufferOverrides(getBufferInputOverrides(buffer));
+	// Get a reference to the buffer
+	auto toy_buffer(getBuffer(buffer));
 
-	if (const StImage *img = boost::get<const StImage>(&data))
-	{
-		// Changed flag will propagate to the instance in the map
-		const_cast<StImage*>(img)->changed = true;
-	}
-
-	// Override channel for this buffer
-	auto it = bufferOverrides.find(channel);
-	if (it == bufferOverrides.end())
-	{
-		// Change config type to the registered handler
-		auto &input(config.bufferConfigs.find(buffer)->second.inputConfig[channel]);
-
-		if (input.id.empty() || input.type.empty())
-		{
-			// input was not enabled, create an input
-			stringstream sid;
-			sid << buffer << "." << channel;
-			input.id = sid.str();
-			// set type to data
-			input.type = "data";
-		}
-		else
-		{
-			// input was already enabled, just override its type
-			input.type = "data-" + input.type;
-		}
-
-		// Ensure this enabled the input
-		if (!input.enabled())
-		{
-			stringstream ss;
-			ss << buffer << "." << channel << " input is not enabled";
-			throw runtime_error(ss.str());
-		}
-
-		// New override, reload config required
-		bufferOverrides.insert(make_pair(channel, data));
-		reloadInputConfig = true;
-	}
-	else
-	{
-		// Override already exists, do not reload config
-		bufferOverrides[channel] = data;
-	}
-}
-
-void StContext::setInputFilter(const string &buffer, int channel, GLint minFilter)
-{
-	auto it = config.bufferConfigs.find(buffer);
-	if (it == config.bufferConfigs.end())
+	// Reference to the target input
+	if (channel > toy_buffer->inputs().size())
 	{
 		std::stringstream ss;
-		ss << "Buffer " << buffer << " not found";
+		ss << "Channel " << channel << " is not available on " << buffer;
 		throw std::runtime_error(ss.str());
 	}
 
-	auto &input(it->second.inputConfig[channel]);
+	auto &input(toy_buffer->inputs()[channel]);
 
-	input.minFilter = minFilter;
-	input.magFilter = minFilter == GL_NEAREST ? GL_NEAREST : GL_LINEAR;
-}
+	// The input that will be overridden by this call
+	auto overriden_input = input.input();
 
-void StContext::resetInput(const string &buffer, int channel)
-{
-	auto &bufferOverrides(getBufferInputOverrides(buffer));
-
-	// Override channel
-	if (bufferOverrides.erase(channel) > 0)
+	if (auto ov_input = std::dynamic_pointer_cast<override_input>(input.input()))
 	{
-		auto &input(config.bufferConfigs.find(buffer)->second.inputConfig[channel]);
+		// Input is already overridden, so replace it
+		overriden_input = ov_input->overriden_input();
+	} // else, use "input" as the overridden input
 
-		if (input.type.compare("data") == 0)
+	if (const auto img = boost::get<const std::shared_ptr<StImage>>(&data))
+	{
+		// The override is an image input
+		input.input(std::make_shared<override_input>(overriden_input, *img));
+	}
+	else
+	{
+		auto target_name(boost::get<const std::string>(data));
+
+		// The override is a buffer name
+		auto member_source(chain.find_if<shadertoy::members::buffer_member>(
+		[&target_name](const auto &member) { return member->buffer()->id() == target_name; }));
+
+		if (!member_source)
 		{
-			// This input used to be disabled
-			input.id = "";
-			input.type = "";
-		}
-		else
-		{
-			// This input was enabled before
-			input.type = string(input.type.begin() + (sizeof("data-") - 1), input.type.end());
+			std::stringstream ss;
+			ss << "Buffer " << target_name << " was not found to override " << buffer << "." << channel;
+			throw std::runtime_error(ss.str());
 		}
 
-		reloadInputConfig = true;
+		input.input(std::make_shared<override_input>(overriden_input,
+													 std::make_shared<shadertoy::inputs::buffer_input>(member_source)));
 	}
 }
 
-void StContext::initialize(const std::string &shaderId, int width, int height)
+void StContext::setInputFilter(const string &buffer, size_t channel, GLint minFilter)
 {
-	config.width = width;
-	config.height = height;
-	config.targetFramerate = 60.0;
+	// Get a reference to the buffer
+	auto toy_buffer(getBuffer(buffer));
+
+	// Reference to the target input
+	if (channel > toy_buffer->inputs().size())
+	{
+		std::stringstream ss;
+		ss << "Channel " << channel << " is not available on " << buffer;
+		throw std::runtime_error(ss.str());
+	}
+
+	auto input(toy_buffer->inputs()[channel].input());
+
+	if (!input)
+	{
+		std::stringstream ss;
+		ss << "Input " << buffer << "." << channel
+		   << " has not been yet initialized, so its filter cannot be set";
+		throw std::runtime_error(ss.str());
+	}
+
+	input->min_filter(minFilter);
+	input->mag_filter(minFilter == GL_NEAREST ? GL_NEAREST : GL_LINEAR);
+}
+
+void StContext::resetInput(const string &buffer, size_t channel)
+{
+	// Get a reference to the buffer
+	auto toy_buffer(getBuffer(buffer));
+
+	// Reference to the target input
+	if (channel > toy_buffer->inputs().size())
+	{
+		std::stringstream ss;
+		ss << "Channel " << channel << " is not available on " << buffer;
+		throw std::runtime_error(ss.str());
+	}
+
+	auto &input(toy_buffer->inputs()[channel]);
+
+	if (auto ov_input = std::dynamic_pointer_cast<override_input>(input.input()))
+	{
+		input.input(ov_input->overriden_input());
+	}
+}
+
+void StContext::initialize(const std::string &shaderId, size_t width, size_t height)
+{
+	context.state().get<shadertoy::iTimeDelta>() = 1.0 / 60.0;
+	context.state().get<shadertoy::iFrameRate>() = 60.0;
 
 	currentImage.dims[0] = height;
 	currentImage.dims[1] = width;
@@ -242,100 +240,87 @@ GLint StContext::depthFormat(int depth)
 	}
 }
 
-void StContext::createContext(shadertoy::ContextConfig &config)
+void StContext::createContext()
 {
-	// Create the rendering context
-	context = make_shared<shadertoy::RenderContext>(config);
-
-	// Initialize it
-	context->Initialize();
-
-	// Register data texture handlers
-	auto handler(shadertoy::InputHandler(bind(&StContext::DataTextureHandler, this, placeholders::_1,
-											  placeholders::_2, placeholders::_3, placeholders::_4)));
-
-	context->GetTextureEngine().RegisterHandler("data", handler);
-	context->GetTextureEngine().RegisterHandler("data-texture", handler);
-	context->GetTextureEngine().RegisterHandler("data-buffer", handler);
+	// Initialize the swap chain
+	context.init(chain);
 }
 
-StContext::BufferOverrideMap &StContext::getBufferInputOverrides(const string &buffer)
+StContext::override_input::override_input(std::shared_ptr<shadertoy::inputs::basic_input> overriden_input,
+										  std::shared_ptr<StImage> data_buffer)
+: data_buffer_(data_buffer), texture_(), member_input_(), overriden_input_(overriden_input)
 {
-	auto it = inputOverrides.find(buffer);
-	if (it == inputOverrides.end())
-	{
-		const auto bufferConfigIt = config.bufferConfigs.find(buffer);
-		if (bufferConfigIt == config.bufferConfigs.end())
-		{
-			stringstream ss;
-			ss << "Buffer " << buffer << " not found";
-			throw runtime_error(ss.str());
-		}
-
-		inputOverrides.insert(make_pair(buffer, BufferOverrideMap()));
-		it = inputOverrides.find(buffer);
-	}
-
-	return it->second;
+	assert(data_buffer);
 }
 
-shared_ptr<shadertoy::OpenGL::Texture>
-StContext::DataTextureHandler(const shadertoy::InputConfig &inputConfig, bool &skipTextureOptions,
-							  bool &skipCache, bool &framebufferSized)
+StContext::override_input::override_input(std::shared_ptr<shadertoy::inputs::basic_input> overriden_input,
+										  std::shared_ptr<shadertoy::inputs::buffer_input> member_input)
+: data_buffer_(), texture_(), member_input_(member_input), overriden_input_(overriden_input)
 {
-	skipCache = true;
-	framebufferSized = false;
+	assert(member_input);
+}
 
-	// Get the texture object
-	shared_ptr<shadertoy::OpenGL::Texture> texPtr;
-
-	// Find the override texture
-	string bufferName(inputConfig.id.begin(), inputConfig.id.begin() + inputConfig.id.find('.')),
-	inputName(inputConfig.id.begin() + inputConfig.id.find('.') + 1, inputConfig.id.end());
-	int channel = atoi(inputName.c_str());
-
-	boost::variant<std::string, StImage> &data(getBufferInputOverrides(bufferName)[channel]);
-
-	if (std::string *bufferName = boost::get<std::string>(&data))
+void StContext::override_input::load_input()
+{
+	if (data_buffer_)
 	{
-		auto bufPtr = context->GetBufferByName(*bufferName);
-		
-		if (bufPtr)
-			texPtr = bufPtr->GetSourceTexture();
+		// Data buffer mode
+		//  Create texture object if needed
+		if (!texture_)
+			texture_ = std::make_shared<shadertoy::gl::texture>(GL_TEXTURE_2D);
+
+		// Get the format of this image
+		GLint fmt(depthFormat(data_buffer_->dims[2]));
+
+		//  Load into OpenGL
+		texture_->image_2d(GL_TEXTURE_2D, 0, GL_RGBA32F, data_buffer_->dims[1],
+						   data_buffer_->dims[0], 0, fmt, GL_FLOAT, data_buffer_->data->data());
+
+		texture_->generate_mipmap();
 	}
 	else
 	{
-		auto &img(boost::get<StImage>(data));
-
-		texPtr = getDataTexture(inputConfig.id);
-
-		if (img.changed)
-		{
-			// Get the format of this image
-			GLint fmt(depthFormat(img.dims[2]));
-
-			// Load into OpenGL
-			texPtr->Image2D(GL_TEXTURE_2D, 0, GL_RGBA32F, img.dims[1], img.dims[0], 0, fmt, GL_FLOAT,
-							img.data->data());
-
-			// Reset flag
-			img.changed = false;
-		}
+		member_input_->load();
 	}
-
-	return texPtr;
 }
 
-shared_ptr<shadertoy::OpenGL::Texture> StContext::getDataTexture(const string &inputId)
+void StContext::override_input::reset_input()
 {
-	auto it = textures.find(inputId);
-	if (it == textures.end())
+	if (data_buffer_)
 	{
-		shared_ptr<shadertoy::OpenGL::Texture> tex(make_shared<shadertoy::OpenGL::Texture>(GL_TEXTURE_2D));
-		textures.insert(make_pair(inputId, tex));
+	}
+	else
+	{
+		member_input_->reset();
+	}
+}
 
-		return tex;
+std::shared_ptr<shadertoy::gl::texture> StContext::override_input::use_input()
+{
+	if (data_buffer_)
+	{
+		return texture_;
+	}
+	else
+	{
+		return member_input_->use();
+	}
+}
+
+std::shared_ptr<shadertoy::buffers::toy_buffer> StContext::getBuffer(const std::string &name)
+{
+	// Find the target buffer by its name
+	auto buffer_member(chain.find_if<shadertoy::members::buffer_member>([&name](const auto &member) {
+																		return member->buffer()->id() == name;
+																		}));
+
+	if (!buffer_member)
+	{
+		std::stringstream ss;
+		ss << "Buffer " << std::quoted(name) << " was not found in " << shaderId;
+		throw std::runtime_error(ss.str());
 	}
 
-	return it->second;
+	// Get the actual buffer object
+	return std::static_pointer_cast<shadertoy::buffers::toy_buffer>(buffer_member->buffer());
 }
