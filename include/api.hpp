@@ -13,7 +13,7 @@
 
 #include <shadertoy/Shadertoy.hpp>
 
-#include "om_wrapper.h"
+#include <omw.hpp>
 
 #include "context.hpp"
 #include "host.hpp"
@@ -31,38 +31,38 @@ void st_wrapper_internal(TWrapper &wrapper, std::function<void(TWrapper &)> fun)
 	{
 		std::stringstream ss;
 		ss << "Shader compilation error: " << ex.what() << std::endl << ex.log();
-		wrapper.SendFailure(ss.str(), "glerr");
+		wrapper.send_failure(ss.str(), "glerr");
 	}
 	catch (shadertoy::OpenGL::ProgramLinkError &ex)
 	{
 		std::stringstream ss;
 		ss << "Program link error: " << ex.what() << std::endl << ex.log();
-		wrapper.SendFailure(ss.str(), "glerr");
+		wrapper.send_failure(ss.str(), "glerr");
 	}
 	catch (shadertoy::OpenGL::OpenGLError &ex)
 	{
 		std::stringstream ss;
-		ss << "OpenGL error: " << ex.what();
-		wrapper.SendFailure(ss.str(), "glerr");
+		ss << "gl error: " << ex.what();
+		wrapper.send_failure(ss.str(), "glerr");
 	}
 	catch (shadertoy::ShadertoyError &ex)
 	{
 		std::stringstream ss;
 		ss << "Shadertoy error: " << ex.what();
-		wrapper.SendFailure(ss.str());
+		wrapper.send_failure(ss.str());
 	}
 	catch (std::runtime_error &ex)
 	{
-		wrapper.SendFailure(ex.what());
+		wrapper.send_failure(ex.what());
 	}
 }
 
 template <typename TWrapper, typename... ExtraArgs>
 auto st_wrapper_exec(TWrapper &wrapper, std::function<void(TWrapper &)> fun, ExtraArgs... args)
 {
-	wrapper.CheckInitialization();
+	wrapper.check_initialization();
 
-	return wrapper.RunFunction(args..., [&fun](TWrapper &wrapper) {
+	return wrapper.run_function(args..., [&fun](TWrapper &wrapper) {
 		st_wrapper_internal(wrapper, fun);
 	});
 }
@@ -72,7 +72,7 @@ std::string mathematica_unescape(const std::string &source);
 template <typename TWrapper> void impl_st_compile(TWrapper &w)
 {
 	// Image buffer source
-	std::string source(w.template GetParam<std::string>(0, "code"));
+	std::string source(w.template get_param<std::string>(0, "code"));
 
 	// Unescape image buffer source
 	OM_MATHEMATICA(w, [&source]() { source = mathematica_unescape(source); });
@@ -90,7 +90,7 @@ template <typename TWrapper> void impl_st_compile(TWrapper &w)
 	});
 
 	// Get number of buffer sources (Octave)
-	OM_OCTAVE(w, [&]() { nbuffers = (w.Args().length() - 1) / 2; });
+	OM_OCTAVE(w, [&]() { nbuffers = (w.args().length() - 1) / 2; });
 
 	// Get size of fetched tuples
 	int tupleSize = 1;
@@ -102,7 +102,7 @@ template <typename TWrapper> void impl_st_compile(TWrapper &w)
 
 	for (long n = 0; n < nbuffers; ++n)
 	{
-		auto bufferSpec(w.template GetParam<std::tuple<std::string, std::string>>(tupleSize * n + 1, "BufferSpec"));
+		auto bufferSpec(w.template get_param<std::tuple<std::string, std::string>>(tupleSize * n + 1, "BufferSpec"));
 
 		// Lowercase buffer name
 		std::string bufferName(std::get<0>(bufferSpec));
@@ -130,24 +130,24 @@ template <typename TWrapper> void impl_st_compile(TWrapper &w)
 
 	OM_RESULT_MATHEMATICA(w, [&]() { MLPutString(w.link, shaderId.c_str()); });
 
-	OM_RESULT_OCTAVE(w, [&]() { w.Result().append(shaderId); });
+	OM_RESULT_OCTAVE(w, [&]() { w.result().append(shaderId); });
 }
 
 template <typename TWrapper> void impl_st_reset(TWrapper &w)
 {
-	host.Reset(w.template GetParam<std::string>(0, "ctxt"));
+	host.Reset(w.template get_param<std::string>(0, "ctxt"));
 }
 
 template <typename TWrapper> void impl_st_render(TWrapper &w)
 {
-	auto id(w.template GetParam<std::string>(0, "ctxt"));
+	auto id(w.template get_param<std::string>(0, "ctxt"));
 
-	auto frameCount(w.template GetParam<boost::optional<int>>(1, "Frame"));
+	auto frameCount(w.template get_param<boost::optional<int>>(1, "Frame"));
 
-	auto width(w.template GetParam<boost::optional<int>>(2, "Width").get_value_or(640));
-	auto height(w.template GetParam<boost::optional<int>>(3, "Height").get_value_or(360));
+	auto width(w.template get_param<boost::optional<int>>(2, "Width").get_value_or(640));
+	auto height(w.template get_param<boost::optional<int>>(3, "Height").get_value_or(360));
 
-	auto formatName(w.template GetParam<boost::optional<std::string>>(4, "Format").get_value_or("RGBA"));
+	auto formatName(w.template get_param<boost::optional<std::string>>(4, "Format").get_value_or("RGBA"));
 	std::transform(formatName.begin(), formatName.end(),
 		formatName.begin(), ::tolower);
 	GLenum format;
@@ -161,10 +161,10 @@ template <typename TWrapper> void impl_st_render(TWrapper &w)
 	else
 		throw std::runtime_error("Invalid Format parameter");
 
-	auto mouse(w.template GetParam<boost::optional<std::shared_ptr<OMArray<float>>>>(5, "Mouse")
-		.get_value_or(OMArray<float>::from_vector(4, 0.f)));
+	auto mouse(w.template get_param<boost::optional<std::shared_ptr<omw::basic_array<float>>>>(5, "Mouse")
+		.get_value_or(omw::vector_array<float>::make(4, 0.f)));
 
-	auto doFrameTiming(w.template GetParam<boost::optional<bool>>(6, "FrameTiming").get_value_or(false));
+	auto doFrameTiming(w.template get_param<boost::optional<bool>>(6, "FrameTiming").get_value_or(false));
 
 	auto image(host.Render(id, frameCount, width, height, mouse->data(), format));
 
@@ -180,7 +180,7 @@ template <typename TWrapper> void impl_st_render(TWrapper &w)
 	});
 
 	OM_RESULT_OCTAVE(w, [&]() {
-		auto &res(w.Result());
+		auto &res(w.result());
 
 		// Return the image
 		auto dims(dim_vector(image->dims[0], image->dims[1], image->dims[2]));
@@ -209,7 +209,7 @@ bool impl_st_parse_input(std::string &inputSpecName, std::string &buffer, int &c
 template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 {
 	// Parse context id
-	auto id(w.template GetParam<std::string>(0, "ctxt"));
+	auto id(w.template get_param<std::string>(0, "ctxt"));
 	// Get context object
 	auto context(host.GetContext(id));
 
@@ -227,7 +227,7 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 
 	// Get number of inputs (Octave)
 	OM_OCTAVE(w, [&]() {
-		ninputs = (w.Args().length() - 1) / 2;
+		ninputs = (w.args().length() - 1) / 2;
 	});
 
 	// Get size of fetched tuples
@@ -240,7 +240,7 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 	for (long n = 0; n < ninputs; ++n)
 	{
 		// Get <name, image> tuple
-		auto inputSpec(w.template GetParam<std::tuple<std::string, boost::variant<std::string, std::shared_ptr<OMMatrix<float>>>>>(tupleSize * n + 1, "InputSpec"));
+		auto inputSpec(w.template get_param<std::tuple<std::string, boost::variant<std::string, std::shared_ptr<omw::basic_matrix<float>>>>>(tupleSize * n + 1, "InputSpec"));
 
 		// Parse name
 		std::string bufferName;
@@ -259,7 +259,7 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 		else
 		{
 			// Get depth for tests
-			auto imageValue(boost::get<std::shared_ptr<OMMatrix<float>>>(inputValue));
+			auto imageValue(boost::get<std::shared_ptr<omw::basic_matrix<float>>>(inputValue));
 			int d = imageValue->depth();
 
 			// Check dimensions
@@ -299,7 +299,7 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 template <typename TWrapper> void impl_st_reset_input(TWrapper &w)
 {
 	// Parse context id
-	auto id(w.template GetParam<std::string>(0, "ctxt"));
+	auto id(w.template get_param<std::string>(0, "ctxt"));
 	// Get context object
 	auto context(host.GetContext(id));
 
@@ -317,14 +317,14 @@ template <typename TWrapper> void impl_st_reset_input(TWrapper &w)
 
 	// Get number of inputs (Octave)
 	OM_OCTAVE(w, [&]() {
-		ninputs = (w.Args().length() - 1) / 2;
+		ninputs = (w.args().length() - 1) / 2;
 	});
 
 	// Process all inputs
 	for (long n = 0; n < ninputs; ++n)
 	{
 		// Get input name
-		auto inputName(w.template GetParam<std::string>(n + 1, "InputName"));
+		auto inputName(w.template get_param<std::string>(n + 1, "InputName"));
 
 		// Parse name
 		std::string bufferName;
@@ -339,7 +339,7 @@ template <typename TWrapper> void impl_st_reset_input(TWrapper &w)
 template <typename TWrapper> void impl_st_set_input_filter(TWrapper &w)
 {
 	// Parse context id
-	auto id(w.template GetParam<std::string>(0, "ctxt"));
+	auto id(w.template get_param<std::string>(0, "ctxt"));
 	// Get context object
 	auto context(host.GetContext(id));
 
@@ -357,7 +357,7 @@ template <typename TWrapper> void impl_st_set_input_filter(TWrapper &w)
 
 	// Get number of inputs (Octave)
 	OM_OCTAVE(w, [&]() {
-		ninputs = (w.Args().length() - 1) / 2;
+		ninputs = (w.args().length() - 1) / 2;
 	});
 
 	// Get size of fetched tuples
@@ -370,7 +370,7 @@ template <typename TWrapper> void impl_st_set_input_filter(TWrapper &w)
 	for (long n = 0; n < ninputs; ++n)
 	{
 		// Get <name, image> tuple
-		auto inputSpec(w.template GetParam<std::tuple<std::string, std::string>>(tupleSize * n + 1, "InputSpec"));
+		auto inputSpec(w.template get_param<std::tuple<std::string, std::string>>(tupleSize * n + 1, "InputSpec"));
 
 		// Parse name
 		std::string bufferName;
