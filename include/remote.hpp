@@ -3,13 +3,12 @@
 
 #include <string>
 
-#include <shadertoy/BufferConfig.hpp>
-#include <shadertoy/ContextConfig.hpp>
+#include <shadertoy.hpp>
 
 void initRemote();
 void freeRemote();
 
-void loadRemote(const std::string &shaderId, const std::string &shaderApiKey,
-				shadertoy::ContextConfig &contextConfig);
+void loadRemote(const std::string &shaderId, const std::string &shaderApiKey, shadertoy::render_context &context,
+				shadertoy::swap_chain &chain, const shadertoy::rsize &render_size);
 
 #endif /* _REMOTE_HPP_ */

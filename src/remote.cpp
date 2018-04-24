@@ -15,7 +15,7 @@
 
 #include "remote.hpp"
 
-using namespace std;
+namespace u = shadertoy::utils;
 namespace fs = boost::filesystem;
 
 void initRemote()
@@ -32,15 +32,15 @@ void freeRemote()
 
 size_t curl_write_data(char *buffer, size_t size, size_t nmemb, void *userp)
 {
-	ostream &ss = *static_cast<ostream *>(userp);
+	std::ostream &ss = *static_cast<std::ostream *>(userp);
 	size_t sz = size * nmemb;
 	ss.write(buffer, sz);
 	return sz;
 }
 
-void file_get(CURL *curl, const string &url, const fs::path &dst)
+void file_get(CURL *curl, const std::string &url, const fs::path &dst)
 {
-	ofstream ofs(dst.string(), ios::out | ios::binary);
+	std::ofstream ofs(dst.string(), std::ios::out | std::ios::binary);
 
 	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_data);
@@ -49,15 +49,15 @@ void file_get(CURL *curl, const string &url, const fs::path &dst)
 	CURLcode res = curl_easy_perform(curl);
 	if (res != CURLE_OK)
 	{
-		throw runtime_error(curl_easy_strerror(res));
+		throw std::runtime_error(curl_easy_strerror(res));
 	}
 
 	ofs.close();
 }
 
-stringstream curl_get(CURL *curl, const string &url)
+std::stringstream curl_get(CURL *curl, const std::string &url)
 {
-	stringstream ss;
+	std::stringstream ss;
 
 	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_data);
@@ -66,20 +66,130 @@ stringstream curl_get(CURL *curl, const string &url)
 	CURLcode res = curl_easy_perform(curl);
 	if (res != CURLE_OK)
 	{
-		throw runtime_error(curl_easy_strerror(res));
+		throw std::runtime_error(curl_easy_strerror(res));
 	}
 
 	return ss;
 }
 
-Json::Value json_get(CURL *curl, const string &url)
+Json::Value json_get(CURL *curl, const std::string &url)
 {
 	Json::Value result;
 	curl_get(curl, url) >> result;
 	return result;
 }
 
-void loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::ContextConfig &contextConfig)
+std::string to_buffer_name(const Json::Value &pass)
+{
+	auto name(pass["name"].asString());
+	if (name.empty())
+		name = pass["type"].asString();
+	std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+	return name;
+}
+
+void apply_sampler_options(std::shared_ptr<shadertoy::inputs::basic_input> &buffer_input, const Json::Value &sampler)
+{
+	if (buffer_input)
+	{
+		if (sampler["filter"].compare("mipmap") == 0)
+		{
+			buffer_input->min_filter(GL_LINEAR_MIPMAP_LINEAR);
+			buffer_input->mag_filter(GL_LINEAR);
+		}
+		else if (sampler["filter"].compare("linear") == 0)
+		{
+			buffer_input->min_filter(GL_LINEAR);
+			buffer_input->mag_filter(GL_LINEAR);
+		}
+		else if (sampler["filter"].compare("nearest") == 0)
+		{
+			buffer_input->min_filter(GL_LINEAR);
+			buffer_input->mag_filter(GL_LINEAR);
+		}
+
+		if (sampler["wrap"].compare("repeat") == 0)
+		{
+			buffer_input->wrap(GL_REPEAT);
+		}
+		else if (sampler["wrap"].compare("clamp") == 0)
+		{
+			buffer_input->wrap(GL_CLAMP_TO_EDGE);
+		}
+	}
+}
+
+void load_nonbuffer_input(std::shared_ptr<shadertoy::inputs::basic_input> &buffer_input,
+						  const Json::Value &input, CURL *curl, const fs::path &tmpdir, int i)
+{
+	auto &sampler(input["sampler"]);
+
+	if (input["ctype"].compare("texture") == 0 || input["ctype"].compare("cubemap") == 0)
+	{
+		fs::path srcpath(input["src"].asString());
+		std::string url = std::string("https://www.shadertoy.com") + input["src"].asString();
+		fs::path dstpath(tmpdir / srcpath.filename());
+
+		if (!fs::exists(dstpath))
+		{
+			u::log::shadertoy()->info("Downloading {}", url);
+			file_get(curl, url, dstpath);
+		}
+		else
+		{
+			u::log::shadertoy()->info("Using cache for {}", url);
+		}
+
+		shadertoy::utils::input_loader loader;
+
+		auto uri(dstpath.string());
+		std::transform(uri.begin(), uri.end(), uri.begin(), [](char cc) {
+			if (cc == '\\')
+				return '/';
+			return cc;
+		});
+
+		buffer_input = loader.create("file:///" + uri);
+
+		if (buffer_input)
+			std::static_pointer_cast<shadertoy::inputs::file_input>(buffer_input)->vflip(sampler["vflip"].compare("true") == 0);
+
+		apply_sampler_options(buffer_input, sampler);
+	}
+	else if (input["ctype"].compare("buffer") == 0)
+	{
+	}
+	else
+	{
+		u::log::shadertoy()->warn("Unsupported input {} for pass {}, input {}",
+								  input["ctype"].asString(), i, input["channel"].asInt());
+	}
+}
+
+void load_buffer_input(std::shared_ptr<shadertoy::inputs::basic_input> &buffer_input, const Json::Value &input,
+					   std::map<std::string, std::shared_ptr<shadertoy::members::buffer_member>> known_buffers,
+					   int i)
+{
+	auto &sampler(input["sampler"]);
+
+	if (input["ctype"].compare("buffer") == 0)
+	{
+		std::string source = "Buf A";
+		source.back() = 'A' + (input["id"].asInt() - 257);
+		std::transform(source.begin(), source.end(), source.begin(), ::tolower);
+
+		u::log::shadertoy()->info("Pass {}, input {}: binding {} buffer", i, input["channel"].asInt(), source);
+
+		auto src = known_buffers[source];
+		assert(src);
+		buffer_input = std::make_shared<shadertoy::inputs::buffer_input>(src);
+
+		apply_sampler_options(buffer_input, sampler);
+	}
+}
+
+void loadRemote(const std::string &shaderId, const std::string &shaderApiKey, shadertoy::render_context &context,
+				shadertoy::swap_chain &chain, const shadertoy::rsize &render_size)
 {
 	CURL *curl = curl_easy_init();
 
@@ -88,148 +198,118 @@ void loadRemote(const string &shaderId, const string &shaderApiKey, shadertoy::C
 
 	if (!curl)
 	{
-		throw runtime_error("Failed to initialize curl");
+		throw std::runtime_error("Failed to initialize curl");
 	}
 
 	try
 	{
-		string endpoint =
-		string("https://www.shadertoy.com/api/v1/shaders/") + shaderId + string("?key=") + shaderApiKey;
+		std::string endpoint = std::string("https://www.shadertoy.com/api/v1/shaders/") + shaderId +
+							   std::string("?key=") + shaderApiKey;
 		Json::Value shaderSpec = json_get(curl, endpoint);
 
 		// Check errors from ShaderToy
 		if (!shaderSpec["Error"].isNull())
 		{
-			throw runtime_error(shaderSpec["Error"].asString().c_str());
+			throw std::runtime_error(shaderSpec["Error"].asString().c_str());
 		}
 
-		ofstream dump((basedir / fs::path(shaderId + string(".json"))).string());
+		std::ofstream dump((basedir / fs::path(shaderId + std::string(".json"))).string());
 		dump << shaderSpec;
 		dump.close();
 
-		// Create buffer configs for each render pass
-		regex rxChar("\\bchar\\b");
+		std::map<std::string, std::shared_ptr<shadertoy::members::buffer_member>> known_buffers;
 
+		// Create buffer configs for each render pass
 		for (size_t i = 0; i < shaderSpec["Shader"]["renderpass"].size(); ++i)
 		{
 			auto &pass(shaderSpec["Shader"]["renderpass"][static_cast<int>(i)]);
 
-			// Create buffer
-			shadertoy::BufferConfig imageBuffer;
-
-			// Get buffer name from JSON object
-			imageBuffer.name = pass["name"].asString();
-			if (imageBuffer.name.empty())
-				imageBuffer.name = pass["type"].asString();
-
-			// Lowercase buffer name
-			std::transform(imageBuffer.name.begin(), imageBuffer.name.end(),
-				imageBuffer.name.begin(), ::tolower);
+			// Find buffer name
+			auto name(to_buffer_name(pass));
 
 			// Skip if sound buffer
 			if (pass["type"].asString().compare("sound") == 0)
 			{
+				u::log::shadertoy()->warn("Skipping unsupported sound shader.");
 				continue;
 			}
 
+			// Create buffer
+			auto buffer(std::make_shared<shadertoy::buffers::toy_buffer>(name));
+
+			// Create iChannel0-3 beforehand
+			for (int j = 0; j < 4; ++j)
+				buffer->inputs().emplace_back();
+
 			// Load code
-			stringstream sspath;
+			std::stringstream sspath;
 			sspath << "stcode_remoteshader-" << getpid() << "-" << shaderId << "-" << i << ".glsl";
 			fs::path p(basedir / sspath.str());
 
-			ofstream ofs(p.string());
-			ofs << regex_replace(pass["code"].asString(), rxChar, "webgl_char");
-			ofs.close();
+			if (!fs::exists(p))
+			{
+				std::ofstream ofs(p.string());
+				ofs << pass["code"].asString();
+				ofs.close();
+			}
+
+			buffer->source_files().push_back(p.string());
 
 			// Load inputs
 			for (size_t j = 0; j < pass["inputs"].size(); ++j)
 			{
 				auto &input(pass["inputs"][static_cast<int>(j)]);
-				auto &conf(imageBuffer.inputConfig[input["channel"].asInt()]);
-				auto &sampler(input["sampler"]);
+				auto channel_id(input["channel"].asInt());
 
-				stringstream ssname;
-				ssname << imageBuffer.name << "." << input["channel"].asInt();
-				conf.id = ssname.str();
-
-				if (sampler["filter"].compare("mipmap") == 0)
-				{
-					conf.minFilter = GL_LINEAR_MIPMAP_LINEAR;
-					conf.magFilter = GL_LINEAR;
-				}
-				else if (sampler["filter"].compare("linear") == 0)
-				{
-					conf.minFilter = GL_LINEAR;
-					conf.magFilter = GL_LINEAR;
-				}
-				else if (sampler["filter"].compare("nearest") == 0)
-				{
-					conf.minFilter = GL_NEAREST;
-					conf.magFilter = GL_NEAREST;
-				}
-
-				if (sampler["wrap"].compare("repeat") == 0)
-				{
-					conf.wrap = GL_REPEAT;
-				}
-				else if (sampler["wrap"].compare("clamp") == 0)
-				{
-					conf.wrap = GL_CLAMP_TO_EDGE;
-				}
-
-				conf.vflip = sampler["vflip"].compare("true") == 0;
-
-				if (input["ctype"].compare("texture") == 0 || input["ctype"].compare("cubemap") == 0)
-				{
-					conf.type = "texture";
-
-					fs::path srcpath(input["src"].asString());
-					string url = string("https://www.shadertoy.com") + input["src"].asString();
-					fs::path dstpath(basedir / fs::path(std::string("stinput_") + srcpath.filename().string()));
-
-					if (!fs::exists(dstpath))
-					{
-						file_get(curl, url, dstpath);
-					}
-
-					conf.source = dstpath.string();
-				}
-				else if (input["ctype"].compare("buffer") == 0)
-				{
-					conf.type = "buffer";
-					conf.source = "Buf A";
-					conf.source.back() = 'A' + (input["id"].asInt() - 257);
-				}
-				else
-				{
-					stringstream ss;
-					ss << "Unsupported input " << input["ctype"].asString() << " for pass " << i
-					   << ", input " << input["channel"].asInt();
-
-					if (!(input["ctype"].compare("keyboard") == 0))
-					{
-						// throw runtime_error(ss.str().c_str());
-					}
-				}
+				load_nonbuffer_input(buffer->inputs()[channel_id].input(), input, curl, basedir, i);
 			}
 
-			// Add to context
-			imageBuffer.shaderFiles.push_back(p);
-			contextConfig.bufferConfigs.insert(make_pair(imageBuffer.name, imageBuffer));
+			auto member(shadertoy::members::member_data(buffer, shadertoy::make_size_ref(render_size)));
+			known_buffers.emplace(name, member);
+
+			if (name != "image")
+			{
+				// Add to chain
+				chain.push_back(member);
+			}
 		}
 
-		// Image buffer should be last
-		pair<string, shadertoy::BufferConfig> imagebuf(*contextConfig.bufferConfigs.begin());
-		contextConfig.bufferConfigs.erase(contextConfig.bufferConfigs.begin());
-		contextConfig.bufferConfigs.insert(imagebuf);
+		// Create buffer configs for each render pass
+		for (size_t i = 0; i < shaderSpec["Shader"]["renderpass"].size(); ++i)
+		{
+			auto &pass(shaderSpec["Shader"]["renderpass"][static_cast<int>(i)]);
+
+			// Find buffer name
+			auto name(to_buffer_name(pass));
+
+			// Skip if sound buffer
+			if (pass["type"].asString().compare("sound") == 0)
+				continue;
+
+			// Fetch buffer
+			auto buffer_member(known_buffers[name]);
+			auto buffer(std::static_pointer_cast<shadertoy::buffers::toy_buffer>(buffer_member->buffer()));
+
+			// Load buffer inputs and apply options
+			for (size_t j = 0; j < pass["inputs"].size(); ++j)
+			{
+				auto &input(pass["inputs"][static_cast<int>(j)]);
+				auto channel_id(input["channel"].asInt());
+
+				load_buffer_input(buffer->inputs()[channel_id].input(), input, known_buffers, i);
+			}
+		}
+
+		// Add the image buffer last
+		chain.push_back(known_buffers["image"]);
 	}
-	catch (exception &ex)
+	catch (std::exception &ex)
 	{
 		// Free CURL
 		curl_easy_cleanup(curl);
 
 		// Rethrow
-		throw runtime_error(ex.what());
+		throw std::runtime_error(ex.what());
 	}
 
 	// Free CURL

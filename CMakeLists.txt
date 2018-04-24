@@ -29,7 +29,7 @@ set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
 
 # libshadertoy
-find_package(shadertoy REQUIRED 0.1.7)
+find_package(shadertoy 1.0.0 REQUIRED)
 
 # Load omw
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ext/omw)
@@ -51,6 +51,10 @@ add_library(shadertoy_connector OBJECT
 	${SRC_DIR}/local.cpp
 	${SRC_DIR}/remote.cpp)
 
+# Fix include dirs for object library
+get_target_property(shadertoy_INCLUDE_DIRS shadertoy-shared INTERFACE_INCLUDE_DIRECTORIES)
+target_include_directories(shadertoy_connector PRIVATE ${shadertoy_INCLUDE_DIRS})
+
 # list of libraries to link into all the targets
 set(COMMON_LIBRARIES
 	${OPENGL_LIBRARY}
@@ -59,7 +63,7 @@ set(COMMON_LIBRARIES
 	${Boost_LIBRARIES}
 	${CURL_LIBRARIES}
 	${jsoncpp_LIBRARIES}
-	shadertoy)
+	shadertoy-shared)
 
 option(ST_BUILD_MATHEMATICA "Build the Mathematica target" ON)
 option(ST_BUILD_OCTAVE "Build the Octave target" ON)

@@ -11,7 +11,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include <shadertoy/Shadertoy.hpp>
+#include <shadertoy.hpp>
 
 #include <omw.hpp>
 
@@ -27,25 +27,25 @@ void st_wrapper_internal(TWrapper &wrapper, std::function<void(TWrapper &)> fun)
 	{
 		fun(wrapper);
 	}
-	catch (shadertoy::OpenGL::ShaderCompilationError &ex)
+	catch (shadertoy::gl::shader_compilation_error &ex)
 	{
 		std::stringstream ss;
 		ss << "Shader compilation error: " << ex.what() << std::endl << ex.log();
 		wrapper.send_failure(ss.str(), "glerr");
 	}
-	catch (shadertoy::OpenGL::ProgramLinkError &ex)
+	catch (shadertoy::gl::program_link_error &ex)
 	{
 		std::stringstream ss;
 		ss << "Program link error: " << ex.what() << std::endl << ex.log();
 		wrapper.send_failure(ss.str(), "glerr");
 	}
-	catch (shadertoy::OpenGL::OpenGLError &ex)
+	catch (shadertoy::gl::opengl_error &ex)
 	{
 		std::stringstream ss;
 		ss << "gl error: " << ex.what();
 		wrapper.send_failure(ss.str(), "glerr");
 	}
-	catch (shadertoy::ShadertoyError &ex)
+	catch (shadertoy::shadertoy_error &ex)
 	{
 		std::stringstream ss;
 		ss << "Shadertoy error: " << ex.what();
@@ -97,8 +97,7 @@ template <typename TWrapper> void impl_st_compile(TWrapper &w)
 	OM_OCTAVE(w, [&]() { tupleSize = 2; });
 
 	// Map of buffer sources
-	std::map<std::string, std::string> bufferSources;
-	bufferSources.insert(std::make_pair(std::string("image"), source));
+	std::vector<std::pair<std::string, std::string>> bufferSources;
 
 	for (long n = 0; n < nbuffers; ++n)
 	{
@@ -114,7 +113,8 @@ template <typename TWrapper> void impl_st_compile(TWrapper &w)
 		});
 
 		// Check for duplicates
-		auto it = bufferSources.find(bufferName);
+		auto it = std::find_if(bufferSources.begin(), bufferSources.end(), [&bufferName](const auto &pair)
+							   { return pair.first == bufferName; });
 		if (it != bufferSources.end())
 		{
 			std::stringstream ss;
@@ -122,9 +122,10 @@ template <typename TWrapper> void impl_st_compile(TWrapper &w)
 			throw std::runtime_error(ss.str());
 		}
 
-		bufferSources.insert(std::make_pair<std::string, std::string>(std::move(bufferName),
-																	  std::move(std::get<1>(bufferSpec))));
+		bufferSources.emplace_back(std::move(bufferName), std::move(std::get<1>(bufferSpec)));
 	}
+
+	bufferSources.emplace_back(std::string("image"), std::move(source));
 
 	std::string shaderId(host.CreateLocal(bufferSources));
 
@@ -254,7 +255,7 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 		{
 			std::transform(inputBufferName->begin(), inputBufferName->end(),
 				inputBufferName->begin(), ::tolower);
-			context->setInput(bufferName, channelName, boost::variant<std::string, StImage>(*inputBufferName));
+			context->setInput(bufferName, channelName, boost::variant<std::string, std::shared_ptr<StImage>>(*inputBufferName));
 		}
 		else
 		{
@@ -272,7 +273,8 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 			}
 
 			// Move image data in StImage structure
-			StImage img;
+			auto imgptr(std::make_shared<StImage>());
+			auto &img(*imgptr);
 			img.dims[0] = imageValue->dims()[0];
 			img.dims[1] = imageValue->dims()[1];
 			if (d == 3)
@@ -291,7 +293,7 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 			}
 
 			// Set context input
-			context->setInput(bufferName, channelName, img);
+			context->setInput(bufferName, channelName, imgptr);
 		}
 	}
 }

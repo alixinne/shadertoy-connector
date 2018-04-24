@@ -3,9 +3,10 @@
 
 #include <string>
 
-#include <shadertoy/Shadertoy.hpp>
+#include <shadertoy.hpp>
 
-void loadLocal(const std::string &shaderId, const std::map<std::string, std::string> &bufferSources,
-			   shadertoy::ContextConfig &contextConfig);
+void loadLocal(const std::string &shaderId, const std::vector<std::pair<std::string, std::string>> &bufferSources,
+			   shadertoy::render_context &context, shadertoy::swap_chain &chain,
+			   const shadertoy::rsize &render_size);
 
 #endif /* _LOCAL_HPP_ */

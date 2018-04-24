@@ -1,3 +1,11 @@
+shadertoy-connector (1.0.0~alpha) unstable; urgency=medium
+
+  * Add support for overriding fragment shader generation
+  * Upgrade libshadertoy dependency to 1.0.0
+  * Upgrade omw dependency
+
+ -- Vincent Tavernier <vince.tavernier@gmail.com>  Tue, 24 Apr 2018 22:15:16 +0200
+
 shadertoy-connector (0.1.0) unstable; urgency=medium
 
   * Initial Release.

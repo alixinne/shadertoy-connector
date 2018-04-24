@@ -8,7 +8,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include <shadertoy/Shadertoy.hpp>
+#include <shadertoy.hpp>
 
 struct StImage
 {
@@ -28,11 +28,14 @@ struct StContext
 	/// Identifier of the Shadertoy object
 	std::string shaderId;
 
-	/// Rendering context configuration
-	shadertoy::ContextConfig config;
+	/// Rendering size
+	shadertoy::rsize render_size;
 
 	/// Rendering context
-	std::shared_ptr<shadertoy::RenderContext> context;
+	shadertoy::render_context context;
+
+	/// Associated swap chain
+	shadertoy::swap_chain chain;
 
 	/// Number of rendered frames
 	int frameCount;
@@ -47,7 +50,7 @@ struct StContext
 	 * @param width    Initial width of the rendering context.
 	 * @param height   Initial height of the rendering context.
 	 */
-	StContext(const std::string &shaderId, int width, int height);
+	StContext(const std::string &shaderId, size_t width, size_t height);
 
 	/**
 	 * Builds a multi-buffer rendering context from source.
@@ -61,8 +64,8 @@ struct StContext
 	 *                            the local context, or if the image buffer is
 	 *                            missing from the definition.
 	 */
-	StContext(const std::string &shaderId, const std::map<std::string, std::string> &bufferSources,
-			  int width, int height);
+	StContext(const std::string &shaderId, const std::vector<std::pair<std::string, std::string>> &bufferSources,
+			  size_t width, size_t height);
 
 	/**
 	 * Renders the next frame of this Shadertoy into the currentImage field.
@@ -74,7 +77,7 @@ struct StContext
 	 * @param mouse      Values for the mouse uniform
 	 * @param format     Format of the rendering
 	 */
-	void performRender(GLFWwindow *window, int frameCount, int width, int height, const float mouse[4], GLenum format);
+	void performRender(GLFWwindow *window, int frameCount, size_t width, size_t height, const float mouse[4], GLenum format);
 
 	/**
 	 * Sets the value of an input for the next renderings.
@@ -83,7 +86,7 @@ struct StContext
 	 * @param channel  Channel id (0 to 3) of the input to change
 	 * @param data     Image data (or buffer name) to feed to the channel
 	 */
-	void setInput(const std::string &buffer, int channel, const boost::variant<std::string, StImage> &data);
+	void setInput(const std::string &buffer, size_t channel, const boost::variant<std::string, std::shared_ptr<StImage>> &data);
 
 	/**
 	 * Sets the filter for a given input.
@@ -92,7 +95,7 @@ struct StContext
 	 * @param channel   Channel id (0 to 3) of the input to change
 	 * @param minFilter Filtering method for the given input
 	 */
-	void setInputFilter(const std::string &buffer, int channel, GLint minFilter);
+	void setInputFilter(const std::string &buffer, size_t channel, GLint minFilter);
 
 	/**
 	 * Resets the values of the given input to the default as given by the context.
@@ -100,13 +103,13 @@ struct StContext
 	 * @param buffer  Name of the buffer to change the inputs
 	 * @param channel Channel id (0 to 3) of the input to reset
 	 */
-	void resetInput(const std::string &buffer, int channel);
+	void resetInput(const std::string &buffer, size_t channel);
 
 	private:
 	/**
 	 * Initialize the rendering context members.
 	 */
-	void initialize(const std::string &shaderId, int width, int height);
+	void initialize(const std::string &shaderId, size_t width, size_t height);
 
 	/**
 	 * Returns the number of components for a given format.
@@ -120,42 +123,50 @@ struct StContext
 	 *
 	 * @param  depth Depth of the image
 	 */
-	GLint depthFormat(int depth);
+	static GLint depthFormat(int depth);
 
 	/**
 	 * Allocates the rendering context
-	 *
-	 * @param config Rendering context configuration
 	 */
-	void createContext(shadertoy::ContextConfig &config);
-
-	typedef std::map<int, boost::variant<std::string, StImage>> BufferOverrideMap;
+	void createContext();
 
 	/**
-	 * Gets the map of input overrides for a given buffer.
+	 * @brief Find a buffer by name
 	 *
-	 * @param buffer Name of the buffer to get the overrides for.
+	 * @param name Name of the buffer to find
+	 *
+	 * @return Pointer to the buffer with the id \p name
+	 *
+	 * @throws std::runtime_error When a suitable buffer could not be found
 	 */
-	BufferOverrideMap &getBufferInputOverrides(const std::string &buffer);
+	std::shared_ptr<shadertoy::buffers::toy_buffer> getBuffer(const std::string &name);
 
-	/// Input override map
-	std::map<std::string, BufferOverrideMap> inputOverrides;
+	class override_input : public shadertoy::inputs::basic_input
+	{
+		std::shared_ptr<StImage> data_buffer_;
+		std::shared_ptr<shadertoy::gl::texture> texture_;
 
-	/// Data texture handler
-	std::shared_ptr<shadertoy::OpenGL::Texture>
-	DataTextureHandler(const shadertoy::InputConfig &inputConfig, bool &skipTextureOptions,
-					   bool &skipCache, bool &framebufferSized);
+		std::shared_ptr<shadertoy::inputs::buffer_input> member_input_;
 
-	/**
-	 * Get an shadertoy::OpenGL::Texture instance for the given input id.
-	 */
-	std::shared_ptr<shadertoy::OpenGL::Texture> getDataTexture(const std::string &inputId);
+		std::shared_ptr<shadertoy::inputs::basic_input> overriden_input_;
 
-	/// List of input override textures OpenGL objects
-	std::map<std::string, std::shared_ptr<shadertoy::OpenGL::Texture>> textures;
+	protected:
+		void load_input() override;
 
-	/// true if the set of input overrides has changed and textures need to be reloaded
-	bool reloadInputConfig;
+		void reset_input() override;
+
+		std::shared_ptr<shadertoy::gl::texture> use_input() override;
+
+	public:
+		override_input(std::shared_ptr<shadertoy::inputs::basic_input> overriden_input,
+					   std::shared_ptr<StImage> data_buffer);
+
+		override_input(std::shared_ptr<shadertoy::inputs::basic_input> overriden_input,
+					   std::shared_ptr<shadertoy::inputs::buffer_input> member_input);
+
+		inline const std::shared_ptr<shadertoy::inputs::basic_input> &overriden_input() const
+		{ return overriden_input_; }
+	};
 };
 
 #endif /* _CONTEXT_HPP_ */

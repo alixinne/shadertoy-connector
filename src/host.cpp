@@ -82,7 +82,7 @@ void Host::Allocate()
 	}
 }
 
-StImage *Host::Render(const string &id, boost::optional<int> frame, int width, int height,
+StImage *Host::Render(const string &id, boost::optional<int> frame, size_t width, size_t height,
 					  const float mouse[4], GLenum format)
 {
 	auto context(GetContext(id));
@@ -115,7 +115,7 @@ void Host::Reset(const string &id)
 	st_contexts.erase(id);
 }
 
-string Host::CreateLocal(const map<string, string> &bufferSources)
+std::string Host::CreateLocal(const std::vector<std::pair<std::string, std::string>> &bufferSources)
 {
 	// Ensure we are in the right context
 	glfwMakeContextCurrent(st_window);
