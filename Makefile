@@ -1,5 +1,5 @@
 # Known build distributions
-ALL_DISTS=xenial stretch
+ALL_DISTS=xenial stretch local
 
 # Known package types
 PKG_TYPES=amd64 i386 source
