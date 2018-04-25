@@ -264,7 +264,7 @@ void loadRemote(const std::string &shaderId, const std::string &shaderApiKey, sh
 				load_nonbuffer_input(buffer->inputs()[channel_id].input(), input, curl, basedir, i);
 			}
 
-			auto member(shadertoy::members::member_data(buffer, shadertoy::make_size_ref(render_size)));
+			auto member(shadertoy::members::make_buffer(buffer, shadertoy::make_size_ref(render_size)));
 			known_buffers.emplace(name, member);
 
 			if (name != "image")
