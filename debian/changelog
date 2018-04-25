@@ -1,4 +1,4 @@
-shadertoy-connector (1.0.0~alpha) unstable; urgency=medium
+shadertoy-connector (1.0.0~rc1) unstable; urgency=medium
 
   * Add support for overriding fragment shader generation
   * Upgrade libshadertoy dependency to 1.0.0
