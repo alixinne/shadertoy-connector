@@ -158,11 +158,11 @@ struct StContext
 		std::shared_ptr<shadertoy::gl::texture> use_input() override;
 
 	public:
-		override_input(std::shared_ptr<shadertoy::inputs::basic_input> overriden_input,
-					   std::shared_ptr<StImage> data_buffer);
+		override_input(std::shared_ptr<shadertoy::inputs::basic_input> overriden_input);
 
-		override_input(std::shared_ptr<shadertoy::inputs::basic_input> overriden_input,
-					   std::shared_ptr<shadertoy::inputs::buffer_input> member_input);
+		void set(std::shared_ptr<StImage> data_buffer);
+
+		void set(std::shared_ptr<shadertoy::inputs::buffer_input> member_input);
 
 		inline const std::shared_ptr<shadertoy::inputs::basic_input> &overriden_input() const
 		{ return overriden_input_; }
