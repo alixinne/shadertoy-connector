@@ -117,18 +117,18 @@ void StContext::setInput(const std::string &buffer, size_t channel,
 	auto &input(toy_buffer->inputs()[channel]);
 
 	// The input that will be overridden by this call
-	auto overriden_input = input.input();
+	std::shared_ptr<override_input> ov_input;
 
-	if (auto ov_input = std::dynamic_pointer_cast<override_input>(input.input()))
+	if (!(ov_input = std::dynamic_pointer_cast<override_input>(input.input())))
 	{
-		// Input is already overridden, so replace it
-		overriden_input = ov_input->overriden_input();
-	} // else, use "input" as the overridden input
+		// The input has not been overriden yet, so we replace it
+		input.input(ov_input = std::make_shared<override_input>(input.input()));
+	} // else, we will modify ov_input state
 
 	if (const auto img = boost::get<const std::shared_ptr<StImage>>(&data))
 	{
 		// The override is an image input
-		input.input(std::make_shared<override_input>(overriden_input, *img));
+		ov_input->set(*img);
 	}
 	else
 	{
@@ -145,9 +145,10 @@ void StContext::setInput(const std::string &buffer, size_t channel,
 			throw std::runtime_error(ss.str());
 		}
 
-		input.input(std::make_shared<override_input>(overriden_input,
-													 std::make_shared<shadertoy::inputs::buffer_input>(member_source)));
+		ov_input->set(std::make_shared<shadertoy::inputs::buffer_input>(member_source));
 	}
+
+	ov_input->reset();
 }
 
 void StContext::setInputFilter(const string &buffer, size_t channel, GLint minFilter)
@@ -246,18 +247,28 @@ void StContext::createContext()
 	context.init(chain);
 }
 
-StContext::override_input::override_input(std::shared_ptr<shadertoy::inputs::basic_input> overriden_input,
-										  std::shared_ptr<StImage> data_buffer)
-: data_buffer_(data_buffer), texture_(), member_input_(), overriden_input_(overriden_input)
+StContext::override_input::override_input(std::shared_ptr<shadertoy::inputs::basic_input> overriden_input)
+: data_buffer_(), texture_(), member_input_(), overriden_input_(overriden_input)
 {
-	assert(data_buffer);
 }
 
-StContext::override_input::override_input(std::shared_ptr<shadertoy::inputs::basic_input> overriden_input,
-										  std::shared_ptr<shadertoy::inputs::buffer_input> member_input)
-: data_buffer_(), texture_(), member_input_(member_input), overriden_input_(overriden_input)
+void StContext::override_input::set(std::shared_ptr<StImage> data_buffer)
+{
+	assert(data_buffer);
+
+	member_input_.reset();
+
+	data_buffer_ = data_buffer;
+}
+
+void StContext::override_input::set(std::shared_ptr<shadertoy::inputs::buffer_input> member_input)
 {
 	assert(member_input);
+
+	data_buffer_.reset();
+	texture_.reset();
+
+	member_input_ = member_input;
 }
 
 void StContext::override_input::load_input()
