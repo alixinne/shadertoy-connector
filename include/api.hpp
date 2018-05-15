@@ -67,15 +67,10 @@ auto st_wrapper_exec(TWrapper &wrapper, std::function<void(TWrapper &)> fun, Ext
 	});
 }
 
-std::string mathematica_unescape(const std::string &source);
-
 template <typename TWrapper> void impl_st_compile(TWrapper &w)
 {
 	// Image buffer source
 	std::string source(w.template get_param<std::string>(0, "code"));
-
-	// Unescape image buffer source
-	OM_MATHEMATICA(w, [&source]() { source = mathematica_unescape(source); });
 
 	// Fetch sources for extra buffers
 	long nbuffers;
@@ -106,11 +101,6 @@ template <typename TWrapper> void impl_st_compile(TWrapper &w)
 		// Lowercase buffer name
 		std::string bufferName(std::get<0>(bufferSpec));
 		std::transform(bufferName.begin(), bufferName.end(), bufferName.begin(), ::tolower);
-
-		// Unescape extra buffer source
-		OM_MATHEMATICA(w, [&]() {
-			std::get<1>(bufferSpec) = mathematica_unescape(std::get<1>(bufferSpec));
-		});
 
 		// Check for duplicates
 		auto it = std::find_if(bufferSources.begin(), bufferSources.end(), [&bufferName](const auto &pair)
