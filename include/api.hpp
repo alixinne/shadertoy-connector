@@ -72,32 +72,12 @@ template <typename TWrapper> void impl_st_compile(TWrapper &w)
 	// Image buffer source
 	std::string source(w.template get_param<std::string>(0, "code"));
 
-	// Fetch sources for extra buffers
-	long nbuffers;
-
-	// Get number of buffer sources (Mathematica)
-	OM_MATHEMATICA(w, [&]() {
-		if (!MLCheckFunction(w.link, "List", &nbuffers))
-		{
-			MLClearError(w.link);
-			throw std::runtime_error("Invalid buffer source specification");
-		}
-	});
-
-	// Get number of buffer sources (Octave)
-	OM_OCTAVE(w, [&]() { nbuffers = (w.args().length() - 1) / 2; });
-
-	// Get size of fetched tuples
-	int tupleSize = 1;
-	OM_OCTAVE(w, [&]() { tupleSize = 2; });
-
 	// Map of buffer sources
 	std::vector<std::pair<std::string, std::string>> bufferSources;
 
-	for (long n = 0; n < nbuffers; ++n)
+	// Build buffer source map
+	for (auto bufferSpec : w.template get_params<std::string, std::string>(1, "BufferSpec"))
 	{
-		auto bufferSpec(w.template get_param<std::tuple<std::string, std::string>>(tupleSize * n + 1, "BufferSpec"));
-
 		// Lowercase buffer name
 		std::string bufferName(std::get<0>(bufferSpec));
 		std::transform(bufferName.begin(), bufferName.end(), bufferName.begin(), ::tolower);
@@ -177,35 +157,9 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 	// Get context object
 	auto context(host.GetContext(id));
 
-	// Number of defined inputs
-	long ninputs;
-
-	// Get number of inputs (Mathematica)
-	OM_MATHEMATICA(w, [&]() {
-		if (!MLCheckFunction(w.link, "List", &ninputs))
-		{
-			MLClearError(w.link);
-			throw std::runtime_error("Invalid input specification");
-		}
-	});
-
-	// Get number of inputs (Octave)
-	OM_OCTAVE(w, [&]() {
-		ninputs = (w.args().length() - 1) / 2;
-	});
-
-	// Get size of fetched tuples
-	int tupleSize = 1;
-	OM_OCTAVE(w, [&]() {
-		tupleSize = 2;
-	});
-
 	// Process all inputs
-	for (long n = 0; n < ninputs; ++n)
+	for (auto inputSpec : w.template get_params<std::string, boost::variant<std::string, std::shared_ptr<omw::basic_matrix<float>>>>(1, "InputSpec"))
 	{
-		// Get <name, image> tuple
-		auto inputSpec(w.template get_param<std::tuple<std::string, boost::variant<std::string, std::shared_ptr<omw::basic_matrix<float>>>>>(tupleSize * n + 1, "InputSpec"));
-
 		// Parse name
 		std::string bufferName;
 		int channelName(0);
@@ -268,29 +222,9 @@ template <typename TWrapper> void impl_st_reset_input(TWrapper &w)
 	// Get context object
 	auto context(host.GetContext(id));
 
-	// Number of defined inputs
-	long ninputs;
-
-	// Get number of inputs (Mathematica)
-	OM_MATHEMATICA(w, [&]() {
-		if (!MLCheckFunction(w.link, "List", &ninputs))
-		{
-			MLClearError(w.link);
-			throw std::runtime_error("Invalid input specification");
-		}
-	});
-
-	// Get number of inputs (Octave)
-	OM_OCTAVE(w, [&]() {
-		ninputs = (w.args().length() - 1) / 2;
-	});
-
 	// Process all inputs
-	for (long n = 0; n < ninputs; ++n)
+	for (auto inputName : w.template get_params<std::string>(1, "InputName"))
 	{
-		// Get input name
-		auto inputName(w.template get_param<std::string>(n + 1, "InputName"));
-
 		// Parse name
 		std::string bufferName;
 		int channelName(0);
@@ -308,35 +242,9 @@ template <typename TWrapper> void impl_st_set_input_filter(TWrapper &w)
 	// Get context object
 	auto context(host.GetContext(id));
 
-	// Number of defined inputs
-	long ninputs;
-
-	// Get number of inputs (Mathematica)
-	OM_MATHEMATICA(w, [&]() {
-		if (!MLCheckFunction(w.link, "List", &ninputs))
-		{
-			MLClearError(w.link);
-			throw std::runtime_error("Invalid input specification");
-		}
-	});
-
-	// Get number of inputs (Octave)
-	OM_OCTAVE(w, [&]() {
-		ninputs = (w.args().length() - 1) / 2;
-	});
-
-	// Get size of fetched tuples
-	int tupleSize = 1;
-	OM_OCTAVE(w, [&]() {
-		tupleSize = 2;
-	});
-
 	// Process all inputs
-	for (long n = 0; n < ninputs; ++n)
+	for (auto inputSpec : w.template get_params<std::string, std::string>(1, "InputSpec"))
 	{
-		// Get <name, image> tuple
-		auto inputSpec(w.template get_param<std::tuple<std::string, std::string>>(tupleSize * n + 1, "InputSpec"));
-
 		// Parse name
 		std::string bufferName;
 		int channelName(0);
