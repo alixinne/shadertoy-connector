@@ -23,6 +23,9 @@ link_directories(${jsoncpp_LIBDIR})
 pkg_search_module(EPOXY REQUIRED epoxy)
 link_directories(${epoxy_LBIDIR})
 
+pkg_search_module(ZMQ libzmq)
+link_directories(${ZMQ_LIBRARY_DIRS})
+
 # Directories
 set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
@@ -67,6 +70,53 @@ set(COMMON_LIBRARIES
 
 option(ST_BUILD_MATHEMATICA "Build the Mathematica target" ON)
 option(ST_BUILD_OCTAVE "Build the Octave target" ON)
+
+# Shared objects
+add_library(shadertoy_remote OBJECT
+	${SRC_DIR}/net_io.cpp)
+
+target_include_directories(shadertoy_remote PRIVATE
+	${ZMQ_INCLUDE_DIRS})
+
+set_property(TARGET shadertoy_remote PROPERTY CXX_STANDARD 14)
+
+# Client library
+add_library(shadertoy_connector_client OBJECT
+	${SRC_DIR}/net_host.cpp)
+
+target_include_directories(shadertoy_connector_client PRIVATE
+	${ZMQ_INCLUDE_DIRS})
+
+set_property(TARGET shadertoy_connector_client PROPERTY CXX_STANDARD 14)
+
+# Client program
+add_executable(shadertoy_client
+	$<TARGET_OBJECTS:shadertoy_connector>
+	$<TARGET_OBJECTS:shadertoy_connector_client>
+	$<TARGET_OBJECTS:shadertoy_remote>
+	${SRC_DIR}/cli/client.cpp)
+
+target_link_libraries(shadertoy_client
+	${COMMON_LIBRARIES}
+	${ZMQ_LIBRARIES})
+
+set_property(TARGET shadertoy_client PROPERTY CXX_STANDARD 14)
+
+# Remote server
+add_executable(shadertoy_server
+	$<TARGET_OBJECTS:shadertoy_connector>
+	$<TARGET_OBJECTS:shadertoy_remote>
+	${SRC_DIR}/server.cpp
+	${SRC_DIR}/cli/server.cpp)
+
+target_include_directories(shadertoy_server PRIVATE
+	${ZMQ_INCLUDE_DIRS})
+
+target_link_libraries(shadertoy_server
+	${COMMON_LIBRARIES}
+	${ZMQ_LIBRARIES})
+
+set_property(TARGET shadertoy_server PROPERTY CXX_STANDARD 14)
 
 # Mathematica connector
 if(ST_BUILD_MATHEMATICA)
