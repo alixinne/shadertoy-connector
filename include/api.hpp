@@ -118,10 +118,7 @@ template <typename TWrapper> void impl_st_compile(TWrapper &w)
 	bufferSources.emplace_back(std::string("image"), std::move(source));
 
 	std::string shaderId(host.CreateLocal(bufferSources));
-
-	OM_RESULT_MATHEMATICA(w, [&]() { MLPutString(w.link, shaderId.c_str()); });
-
-	OM_RESULT_OCTAVE(w, [&]() { w.result().append(shaderId); });
+	w.write_result(shaderId);
 }
 
 template <typename TWrapper> void impl_st_reset(TWrapper &w)
@@ -158,41 +155,17 @@ template <typename TWrapper> void impl_st_render(TWrapper &w)
 	auto doFrameTiming(w.template get_param<boost::optional<bool>>(6, "FrameTiming").get_value_or(false));
 
 	auto image(host.Render(id, frameCount, width, height, mouse->data(), format));
+	auto image_result(omw::ref_matrix<float>::make(*image->data, image->dims));
 
-	OM_RESULT_MATHEMATICA(w, [&]() {
-		if (doFrameTiming)
-		{
-			MLPutFunction(w.link, "List", 2);
-			MLPutReal64(w.link, image->frameTiming / 1e9);
-		}
-
-		MLPutFunction(w.link, "Image", 1);
-		MLPutReal32Array(w.link, image->data->data(), &image->dims[0], NULL, 3);
-	});
-
-	OM_RESULT_OCTAVE(w, [&]() {
-		auto &res(w.result());
-
-		// Return the image
-		auto dims(dim_vector(image->dims[0], image->dims[1], image->dims[2]));
-		NDArray data(dims);
-
-		// Need to copy from float* to double*
-		for (int i = 0; i < image->dims[0]; ++i)
-			for (int j = 0; j < image->dims[1]; ++j)
-				for (int k = 0; k < image->dims[2]; ++k)
-				{
-					size_t idx = (i * image->dims[1] + j) * image->dims[2] + k;
-					data(i, j, k) = static_cast<double>((*image->data)[idx]);
-				}
-
-		if (doFrameTiming)
-		{
-			res.append(image->frameTiming / 1e9);
-		}
-
-		res.append(data);
-	});
+	w.matrices_as_images(true);
+	if (doFrameTiming)
+	{
+		w.write_result(image->frameTiming / 1e9, image_result);
+	}
+	else
+	{
+		w.write_result(image_result);
+	}
 }
 
 bool impl_st_parse_input(std::string &inputSpecName, std::string &buffer, int &channel);

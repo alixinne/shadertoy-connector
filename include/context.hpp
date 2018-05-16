@@ -13,14 +13,16 @@
 struct StImage
 {
 	std::shared_ptr<std::vector<float>> data;
-	int dims[3];
+	std::vector<int> dims;
 
 	// Flag to indicate the data in the data field has changed since the last
 	// rendering
-	bool changed = false;
+	bool changed;
 
 	// Rendering duration of the main buffer
-	unsigned long long frameTiming = 0;
+	unsigned long long frameTiming;
+
+	StImage();
 };
 
 struct StContext

@@ -10,6 +10,11 @@
 
 using namespace std;
 
+StImage::StImage()
+	: data(), dims(3), changed(false), frameTiming(0)
+{
+}
+
 StContext::StContext(const std::string &shaderId, size_t width, size_t height)
 : shaderId(shaderId), render_size(width, height), context(), chain(), frameCount(0)
 {
