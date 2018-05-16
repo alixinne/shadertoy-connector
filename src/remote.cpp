@@ -219,6 +219,8 @@ void loadRemote(const std::string &shaderId, const std::string &shaderApiKey, sh
 
 		std::map<std::string, std::shared_ptr<shadertoy::members::buffer_member>> known_buffers;
 
+		std::regex rgx_char("\\bchar\\b");
+
 		// Create buffer configs for each render pass
 		for (size_t i = 0; i < shaderSpec["Shader"]["renderpass"].size(); ++i)
 		{
@@ -248,8 +250,13 @@ void loadRemote(const std::string &shaderId, const std::string &shaderApiKey, sh
 
 			if (!fs::exists(p))
 			{
+				std::string raw_code(pass["code"].asString());
+				std::string result_code;
+
+				result_code = std::regex_replace(raw_code, rgx_char, "glchar");
+
 				std::ofstream ofs(p.string());
-				ofs << pass["code"].asString();
+				ofs << result_code;
 				ofs.close();
 			}
 
