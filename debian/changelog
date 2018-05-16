@@ -1,3 +1,10 @@
+shadertoy-connector (1.0.0~rc3) unstable; urgency=medium
+
+  * Update libshadertoy to 1.0.0~rc3
+  * Update omw wrapper
+
+ -- Vincent Tavernier <vince.tavernier@gmail.com>  Wed, 16 May 2018 10:52:26 +0200
+
 shadertoy-connector (1.0.0~rc2) unstable; urgency=medium
 
   * Update libshadertoy to 1.0.0~rc2
