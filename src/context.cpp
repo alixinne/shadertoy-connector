@@ -10,13 +10,8 @@
 
 using namespace std;
 
-StImage::StImage()
-	: data(), dims(3), changed(false), frameTiming(0)
-{
-}
-
 StContext::StContext(const std::string &shaderId, size_t width, size_t height)
-: shaderId(shaderId), render_size(width, height), context(), chain(), frameCount(0)
+: basic_context(shaderId), render_size(width, height), context(), chain(), frameCount(0)
 {
 	initialize(shaderId, width, height);
 
@@ -29,7 +24,7 @@ StContext::StContext(const std::string &shaderId, size_t width, size_t height)
 StContext::StContext(const std::string &shaderId,
 					 const std::vector<std::pair<std::string, std::string>> &bufferSources,
 					 size_t width, size_t height)
-: shaderId(shaderId), render_size(width, height), context(), chain(), frameCount(0)
+: basic_context(shaderId), render_size(width, height), context(), chain(), frameCount(0)
 {
 	initialize(shaderId, width, height);
 
@@ -39,8 +34,8 @@ StContext::StContext(const std::string &shaderId,
 	createContext();
 }
 
-void StContext::performRender(GLFWwindow *window, int frameCount, size_t width, size_t height,
-							  const float mouse[4], GLenum format)
+void StContext::perform_render(int frameCount, size_t width, size_t height,
+							   const float mouse[4], GLenum format)
 {
 	// Ensure we are working at the right size
 	GLint depth = formatDepth(format);
@@ -103,10 +98,13 @@ void StContext::performRender(GLFWwindow *window, int frameCount, size_t width, 
 	}
 
 	currentImage.frameTiming = std::static_pointer_cast<shadertoy::members::buffer_member>(chain.current())->buffer()->elapsed_time();
+
+	// Advance the frame counter
+	this->frameCount = frameCount + 1;
 }
 
-void StContext::setInput(const std::string &buffer, size_t channel,
-						 const boost::variant<std::string, std::shared_ptr<StImage>> &data)
+void StContext::set_input(const std::string &buffer, size_t channel,
+						  const boost::variant<std::string, std::shared_ptr<StImage>> &data)
 {
 	// Get a reference to the buffer
 	auto toy_buffer(getBuffer(buffer));
@@ -156,7 +154,7 @@ void StContext::setInput(const std::string &buffer, size_t channel,
 	ov_input->reset();
 }
 
-void StContext::setInputFilter(const string &buffer, size_t channel, GLint minFilter)
+void StContext::set_input_filter(const string &buffer, size_t channel, GLint minFilter)
 {
 	// Get a reference to the buffer
 	auto toy_buffer(getBuffer(buffer));
@@ -183,7 +181,7 @@ void StContext::setInputFilter(const string &buffer, size_t channel, GLint minFi
 	input->mag_filter(minFilter == GL_NEAREST ? GL_NEAREST : GL_LINEAR);
 }
 
-void StContext::resetInput(const string &buffer, size_t channel)
+void StContext::reset_input(const string &buffer, size_t channel)
 {
 	// Get a reference to the buffer
 	auto toy_buffer(getBuffer(buffer));
@@ -333,7 +331,7 @@ std::shared_ptr<shadertoy::buffers::toy_buffer> StContext::getBuffer(const std::
 	if (!buffer_member)
 	{
 		std::stringstream ss;
-		ss << "Buffer " << std::quoted(name) << " was not found in " << shaderId;
+		ss << "Buffer " << std::quoted(name) << " was not found in " << id();
 		throw std::runtime_error(ss.str());
 	}
 

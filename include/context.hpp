@@ -10,26 +10,10 @@
 
 #include <shadertoy.hpp>
 
-struct StImage
+#include "basic_context.hpp"
+
+class StContext : public basic_context
 {
-	std::shared_ptr<std::vector<float>> data;
-	std::vector<int> dims;
-
-	// Flag to indicate the data in the data field has changed since the last
-	// rendering
-	bool changed;
-
-	// Rendering duration of the main buffer
-	unsigned long long frameTiming;
-
-	StImage();
-};
-
-struct StContext
-{
-	/// Identifier of the Shadertoy object
-	std::string shaderId;
-
 	/// Rendering size
 	shadertoy::rsize render_size;
 
@@ -45,6 +29,7 @@ struct StContext
 	/// The currently rendered image
 	StImage currentImage;
 
+public:
 	/**
 	 * Builds a new rendering context for a given Shadertoy.
 	 *
@@ -69,43 +54,19 @@ struct StContext
 	StContext(const std::string &shaderId, const std::vector<std::pair<std::string, std::string>> &bufferSources,
 			  size_t width, size_t height);
 
-	/**
-	 * Renders the next frame of this Shadertoy into the currentImage field.
-	 *
-	 * @param window     OpenGL rendering window
-	 * @param frameCount Id of the frame to render
-	 * @param width      Width of the rendering
-	 * @param height     Height of the rendering
-	 * @param mouse      Values for the mouse uniform
-	 * @param format     Format of the rendering
-	 */
-	void performRender(GLFWwindow *window, int frameCount, size_t width, size_t height, const float mouse[4], GLenum format);
+	inline int frame_count() const override
+	{ return frameCount; }
 
-	/**
-	 * Sets the value of an input for the next renderings.
-	 *
-	 * @param buffer   Name of the buffer to change the inputs
-	 * @param channel  Channel id (0 to 3) of the input to change
-	 * @param data     Image data (or buffer name) to feed to the channel
-	 */
-	void setInput(const std::string &buffer, size_t channel, const boost::variant<std::string, std::shared_ptr<StImage>> &data);
+	inline StImage current_image() const override
+	{ return currentImage; }
 
-	/**
-	 * Sets the filter for a given input.
-	 *
-	 * @param buffer    Name of the buffer to change the inputs
-	 * @param channel   Channel id (0 to 3) of the input to change
-	 * @param minFilter Filtering method for the given input
-	 */
-	void setInputFilter(const std::string &buffer, size_t channel, GLint minFilter);
+	void perform_render(int frameCount, size_t width, size_t height, const float mouse[4], GLenum format) override;
 
-	/**
-	 * Resets the values of the given input to the default as given by the context.
-	 *
-	 * @param buffer  Name of the buffer to change the inputs
-	 * @param channel Channel id (0 to 3) of the input to reset
-	 */
-	void resetInput(const std::string &buffer, size_t channel);
+	void set_input(const std::string &buffer, size_t channel, const boost::variant<std::string, std::shared_ptr<StImage>> &data) override;
+
+	void set_input_filter(const std::string &buffer, size_t channel, GLint minFilter) override;
+
+	void reset_input(const std::string &buffer, size_t channel) override;
 
 	private:
 	/**

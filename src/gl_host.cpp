@@ -4,14 +4,14 @@
 #include "getpid.h"
 
 #include "context.hpp"
-#include "host.hpp"
+#include "gl_host.hpp"
 #include "remote.hpp"
 
 using namespace std;
 
-Host::Host() : st_window(nullptr), local_counter(0), st_contexts() {}
+gl_host::gl_host() : basic_host(), st_window(nullptr), local_counter(0), st_contexts() {}
 
-Host::~Host()
+gl_host::~gl_host()
 {
 	if (st_window)
 	{
@@ -47,7 +47,7 @@ void st_glfwErrorCallback(int error, const char *description)
 	throw runtime_error(ss.str());
 }
 
-void Host::Allocate()
+void gl_host::allocate()
 {
 	initRemote();
 	m_remoteInit = true;
@@ -82,26 +82,23 @@ void Host::Allocate()
 	}
 }
 
-StImage *Host::Render(const string &id, boost::optional<int> frame, size_t width, size_t height,
+StImage gl_host::render(const string &id, boost::optional<int> frame, size_t width, size_t height,
 					  const float mouse[4], GLenum format)
 {
-	auto context(GetContext(id));
+	auto context(get_context(id));
 
 	// Default value for frame is the current frame count of the context
 	if (!frame)
-		frame = context->frameCount;
+		frame = context->frame_count();
 
 	// Render the next frame
-	context->performRender(st_window, *frame, width, height, mouse, format);
-
-	// Advance the frame counter
-	context->frameCount = *frame + 1;
+	context->perform_render(*frame, width, height, mouse, format);
 
 	// Return the image
-	return &(context->currentImage);
+	return context->current_image();
 }
 
-void Host::Reset(const string &id)
+void gl_host::reset(const string &id)
 {
 	// Ensure we are in the right context
 	glfwMakeContextCurrent(st_window);
@@ -115,7 +112,7 @@ void Host::Reset(const string &id)
 	st_contexts.erase(id);
 }
 
-std::string Host::CreateLocal(const std::vector<std::pair<std::string, std::string>> &bufferSources)
+std::string gl_host::create_local(const std::vector<std::pair<std::string, std::string>> &bufferSources)
 {
 	// Ensure we are in the right context
 	glfwMakeContextCurrent(st_window);
@@ -126,12 +123,12 @@ std::string Host::CreateLocal(const std::vector<std::pair<std::string, std::stri
 	string shaderId(name.str());
 
 	// Create local context
-	NewContext(shaderId, bufferSources);
+	new_context(shaderId, bufferSources);
 
 	return shaderId;
 }
 
-shared_ptr<StContext> Host::GetContext(const std::string &id)
+shared_ptr<basic_context> gl_host::get_context(const std::string &id)
 {
 	// Ensure we are in the right context
 	glfwMakeContextCurrent(st_window);
@@ -139,7 +136,7 @@ shared_ptr<StContext> Host::GetContext(const std::string &id)
 	auto it = st_contexts.find(id);
 	if (it == st_contexts.end())
 	{
-		return NewContext(id);
+		return new_context(id);
 	}
 
 	return it->second;

@@ -46,8 +46,11 @@ include_directories(
 
 # create the connector library
 add_library(shadertoy_connector OBJECT
+	${SRC_DIR}/basic_context.cpp
+	${SRC_DIR}/basic_host.cpp
 	${SRC_DIR}/context.cpp
-	${SRC_DIR}/host.cpp
+	${SRC_DIR}/gl_host.cpp
+	${SRC_DIR}/image.cpp
 	${SRC_DIR}/local.cpp
 	${SRC_DIR}/remote.cpp)
 

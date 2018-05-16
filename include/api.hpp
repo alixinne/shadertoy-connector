@@ -16,9 +16,9 @@
 #include <omw.hpp>
 
 #include "context.hpp"
-#include "host.hpp"
+#include "gl_host.hpp"
 
-extern Host host;
+extern gl_host host;
 
 template<typename TWrapper>
 void st_wrapper_internal(TWrapper &wrapper, std::function<void(TWrapper &)> fun)
@@ -97,13 +97,13 @@ template <typename TWrapper> void impl_st_compile(TWrapper &w)
 
 	bufferSources.emplace_back(std::string("image"), std::move(source));
 
-	std::string shaderId(host.CreateLocal(bufferSources));
+	std::string shaderId(host.create_local(bufferSources));
 	w.write_result(shaderId);
 }
 
 template <typename TWrapper> void impl_st_reset(TWrapper &w)
 {
-	host.Reset(w.template get_param<std::string>(0, "ctxt"));
+	host.reset(w.template get_param<std::string>(0, "ctxt"));
 }
 
 template <typename TWrapper> void impl_st_render(TWrapper &w)
@@ -134,13 +134,13 @@ template <typename TWrapper> void impl_st_render(TWrapper &w)
 
 	auto doFrameTiming(w.template get_param<boost::optional<bool>>(6, "FrameTiming").get_value_or(false));
 
-	auto image(host.Render(id, frameCount, width, height, mouse->data(), format));
-	auto image_result(omw::ref_matrix<float>::make(*image->data, image->dims));
+	auto image(host.render(id, frameCount, width, height, mouse->data(), format));
+	auto image_result(omw::ref_matrix<float>::make(*image.data, image.dims));
 
 	w.matrices_as_images(true);
 	if (doFrameTiming)
 	{
-		w.write_result(image->frameTiming / 1e9, image_result);
+		w.write_result(image.frameTiming / 1e9, image_result);
 	}
 	else
 	{
@@ -155,7 +155,7 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 	// Parse context id
 	auto id(w.template get_param<std::string>(0, "ctxt"));
 	// Get context object
-	auto context(host.GetContext(id));
+	auto context(host.get_context(id));
 
 	// Process all inputs
 	for (auto inputSpec : w.template get_params<std::string, boost::variant<std::string, std::shared_ptr<omw::basic_matrix<float>>>>(1, "InputSpec"))
@@ -172,7 +172,7 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 		{
 			std::transform(inputBufferName->begin(), inputBufferName->end(),
 				inputBufferName->begin(), ::tolower);
-			context->setInput(bufferName, channelName, boost::variant<std::string, std::shared_ptr<StImage>>(*inputBufferName));
+			context->set_input(bufferName, channelName, boost::variant<std::string, std::shared_ptr<StImage>>(*inputBufferName));
 		}
 		else
 		{
@@ -210,7 +210,7 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 			}
 
 			// Set context input
-			context->setInput(bufferName, channelName, imgptr);
+			context->set_input(bufferName, channelName, imgptr);
 		}
 	}
 }
@@ -220,7 +220,7 @@ template <typename TWrapper> void impl_st_reset_input(TWrapper &w)
 	// Parse context id
 	auto id(w.template get_param<std::string>(0, "ctxt"));
 	// Get context object
-	auto context(host.GetContext(id));
+	auto context(host.get_context(id));
 
 	// Process all inputs
 	for (auto inputName : w.template get_params<std::string>(1, "InputName"))
@@ -231,7 +231,7 @@ template <typename TWrapper> void impl_st_reset_input(TWrapper &w)
 		impl_st_parse_input(inputName, bufferName, channelName);
 
 		// Reset context input
-		context->resetInput(bufferName, channelName);
+		context->reset_input(bufferName, channelName);
 	}
 }
 
@@ -240,7 +240,7 @@ template <typename TWrapper> void impl_st_set_input_filter(TWrapper &w)
 	// Parse context id
 	auto id(w.template get_param<std::string>(0, "ctxt"));
 	// Get context object
-	auto context(host.GetContext(id));
+	auto context(host.get_context(id));
 
 	// Process all inputs
 	for (auto inputSpec : w.template get_params<std::string, std::string>(1, "InputSpec"))
@@ -270,7 +270,7 @@ template <typename TWrapper> void impl_st_set_input_filter(TWrapper &w)
 		}
 
 		// Set context input filter
-		context->setInputFilter(bufferName, channelName, minFilter);
+		context->set_input_filter(bufferName, channelName, minFilter);
 	}
 }
 

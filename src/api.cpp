@@ -1,7 +1,7 @@
 #include "api.hpp"
 
 /// Shadertoy Connector context host
-Host host;
+gl_host host;
 
 bool impl_st_parse_input(std::string &inputSpecName, std::string &buffer, int &channel)
 {
@@ -30,7 +30,7 @@ bool impl_st_parse_input(std::string &inputSpecName, std::string &buffer, int &c
 #if OMW_OCTAVE
 
 static omw::octave wrapper(reinterpret_cast<void*>(&impl_st_parse_input),
-	[]() { host.Allocate(); });
+	[]() { host.allocate(); });
 
 DEFUN_DLD(shadertoy_octave, args, , "shadertoy_octave() initializes the shadertoy oct file")
 {
@@ -63,7 +63,7 @@ octave_value_list st_octave_run(const octave_value_list &args,
 #if OMW_MATHEMATICA
 
 // Mathematica API wrapper
-static omw::mathematica wrapper("Shadertoy", stdlink, []() { host.Allocate(); });
+static omw::mathematica wrapper("Shadertoy", stdlink, []() { host.allocate(); });
 
 #define OM_DEFUN(name,oct_usage) \
 	extern "C" void name (); \
