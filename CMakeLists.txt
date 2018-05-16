@@ -26,6 +26,16 @@ link_directories(${epoxy_LBIDIR})
 pkg_search_module(ZMQ libzmq)
 link_directories(${ZMQ_LIBRARY_DIRS})
 
+if (ZMQ_FOUND)
+	set(HAS_ZMQ ON)
+	set(ZMQ_OPT SHADERTOY_CONNECTOR_HAS_ZMQ=1)
+	message(STATUS "Building with libzmq support")
+else()
+	set(HAS_ZMQ OFF)
+	set(ZMQ_OPT SHADERTOY_CONNECTOR_HAS_ZMQ=0)
+	message(STATUS "Building without libzmq support")
+endif()
+
 # Directories
 set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
@@ -71,52 +81,53 @@ set(COMMON_LIBRARIES
 option(ST_BUILD_MATHEMATICA "Build the Mathematica target" ON)
 option(ST_BUILD_OCTAVE "Build the Octave target" ON)
 
-# Shared objects
-add_library(shadertoy_remote OBJECT
-	${SRC_DIR}/net_io.cpp)
+if (HAS_ZMQ)
+	# Shared objects
+	add_library(shadertoy_remote OBJECT ${SRC_DIR}/net_io.cpp)
+	target_include_directories(shadertoy_remote PRIVATE ${ZMQ_INCLUDE_DIRS})
+	set_target_properties(shadertoy_remote
+		PROPERTIES CXX_STANDARD 14
+		POSITION_INDEPENDENT_CODE ON)
 
-target_include_directories(shadertoy_remote PRIVATE
-	${ZMQ_INCLUDE_DIRS})
+	# Client library
+	add_library(shadertoy_connector_client STATIC
+		$<TARGET_OBJECTS:shadertoy_remote>
+		${SRC_DIR}/net_host.cpp)
 
-set_property(TARGET shadertoy_remote PROPERTY CXX_STANDARD 14)
+	target_link_libraries(shadertoy_connector_client PUBLIC ${ZMQ_LIBRARIES})
+	set_target_properties(shadertoy_connector_client
+		PROPERTIES CXX_STANDARD 14
+		POSITION_INDEPENDENT_CODE ON)
 
-# Client library
-add_library(shadertoy_connector_client OBJECT
-	${SRC_DIR}/net_host.cpp)
+	# Client program
+	add_executable(shadertoy_client
+		$<TARGET_OBJECTS:shadertoy_connector>
+		${SRC_DIR}/cli/client.cpp)
 
-target_include_directories(shadertoy_connector_client PRIVATE
-	${ZMQ_INCLUDE_DIRS})
+	target_link_libraries(shadertoy_client
+		shadertoy_connector_client
+		${COMMON_LIBRARIES}
+		${ZMQ_LIBRARIES})
+	set_property(TARGET shadertoy_client PROPERTY CXX_STANDARD 14)
 
-set_property(TARGET shadertoy_connector_client PROPERTY CXX_STANDARD 14)
+	# Remote server
+	add_executable(shadertoy_server
+		$<TARGET_OBJECTS:shadertoy_connector>
+		$<TARGET_OBJECTS:shadertoy_remote>
+		${SRC_DIR}/server.cpp
+		${SRC_DIR}/cli/server.cpp)
 
-# Client program
-add_executable(shadertoy_client
-	$<TARGET_OBJECTS:shadertoy_connector>
-	$<TARGET_OBJECTS:shadertoy_connector_client>
-	$<TARGET_OBJECTS:shadertoy_remote>
-	${SRC_DIR}/cli/client.cpp)
+	target_include_directories(shadertoy_server PRIVATE ${ZMQ_INCLUDE_DIRS})
+	target_link_libraries(shadertoy_server
+		${COMMON_LIBRARIES}
+		${ZMQ_LIBRARIES})
+	set_property(TARGET shadertoy_server PROPERTY CXX_STANDARD 14)
 
-target_link_libraries(shadertoy_client
-	${COMMON_LIBRARIES}
-	${ZMQ_LIBRARIES})
-
-set_property(TARGET shadertoy_client PROPERTY CXX_STANDARD 14)
-
-# Remote server
-add_executable(shadertoy_server
-	$<TARGET_OBJECTS:shadertoy_connector>
-	$<TARGET_OBJECTS:shadertoy_remote>
-	${SRC_DIR}/server.cpp
-	${SRC_DIR}/cli/server.cpp)
-
-target_include_directories(shadertoy_server PRIVATE
-	${ZMQ_INCLUDE_DIRS})
-
-target_link_libraries(shadertoy_server
-	${COMMON_LIBRARIES}
-	${ZMQ_LIBRARIES})
-
-set_property(TARGET shadertoy_server PROPERTY CXX_STANDARD 14)
+	# Extra libraries for connector clients
+	set(EXTRA_LIBRARIES shadertoy_connector_client)
+else()
+	set(EXTRA_LIBRARIES "")
+endif()
 
 # Mathematica connector
 if(ST_BUILD_MATHEMATICA)
@@ -124,25 +135,28 @@ if(ST_BUILD_MATHEMATICA)
 		PACKAGE_NAME Shadertoy
 		INSTALL st_mathematica
 		MPREP_SOURCES ${SRC_DIR}/mathematica/Shadertoy.tm
-		SOURCES ${SRC_DIR}/api.cpp $<TARGET_OBJECTS:shadertoy_connector>
-		LINK_LIBRARIES ${COMMON_LIBRARIES}
+		SOURCES ${SRC_DIR}/api.cpp ${SRC_DIR}/host_host.cpp $<TARGET_OBJECTS:shadertoy_connector>
+		LINK_LIBRARIES ${COMMON_LIBRARIES} ${EXTRA_LIBRARIES}
 		COMPILE_OPTIONS "-Wall")
+
+	target_compile_definitions(shadertoy_mathematica PRIVATE ${ZMQ_OPT})
 endif()
 
 # Octave connector
 if(ST_BUILD_OCTAVE)
 	omw_add_octave(shadertoy_octave
-		SOURCES ${SRC_DIR}/api.cpp $<TARGET_OBJECTS:shadertoy_connector>
-		LINK_LIBRARIES ${COMMON_LIBRARIES}
+		SOURCES ${SRC_DIR}/api.cpp ${SRC_DIR}/host_host.cpp $<TARGET_OBJECTS:shadertoy_connector>
+		LINK_LIBRARIES ${COMMON_LIBRARIES} ${EXTRA_LIBRARIES}
 		INSTALL st_octave
 		COMPILE_OPTIONS "-Wall")
+
+	target_compile_definitions(shadertoy_mathematica PRIVATE ${ZMQ_OPT})
 endif()
 
-# C++14 for the targets
-set_property(TARGET shadertoy_connector PROPERTY CXX_STANDARD 14)
-
-# Required
-set_property(TARGET shadertoy_connector PROPERTY POSITION_INDEPENDENT_CODE ON)
+# C++14 for the targets and -fPIC
+set_target_properties(shadertoy_connector
+	PROPERTIES CXX_STANDARD 14
+	POSITION_INDEPENDENT_CODE ON)
 
 # Set -Wall for connector
 target_compile_options(shadertoy_connector PRIVATE "-Wall")
