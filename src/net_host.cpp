@@ -138,12 +138,13 @@ void net_host::allocate()
 StImage net_host::render(const std::string &id, boost::optional<int> frame, size_t width, size_t height,
 						 const std::array<float, 4> &mouse, GLenum format)
 {
-	impl_->log->info("render id: {} frame: {} width: {} height: {}", id, *frame, width, height);
+	int act_frame = frame.get_value_or(std::numeric_limits<int>::min());
+	impl_->log->info("render id: {} frame: {} width: {} height: {}", id, act_frame, width, height);
 
 	impl_->io.send_string("render", ZMQ_SNDMORE);
 
 	impl_->io.send_string(id, ZMQ_SNDMORE);
-	impl_->io.send_data<int>(*frame, ZMQ_SNDMORE);
+	impl_->io.send_data<int>(act_frame, ZMQ_SNDMORE);
 	impl_->io.send_data<size_t>(width, ZMQ_SNDMORE);
 	impl_->io.send_data<size_t>(height, ZMQ_SNDMORE);
 	impl_->io.send_data_noout(mouse, ZMQ_SNDMORE);

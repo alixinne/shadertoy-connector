@@ -95,7 +95,11 @@ class server_impl
 
 		try
 		{
-			auto img(rendering_context_.render(id, frame, width, height, mouse, format));
+			boost::optional<int> frame_opt;
+			if (frame > std::numeric_limits<int>::min())
+				frame_opt = frame;
+
+			auto img(rendering_context_.render(id, frame_opt, width, height, mouse, format));
 
 			log_->info("Rendered frame {} for {}", frame, id);
 			io_.send_string("OK", ZMQ_SNDMORE);
