@@ -67,6 +67,24 @@ auto st_wrapper_exec(TWrapper &wrapper, std::function<void(TWrapper &)> fun, Ext
 	});
 }
 
+template <typename TWrapper> void impl_st_set_renderer(TWrapper &w)
+{
+	// New renderer name
+	std::string host(w.template get_param<std::string>(0, "Renderer"));
+
+	// Add tcp:// if needed
+	if (host.compare("local") != 0)
+		if (std::strncmp(host.c_str(), "tcp", 3) != 0)
+			host = std::string("tcp://") + host;
+
+	// Add port number if needed
+	if (std::strncmp(host.c_str(), "tcp", 3) == 0 && host.find(":", host.find(":") + 1) == std::string::npos)
+		host += ":13710";
+
+	// Set new renderer
+	host_mgr.set_current(host);
+}
+
 template <typename TWrapper> void impl_st_compile(TWrapper &w)
 {
 	// Image buffer source

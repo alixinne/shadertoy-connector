@@ -1,3 +1,15 @@
+void st_set_renderer P(( ));
+
+:Begin:
+:Function:       st_set_renderer
+:Pattern:        SetShadertoyRenderer[host_String]
+:Arguments:      { host }
+:ArgumentTypes:  { Manual }
+:ReturnType:     Manual
+:End:
+
+:Evaluate: SetShadertoyRenderer::usage = "SetShadertoyRenderer[host] sets the target host for rendering";
+
 void st_render P(( ));
 
 :Begin:

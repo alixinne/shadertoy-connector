@@ -35,6 +35,7 @@ DEFUN_DLD(shadertoy_octave, args, , "shadertoy_octave() initializes the shaderto
 {
 	wrapper.check_initialization();
 
+	wrapper.set_autoload("st_set_renderer");
 	wrapper.set_autoload("st_render");
 	wrapper.set_autoload("st_reset");
 	wrapper.set_autoload("st_compile");
@@ -78,6 +79,8 @@ static omw::mathematica wrapper("Shadertoy", stdlink);
 #define OM_DEFUN(name,oct_usage)
 
 #endif /* !defined(OM_DEFUN) */
+
+OM_DEFUN(st_set_renderer, "st_set_renderer('local'|'tcp://hostname') sets the current rendering target")
 
 OM_DEFUN(st_render, "st_render('id', [frame, [width, [height, [format, [mouse, [timing]]]]]]) renders a Shadertoy as an image")
 
