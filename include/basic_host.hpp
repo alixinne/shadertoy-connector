@@ -28,6 +28,11 @@ class basic_host
 	virtual ~basic_host();
 
 	/**
+	 * Allocate the rendering context. Throws exceptions on errors.
+	 */
+	virtual void allocate() = 0;
+
+	/**
 	 * Render a shadertoy by its name.
 	 *
 	 * @param  id     Name of the shadertoy context to render.
@@ -39,7 +44,7 @@ class basic_host
 	 * @return        Handle to the rendered frame
 	 */
 	virtual StImage render(const std::string &id, boost::optional<int> frame, size_t width, size_t height,
-						   const float mouse[4], GLenum format) = 0;
+						   const std::array<float, 4> &mouse, GLenum format) = 0;
 
 	/**
 	 * Resets the context associated with this Shadertoy Id.

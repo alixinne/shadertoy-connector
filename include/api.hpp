@@ -132,9 +132,12 @@ template <typename TWrapper> void impl_st_render(TWrapper &w)
 	auto mouse(w.template get_param<boost::optional<std::shared_ptr<omw::basic_array<float>>>>(5, "Mouse")
 		.get_value_or(omw::vector_array<float>::make(4, 0.f)));
 
+	std::array<float, 4> mouse_array;
+	memcpy(mouse_array.data(), mouse->data(), sizeof(float) * (4 < mouse->size() ? 4 : mouse->size()));
+
 	auto doFrameTiming(w.template get_param<boost::optional<bool>>(6, "FrameTiming").get_value_or(false));
 
-	auto image(host.render(id, frameCount, width, height, mouse->data(), format));
+	auto image(host.render(id, frameCount, width, height, mouse_array, format));
 	auto image_result(omw::ref_matrix<float>::make(*image.data, image.dims));
 
 	w.matrices_as_images(true);

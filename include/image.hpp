@@ -7,7 +7,7 @@
 struct StImage
 {
 	std::shared_ptr<std::vector<float>> data;
-	std::vector<int> dims;
+	std::array<int, 3> dims;
 
 	// Flag to indicate the data in the data field has changed since the last
 	// rendering
@@ -15,6 +15,8 @@ struct StImage
 
 	// Rendering duration of the main buffer
 	unsigned long long frameTiming;
+
+	void alloc();
 
 	StImage();
 };

@@ -54,13 +54,32 @@ public:
 	StContext(const std::string &shaderId, const std::vector<std::pair<std::string, std::string>> &bufferSources,
 			  size_t width, size_t height);
 
-	inline int frame_count() const override
+	/**
+	 * @brief Gets the number of rendered frames using this context
+	 *
+	 * @return Number of rendered frames
+	 */
+	inline int frame_count() const
 	{ return frameCount; }
 
-	inline StImage current_image() const override
-	{ return currentImage; }
+	/**
+	 * @brief Renders a new frame at the given resolution
+	 *
+	 * @param frame  Number of the frame to render
+	 * @param width  Rendering width
+	 * @param height Rendering height
+	 * @param mouse  Mouse status
+	 * @param format Rendering format
+	 */
+	void perform_render(int frame, size_t width, size_t height, const std::array<float, 4> &mouse, GLenum format);
 
-	void perform_render(int frameCount, size_t width, size_t height, const float mouse[4], GLenum format) override;
+	/**
+	 * @brief Gets the current frame result
+	 *
+	 * @return Handle to the frame result
+	 */
+	inline StImage current_image() const
+	{ return currentImage; }
 
 	void set_input(const std::string &buffer, size_t channel, const boost::variant<std::string, std::shared_ptr<StImage>> &data) override;
 

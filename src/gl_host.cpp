@@ -83,9 +83,9 @@ void gl_host::allocate()
 }
 
 StImage gl_host::render(const string &id, boost::optional<int> frame, size_t width, size_t height,
-					  const float mouse[4], GLenum format)
+						const std::array<float, 4> &mouse, GLenum format)
 {
-	auto context(get_context(id));
+	auto context(get_gl_context(id));
 
 	// Default value for frame is the current frame count of the context
 	if (!frame)
@@ -129,6 +129,11 @@ std::string gl_host::create_local(const std::vector<std::pair<std::string, std::
 }
 
 shared_ptr<basic_context> gl_host::get_context(const std::string &id)
+{
+	return get_gl_context(id);
+}
+
+shared_ptr<StContext> gl_host::get_gl_context(const std::string &id)
 {
 	// Ensure we are in the right context
 	glfwMakeContextCurrent(st_window);
