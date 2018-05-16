@@ -35,6 +35,7 @@ find_package(shadertoy 1.0.0 REQUIRED)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ext/omw)
 
 # setup shared include directories
+get_target_property(shadertoy_INCLUDE_DIRS shadertoy-shared INTERFACE_INCLUDE_DIRECTORIES)
 include_directories(
 	${INCLUDE_DIR}
 	${jsoncpp_INCLUDE_DIRS}
@@ -42,7 +43,8 @@ include_directories(
 	${Boost_INCLUDE_DIRS}
 	${glfw3_INCLUDE_DIRS}
 	${EPOXY_INCLUDE_DIRS}
-	${OPENGL_INCLUDE_DIRS})
+	${OPENGL_INCLUDE_DIRS}
+	${shadertoy_INCLUDE_DIRS})
 
 # create the connector library
 add_library(shadertoy_connector OBJECT
@@ -53,10 +55,6 @@ add_library(shadertoy_connector OBJECT
 	${SRC_DIR}/image.cpp
 	${SRC_DIR}/local.cpp
 	${SRC_DIR}/remote.cpp)
-
-# Fix include dirs for object library
-get_target_property(shadertoy_INCLUDE_DIRS shadertoy-shared INTERFACE_INCLUDE_DIRECTORIES)
-target_include_directories(shadertoy_connector PRIVATE ${shadertoy_INCLUDE_DIRS})
 
 # list of libraries to link into all the targets
 set(COMMON_LIBRARIES
