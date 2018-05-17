@@ -15,7 +15,7 @@
 
 BUILD_OCTAVE := $(shell hash octave-config 2>/dev/null && echo -n 1 || echo -n 0)
 BUILD_MATHEMATICA := $(shell PATH="$$PATH:/usr/local/bin" hash math 2>/dev/null && echo -n 1 || echo -n 0)
-BUILD_SERVER := $(shell dpkg -s libzmq3-dev && echo -n 1 || echo -n 0)
+BUILD_SERVER := $(shell dpkg -s libzmq3-dev >/dev/null 2>&1 && echo -n 1 || echo -n 0)
 
 %:
 	dh $@ --buildsystem=cmake --parallel
