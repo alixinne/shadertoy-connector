@@ -11,13 +11,15 @@ namespace po = boost::program_options;
 int main(int argc, char *argv[])
 {
 	bool debug_mode;
+	std::string bind_addr;
 
 	try
 	{
 		po::options_description desc("shadertoy-connector server");
 		desc.add_options()
 			("help,h", "Show this help message")
-			("debug", po::bool_switch(&debug_mode)->default_value(false), "Enable debug output");
+			("debug,d", po::bool_switch(&debug_mode)->default_value(false), "Enable debug output")
+			("bind,b", po::value<std::string>(&bind_addr)->default_value("tcp://*:13710"), "Endpoint to bind to");
 
 		po::variables_map vm;
 		po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -30,7 +32,7 @@ int main(int argc, char *argv[])
 			if (debug_mode)
 				spdlog::set_level(spdlog::level::debug);
 
-			server srv("tcp://*:13710");
+			server srv(bind_addr);
 			srv.run();
 		}
 	}
