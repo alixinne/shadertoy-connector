@@ -23,19 +23,26 @@ void net_io::send_string(const std::string &str, int flags)
 	socket_.send(msg, flags);
 }
 
-void net_io::recv_wait()
+bool net_io::recv_wait(int timeout)
 {
 	zmq::pollitem_t items[] = {
 		{ static_cast<void*>(socket_), 0, ZMQ_POLLIN, 0 }
 	};
 
-	while (true)
+	try
 	{
-		zmq::poll(&items[0], sizeof(items)/sizeof(items[0]), -1);
-
-		if (items[0].revents & ZMQ_POLLIN)
-			break;
+		zmq::poll(&items[0], sizeof(items)/sizeof(items[0]), timeout);
 	}
+	catch (zmq::error_t &e)
+	{
+		log_->warn("zmq::poll: {}", e.what());
+		return false;
+	}
+
+	if (items[0].revents & ZMQ_POLLIN)
+		return true;
+
+	return false;
 }
 
 void net_io::recv_empty(int flags)

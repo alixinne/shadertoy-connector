@@ -7,6 +7,10 @@
 #include <shadertoy/spdlog/spdlog.h>
 #include <shadertoy/spdlog/fmt/ostr.h>
 
+#ifndef _WIN32
+#include <signal.h>
+#endif
+
 #include "server.hpp"
 #include "basic_context.hpp"
 #include "gl_host.hpp"
@@ -251,6 +255,24 @@ class server_impl
 		}
 	}
 
+	// Signal handling
+	bool continue_;
+
+	static server_impl *current_server;
+
+	static void sigterm_handler(int)
+	{
+		if (current_server)
+		{
+			current_server->stop();
+		}
+	}
+
+	void stop()
+	{
+		continue_ = false;
+	}
+
 public:
 	server_impl(const std::string bind_address)
 		: bind_address_(bind_address),
@@ -264,16 +286,35 @@ public:
 
 	void run()
 	{
+		// Set current server ptr
+		current_server = this;
+		continue_ = true;
+
+#ifndef _WIN32
+		struct sigaction previous_term_handler;
+		struct sigaction previous_int_handler;
+
+		struct sigaction new_handler;
+		new_handler.sa_handler = server_impl::sigterm_handler;
+		new_handler.sa_flags = 0;
+		sigemptyset(&new_handler.sa_mask);
+
+		sigaction(SIGINT, &new_handler, &previous_int_handler);
+		sigaction(SIGTERM, &new_handler, &previous_term_handler);
+#endif
+
 		log_->info("Creating OpenGL context");
 		rendering_context_.allocate();
 
 		log_->info("Binding to {}", bind_address_);
 		socket_.bind(bind_address_);
 
-		while (true)
+		while (continue_)
 		{
 			// Recv request
-			io_.recv_wait();
+			if (!io_.recv_wait(100))
+				continue;
+
 			auto request_name(io_.recv_string());
 
 			log_->info("Got request header: '{}'", request_name);
@@ -305,8 +346,19 @@ public:
 				io_.send_string("Unknown request name");
 			}
 		}
+
+		log_->info("Terminating server");
+
+#ifndef _WIN32
+		sigaction(SIGINT, &previous_int_handler, NULL);
+		sigaction(SIGTERM, &previous_term_handler, NULL);
+#endif
+
+		current_server = nullptr;
 	}
 };
+
+server_impl *server_impl::current_server = nullptr;
 
 server::server(const std::string &bind_address)
 	: impl_(new server_impl(bind_address))

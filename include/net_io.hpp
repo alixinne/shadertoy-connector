@@ -43,7 +43,7 @@ public:
 
 	void send_string(const std::string &str, int flags = 0);
 
-	void recv_wait();
+	bool recv_wait(int timeout = -1);
 
 	template <typename T>
 	void recv_data(T &response, int flags = 0)
