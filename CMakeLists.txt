@@ -9,8 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # GL libraries
 find_package(OpenGL REQUIRED)
-find_package(Boost 1.54 REQUIRED COMPONENTS filesystem log serialization
-	date_time program_options system)
+find_package(Boost 1.54 REQUIRED COMPONENTS filesystem date_time program_options system)
 find_package(CURL REQUIRED)
 
 find_package(PkgConfig REQUIRED)
