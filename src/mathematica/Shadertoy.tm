@@ -11,6 +11,10 @@ void st_render P(( ));
 :Evaluate: RenderShadertoy::usage = "RenderShadertoy[id, Frame -> Null, Size -> { 640, 360 }, Mouse -> { 0, 0, 0, 0 }, FrameTiming -> False] renders a Shadertoy as an image";
 :Evaluate: Options[RenderShadertoy] = { Frame -> Null, Size -> { 640, 360 }, Mouse -> { 0, 0, 0, 0 }, Format -> "RGB", FrameTiming -> False };
 
+:Evaluate: Size        = Symbol["Size"];
+:Evaluate: Mouse       = Symbol["Mouse"];
+:Evaluate: FrameTiming = Symbol["FrameTiming"];
+
 void st_reset P(( ));
 
 :Begin:
@@ -55,12 +59,15 @@ void st_set_input_filter P(( ));
 :Begin:
 :Function:      st_set_input_filter
 :Pattern:       SetShadertoyInputFilter[id_String, inputs__Rule]
-:Arguments:     { id, Map[{#[[1]], #[[2]]} &, List[inputs]] }
+:Arguments:     { id, Map[{#[[1]], If[StringQ[#[[2]]],#[[2]],SymbolName[#[[2]]]]} &, List[inputs]] }
 :ArgumentTypes: { Manual }
 :ReturnType:    Manual
 :End:
 
-:Evaluate: SetShadertoyInputFilter::usage = "SetShadertoyInputFilter[id, input -> \"Linear\"|\"Nearest\"|\"Mipmap\"] sets the input 'input' filter method of the Shadertoy context 'id' to the specified value";
+:Evaluate: Linear  = Symbol["Linear"];
+:Evaluate: Mipmap  = Symbol["Mipmap"];
+
+:Evaluate: SetShadertoyInputFilter::usage = "SetShadertoyInputFilter[id, input -> Linear|Nearest|Mipmap] sets the input 'input' filter method of the Shadertoy context 'id' to the specified value";
 
 void st_reset_input P(( ));
 
