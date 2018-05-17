@@ -81,9 +81,8 @@ if(ST_BUILD_MATHEMATICA)
 		MPREP_SOURCES ${SRC_DIR}/mathematica/Shadertoy.tm
 		SOURCES ${ST_SOURCES}
 		LINK_LIBRARIES stc_gl ${EXTRA_LIBRARIES}
-		COMPILE_OPTIONS "-Wall")
-
-	target_compile_definitions(shadertoy_mathematica PRIVATE ${ZMQ_OPT})
+		COMPILE_OPTIONS "-Wall"
+		COMPILE_DEFINITIONS ${ZMQ_OPT})
 endif()
 
 # Octave connector
@@ -92,9 +91,8 @@ if(ST_BUILD_OCTAVE)
 		SOURCES ${ST_SOURCES}
 		LINK_LIBRARIES stc_gl ${EXTRA_LIBRARIES}
 		INSTALL st_octave
-		COMPILE_OPTIONS "-Wall")
-
-	target_compile_definitions(shadertoy_mathematica PRIVATE ${ZMQ_OPT})
+		COMPILE_OPTIONS "-Wall"
+		COMPILE_DEFINITIONS ${ZMQ_OPT})
 endif()
 
 # Test procedures
