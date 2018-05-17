@@ -2,8 +2,8 @@
 use strict;
 use warnings;
 use FindBin;
-use lib "$FindBin::Bin/";
-use StHelpers;
+use lib "$FindBin::Bin/../ext/omw/t/";
+use TestHelpers;
 use Test::More tests => 2;
 
 my $shader = <<GLSL;

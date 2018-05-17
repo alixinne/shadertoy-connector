@@ -102,6 +102,7 @@ enable_testing()
 file(GLOB TEST_FILES ${CMAKE_SOURCE_DIR}/t/*.t)
 foreach(TEST_FILE ${TEST_FILES})
 	get_filename_component(TEST_FILE_NAME ${TEST_FILE} NAME_WE)
-	add_test(NAME ${TEST_FILE_NAME} COMMAND prove -v --color ${TEST_FILE} :: ${CMAKE_CURRENT_BINARY_DIR}
+	add_test(NAME ${TEST_FILE_NAME} COMMAND prove -v --color ${TEST_FILE} ::
+		--path ${CMAKE_CURRENT_BINARY_DIR} --octave-pkg shadertoy_octave --mathematica-pkg Shadertoy
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endforeach()
