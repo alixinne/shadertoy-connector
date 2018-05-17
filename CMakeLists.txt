@@ -54,7 +54,10 @@ if (HAS_ZMQ)
 	add_subdirectory(${SRC_DIR}/net)
 	add_subdirectory(${SRC_DIR}/client)
 
-	add_subdirectory(${SRC_DIR}/server)
+	if (ST_BUILD_SERVER)
+		add_subdirectory(${SRC_DIR}/server)
+	endif()
+
 	add_subdirectory(${SRC_DIR}/cli)
 
 	# Extra libraries for connector clients
