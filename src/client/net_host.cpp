@@ -8,6 +8,8 @@
 #include <shadertoy/spdlog/spdlog.h>
 #include <shadertoy/spdlog/fmt/ostr.h>
 
+#undef min
+
 using namespace stc;
 using namespace stc::client;
 

@@ -1,6 +1,7 @@
 #ifndef _IMAGE_HPP_
 #define _IMAGE_HPP_
 
+#include <array>
 #include <memory>
 #include <vector>
 
