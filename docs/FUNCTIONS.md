@@ -10,6 +10,7 @@
 - [st_set_input_filter: Set input texture filter](#st_set_input_filter-set-input-texture-filter)   
 - [st_reset_input: Reset input texture](#st_reset_input-reset-input-texture)   
 - [st_reset: Reset context](#st_reset-reset-context)   
+- [st_set_renderer: Set target renderer](#st_set_renderer-set-target-renderer)   
 
 <!-- /MDTOC -->
 
@@ -365,3 +366,44 @@ using this context id will reload the context from shadertoy.com.
 ### Return value
 
 None.
+
+## st_set_renderer: Set target renderer
+
+### Synopsis
+
+```
+(* Mathematica *)
+SetShadertoyRenderer["tcp://server:13710"];
+SetShadertoyRenderer["local"];
+
+% Octave
+st_set_renderer('tcp://server:13710');
+st_set_renderer('local');
+```
+
+### Description
+
+Sets the name of the target that should be used to render the created contexts.
+The target can either be `local`, which renders using the currently running X
+server, or a `[tcp://]hostname[:port]` specification that targets a running
+instance of shadertoy_server on the network.
+
+Note that this methods allows switching between renderers repeatedly, however
+the context identifiers are per-renderer, which means you may have to call
+st_compile multiple times if you try to do distributed rendering.
+
+This feature is experimental and may change at any time.
+
+### Arguments
+
+* `host`: Either `local` to render using the local X server, or
+`[tcp://]hostname[:port]` to connect to a TCP socket opened by the
+`shadertoy_server` program. Note that the connection will only be
+attempted when a rendering command is issued, not when this method
+is called.
+
+
+### Return value
+
+None.
+
