@@ -1,11 +1,12 @@
 shadertoy-connector (1.0.0~rc4) UNRELEASED; urgency=medium
 
+  * Add remote rendering support
   * Fix undefined symbols in Mathematica module
   * Fix Boost dependencies
   * Fix Shadertoy code using reserved word char
   * Update omw wrapper
 
- -- Vincent Tavernier <vince.tavernier@gmail.com>  Thu, 17 May 2018 16:06:47 +0200
+ -- Vincent Tavernier <vince.tavernier@gmail.com>  Thu, 17 May 2018 16:09:25 +0200
 
 shadertoy-connector (1.0.0~rc3) unstable; urgency=medium
 

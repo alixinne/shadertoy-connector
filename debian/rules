@@ -15,6 +15,7 @@
 
 BUILD_OCTAVE := $(shell hash octave-config 2>/dev/null && echo -n 1 || echo -n 0)
 BUILD_MATHEMATICA := $(shell PATH="$$PATH:/usr/local/bin" hash math 2>/dev/null && echo -n 1 || echo -n 0)
+BUILD_SERVER := $(shell dpkg -s libzmq3-dev && echo -n 1 || echo -n 0)
 
 %:
 	dh $@ --buildsystem=cmake --parallel
@@ -24,7 +25,8 @@ BUILD_MATHEMATICA := $(shell PATH="$$PATH:/usr/local/bin" hash math 2>/dev/null 
 # This is example for Cmake (See https://bugs.debian.org/641051 )
 override_dh_auto_configure:
 	dh_auto_configure -- -DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH) \
-		-DST_BUILD_MATHEMATICA=$(BUILD_MATHEMATICA) -DST_BUILD_OCTAVE=$(BUILD_OCTAVE)
+		-DST_BUILD_MATHEMATICA=$(BUILD_MATHEMATICA) -DST_BUILD_OCTAVE=$(BUILD_OCTAVE) \
+		-DST_BUILD_SERVER=$(BUILD_SERVER)
 
 override_dh_auto_clean:
 	rm -rf obj-$(DEB_HOST_MULTIARCH)/*
@@ -36,6 +38,9 @@ endif
 ifeq ($(BUILD_MATHEMATICA),1)
 	dh_install -pshadertoy-connector-mathematica
 endif
+ifeq ($(BUILD_SERVER),1)
+	dh_install -pshadertoy-connector-server
+endif
 
 override_dh_builddeb:
 ifeq ($(BUILD_OCTAVE),1)
@@ -43,6 +48,9 @@ ifeq ($(BUILD_OCTAVE),1)
 endif
 ifeq ($(BUILD_MATHEMATICA),1)
 	dh_builddeb -pshadertoy-connector-mathematica
+endif
+ifeq ($(BUILD_SERVER),1)
+	dh_builddeb -pshadertoy-connector-server
 endif
 
 override_dh_shlibdeps:
@@ -54,6 +62,10 @@ ifeq ($(BUILD_MATHEMATICA),1)
 	dpkg-shlibdeps -Tdebian/shadertoy-connector-mathematica.substvars \
 		debian/tmp/usr/share/Mathematica/Applications/Shadertoy/*/shadertoy_mathematica
 endif
+ifeq ($(BUILD_SERVER),1)
+	dpkg-shlibdeps -Tdebian/shadertoy-connector-server.substvars \
+		debian/tmp/usr/bin/shadertoy_server
+endif
 
 override_dh_gencontrol:
 ifeq ($(BUILD_OCTAVE),1)
@@ -61,4 +73,7 @@ ifeq ($(BUILD_OCTAVE),1)
 endif
 ifeq ($(BUILD_MATHEMATICA),1)
 	dh_gencontrol -pshadertoy-connector-mathematica
+endif
+ifeq ($(BUILD_SERVER),1)
+	dh_gencontrol -pshadertoy-connector-server
 endif
