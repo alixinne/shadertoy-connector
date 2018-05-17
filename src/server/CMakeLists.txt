@@ -10,3 +10,7 @@ set_target_properties(shadertoy_server
 	PROPERTIES CXX_STANDARD 14)
 
 target_compile_options(shadertoy_server PUBLIC "-Wall")
+
+install(TARGETS shadertoy_server
+	RUNTIME DESTINATION bin
+	COMPONENT st_server)
