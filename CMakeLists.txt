@@ -123,6 +123,11 @@ if (HAS_ZMQ)
 		${ZMQ_LIBRARIES})
 	set_property(TARGET shadertoy_server PROPERTY CXX_STANDARD 14)
 
+	# Install server executable
+	install(TARGETS shadertoy_server
+		RUNTIME DESTINATION bin
+		COMPONENT st_server)
+
 	# Extra libraries for connector clients
 	set(EXTRA_LIBRARIES shadertoy_connector_client)
 else()
