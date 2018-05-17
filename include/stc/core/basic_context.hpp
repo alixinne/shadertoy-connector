@@ -1,5 +1,5 @@
-#ifndef _BASIC_CONTEXT_HPP_
-#define _BASIC_CONTEXT_HPP_
+#ifndef _STC_CORE_BASIC_CONTEXT_HPP_
+#define _STC_CORE_BASIC_CONTEXT_HPP_
 
 #include <string>
 
@@ -7,7 +7,12 @@
 
 #include <boost/variant.hpp>
 
-#include "image.hpp"
+#include "stc/core/image.hpp"
+
+namespace stc
+{
+namespace core
+{
 
 class basic_context
 {
@@ -40,7 +45,7 @@ public:
 	 * @param channel  Channel id (0 to 3) of the input to change
 	 * @param data     Image data (or buffer name) to feed to the channel
 	 */
-	virtual void set_input(const std::string &buffer, size_t channel, const boost::variant<std::string, std::shared_ptr<StImage>> &data) = 0;
+	virtual void set_input(const std::string &buffer, size_t channel, const boost::variant<std::string, std::shared_ptr<image>> &data) = 0;
 
 	/**
 	 * Sets the filter for a given input.
@@ -59,5 +64,7 @@ public:
 	 */
 	virtual void reset_input(const std::string &buffer, size_t channel) = 0;
 };
+}
+}
 
-#endif /* _BASIC_CONTEXT_HPP_ */
+#endif /* _STC_CORE_BASIC_CONTEXT_HPP_ */

@@ -1,17 +1,18 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "getpid.h"
+#include "stc/core/getpid.h"
 
-#include "context.hpp"
-#include "gl_host.hpp"
-#include "remote.hpp"
+#include "stc/gl/context.hpp"
+#include "stc/gl/host.hpp"
+#include "stc/gl/remote.hpp"
 
-using namespace std;
+using namespace stc;
+using namespace stc::gl;
 
-gl_host::gl_host() : basic_host(), st_window(nullptr), local_counter(0), st_contexts() {}
+host::host() : basic_host(), st_window(nullptr), local_counter(0), st_contexts() {}
 
-gl_host::~gl_host()
+host::~host()
 {
 	if (st_window)
 	{
@@ -35,21 +36,21 @@ gl_host::~gl_host()
 
 	if (m_remoteInit)
 	{
-		freeRemote();
+		free_remote();
 		m_remoteInit = false;
 	}
 }
 
 void st_glfwErrorCallback(int error, const char *description)
 {
-	stringstream ss;
+	std::stringstream ss;
 	ss << "GLFW error: " << description;
-	throw runtime_error(ss.str());
+	throw std::runtime_error(ss.str());
 }
 
-void gl_host::allocate()
+void host::allocate()
 {
-	initRemote();
+	init_remote();
 	m_remoteInit = true;
 
 	// Set callback
@@ -73,17 +74,17 @@ void gl_host::allocate()
 		}
 		else
 		{
-			throw runtime_error("Could not create GLFW window");
+			throw std::runtime_error("Could not create GLFW window");
 		}
 	}
 	else
 	{
-		throw runtime_error("Could not initialize GLFW");
+		throw std::runtime_error("Could not initialize GLFW");
 	}
 }
 
-StImage gl_host::render(const string &id, boost::optional<int> frame, size_t width, size_t height,
-						const std::array<float, 4> &mouse, GLenum format)
+core::image host::render(const std::string &id, boost::optional<int> frame, size_t width, size_t height,
+					 const std::array<float, 4> &mouse, GLenum format)
 {
 	auto context(get_gl_context(id));
 
@@ -98,7 +99,7 @@ StImage gl_host::render(const string &id, boost::optional<int> frame, size_t wid
 	return context->current_image();
 }
 
-void gl_host::reset(const string &id)
+void host::reset(const std::string &id)
 {
 	// Ensure we are in the right context
 	glfwMakeContextCurrent(st_window);
@@ -112,15 +113,15 @@ void gl_host::reset(const string &id)
 	st_contexts.erase(id);
 }
 
-std::string gl_host::create_local(const std::vector<std::pair<std::string, std::string>> &bufferSources)
+std::string host::create_local(const std::vector<std::pair<std::string, std::string>> &bufferSources)
 {
 	// Ensure we are in the right context
 	glfwMakeContextCurrent(st_window);
 
 	// Generate unique name
-	stringstream name;
+	std::stringstream name;
 	name << "localshader-" << getpid() << "-" << local_counter++;
-	string shaderId(name.str());
+	std::string shaderId(name.str());
 
 	// Create local context
 	new_context(shaderId, bufferSources);
@@ -128,12 +129,12 @@ std::string gl_host::create_local(const std::vector<std::pair<std::string, std::
 	return shaderId;
 }
 
-shared_ptr<basic_context> gl_host::get_context(const std::string &id)
+std::shared_ptr<core::basic_context> host::get_context(const std::string &id)
 {
 	return get_gl_context(id);
 }
 
-shared_ptr<StContext> gl_host::get_gl_context(const std::string &id)
+std::shared_ptr<context> host::get_gl_context(const std::string &id)
 {
 	// Ensure we are in the right context
 	glfwMakeContextCurrent(st_window);

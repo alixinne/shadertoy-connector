@@ -1,5 +1,5 @@
-#ifndef _NET_IO_HPP_
-#define _NET_IO_HPP_
+#ifndef _STC_NET_IO_HPP_
+#define _STC_NET_IO_HPP_
 
 #include <zmq.hpp>
 
@@ -7,15 +7,20 @@
 
 #include <shadertoy/spdlog/fmt/ostr.h>
 
-#include "image.hpp"
+#include "stc/core/image.hpp"
 
-class net_io
+namespace stc
+{
+namespace net
+{
+
+class io
 {
 	std::shared_ptr<spdlog::logger> &log_;
 	zmq::socket_t &socket_;
 
 public:
-	net_io(std::shared_ptr<spdlog::logger> &log, zmq::socket_t &socket);
+	io(std::shared_ptr<spdlog::logger> &log, zmq::socket_t &socket);
 
 	template <typename T>
 	void send_data(const T &request, int flags = 0)
@@ -90,9 +95,11 @@ public:
 };
 
 template <>
-void net_io::send_data_noout<StImage>(const StImage &img, int flags);
+void io::send_data_noout<core::image>(const core::image &img, int flags);
 
 template <>
-void net_io::recv_data_noout<StImage>(StImage &img, int flags);
+void io::recv_data_noout<core::image>(core::image &img, int flags);
+}
+}
 
-#endif /* _NET_IO_HPP_ */
+#endif /* _STC_NET_IO_HPP_ */

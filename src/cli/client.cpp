@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "net_host.hpp"
+#include "stc/client/net_host.hpp"
 
 #include <shadertoy/spdlog/spdlog.h>
 
@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 {
 	spdlog::set_level(spdlog::level::debug);
 
-	net_host client("tcp://localhost:13710");
+	stc::client::net_host client("tcp://localhost:13710");
 	client.allocate();
 
 	std::vector<std::pair<std::string, std::string>> buffer_sources;

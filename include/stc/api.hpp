@@ -1,5 +1,5 @@
-#ifndef _API_HPP_
-#define _API_HPP_
+#ifndef _STC_API_HPP_
+#define _STC_API_HPP_
 
 #include <array>
 #include <exception>
@@ -8,17 +8,20 @@
 #include <string>
 
 #include <epoxy/gl.h>
-
 #include <GLFW/glfw3.h>
 
 #include <shadertoy.hpp>
 
 #include <omw.hpp>
 
-#include "context.hpp"
-#include "host_host.hpp"
+#include "stc/core/basic_context.hpp"
 
-extern host_host host_mgr;
+#include "stc/host_manager.hpp"
+
+namespace stc
+{
+
+extern host_manager host_mgr;
 
 template<typename TWrapper>
 void st_wrapper_internal(TWrapper &wrapper, std::function<void(TWrapper &)> fun)
@@ -161,7 +164,7 @@ template <typename TWrapper> void impl_st_render(TWrapper &w)
 	w.matrices_as_images(true);
 	if (doFrameTiming)
 	{
-		w.write_result(image.frameTiming / 1e9, image_result);
+		w.write_result(image.frame_timing / 1e9, image_result);
 	}
 	else
 	{
@@ -193,7 +196,7 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 		{
 			std::transform(inputBufferName->begin(), inputBufferName->end(),
 				inputBufferName->begin(), ::tolower);
-			context->set_input(bufferName, channelName, boost::variant<std::string, std::shared_ptr<StImage>>(*inputBufferName));
+			context->set_input(bufferName, channelName, boost::variant<std::string, std::shared_ptr<core::image>>(*inputBufferName));
 		}
 		else
 		{
@@ -210,8 +213,8 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 				throw std::runtime_error(ss.str());
 			}
 
-			// Move image data in StImage structure
-			auto imgptr(std::make_shared<StImage>());
+			// Move image data in core::image structure
+			auto imgptr(std::make_shared<core::image>());
 			auto &img(*imgptr);
 			img.dims[0] = imageValue->dims()[0];
 			img.dims[1] = imageValue->dims()[1];
@@ -295,4 +298,6 @@ template <typename TWrapper> void impl_st_set_input_filter(TWrapper &w)
 	}
 }
 
-#endif /* _API_HPP_ */
+}
+
+#endif /* _STC_API_HPP_ */

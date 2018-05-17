@@ -5,6 +5,7 @@ shadertoy-connector (1.0.0~rc4) UNRELEASED; urgency=medium
   * Fix Boost dependencies
   * Fix Shadertoy code using reserved word char
   * Update omw wrapper
+  * Cleanup codebase
 
  -- Vincent Tavernier <vince.tavernier@gmail.com>  Thu, 17 May 2018 16:09:25 +0200
 

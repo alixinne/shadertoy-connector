@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "server.hpp"
+#include "stc/server/host_server.hpp"
 
 #include <shadertoy/spdlog/spdlog.h>
 
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 			if (debug_mode)
 				spdlog::set_level(spdlog::level::debug);
 
-			server srv(bind_addr);
+			stc::server::host_server srv(bind_addr);
 			srv.run();
 		}
 	}

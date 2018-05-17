@@ -4,7 +4,12 @@
 #include <memory>
 #include <vector>
 
-struct StImage
+namespace stc
+{
+namespace core
+{
+
+struct image
 {
 	std::shared_ptr<std::vector<float>> data;
 	std::array<int, 3> dims;
@@ -14,11 +19,13 @@ struct StImage
 	bool changed;
 
 	// Rendering duration of the main buffer
-	unsigned long long frameTiming;
+	unsigned long long frame_timing;
 
 	void alloc();
 
-	StImage();
+	image();
 };
+}
+}
 
 #endif /* _IMAGE_HPP_ */

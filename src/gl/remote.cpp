@@ -11,20 +11,20 @@
 
 #include <epoxy/gl.h>
 
-#include "getpid.h"
+#include "stc/core/getpid.h"
 
-#include "remote.hpp"
+#include "stc/gl/remote.hpp"
 
 namespace u = shadertoy::utils;
 namespace fs = boost::filesystem;
 
-void initRemote()
+void stc::gl::init_remote()
 {
 	// Init CURL
 	curl_global_init(CURL_GLOBAL_DEFAULT);
 }
 
-void freeRemote()
+void stc::gl::free_remote()
 {
 	// Cleanup CURL
 	curl_global_cleanup();
@@ -188,8 +188,8 @@ void load_buffer_input(std::shared_ptr<shadertoy::inputs::basic_input> &buffer_i
 	}
 }
 
-void loadRemote(const std::string &shaderId, const std::string &shaderApiKey, shadertoy::render_context &context,
-				shadertoy::swap_chain &chain, const shadertoy::rsize &render_size)
+void stc::gl::load_remote(const std::string &shaderId, const std::string &shaderApiKey, shadertoy::render_context &context,
+						  shadertoy::swap_chain &chain, const shadertoy::rsize &render_size)
 {
 	CURL *curl = curl_easy_init();
 

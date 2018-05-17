@@ -2,3 +2,4 @@ octave-workspace
 /build
 *.sw?
 obj-*/
+shadertoy.bin/

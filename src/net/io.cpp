@@ -1,12 +1,15 @@
-#include "net_io.hpp"
+#include "stc/net/io.hpp"
 
-net_io::net_io(std::shared_ptr<spdlog::logger> &log, zmq::socket_t &socket)
+using namespace stc;
+using namespace stc::net;
+
+io::io(std::shared_ptr<spdlog::logger> &log, zmq::socket_t &socket)
 	: log_(log),
 	socket_(socket)
 {
 }
 
-void net_io::send_empty(int flags)
+void io::send_empty(int flags)
 {
 	log_->debug("send(0)");
 
@@ -14,7 +17,7 @@ void net_io::send_empty(int flags)
 	socket_.send(msg, flags);
 }
 
-void net_io::send_string(const std::string &str, int flags)
+void io::send_string(const std::string &str, int flags)
 {
 	log_->debug("send({}): '{}'", str.size(), str);
 
@@ -23,7 +26,7 @@ void net_io::send_string(const std::string &str, int flags)
 	socket_.send(msg, flags);
 }
 
-bool net_io::recv_wait(int timeout)
+bool io::recv_wait(int timeout)
 {
 	zmq::pollitem_t items[] = {
 		{ static_cast<void*>(socket_), 0, ZMQ_POLLIN, 0 }
@@ -45,7 +48,7 @@ bool net_io::recv_wait(int timeout)
 	return false;
 }
 
-void net_io::recv_empty(int flags)
+void io::recv_empty(int flags)
 {
 	zmq::message_t msg;
 	socket_.recv(&msg, flags);
@@ -53,7 +56,7 @@ void net_io::recv_empty(int flags)
 	log_->debug("recv(0)");
 }
 
-std::string net_io::recv_string(int flags)
+std::string io::recv_string(int flags)
 {
 	zmq::message_t msg;
 	socket_.recv(&msg, flags);
@@ -67,7 +70,7 @@ std::string net_io::recv_string(int flags)
 }
 
 template <>
-void net_io::send_data_noout<StImage>(const StImage &img, int flags)
+void io::send_data_noout<core::image>(const core::image &img, int flags)
 {
 	// Send image dimensions
 	send_data_noout(img.dims, ZMQ_SNDMORE | flags);
@@ -77,7 +80,7 @@ void net_io::send_data_noout<StImage>(const StImage &img, int flags)
 }
 
 template <>
-void net_io::recv_data_noout<StImage>(StImage &img, int flags)
+void io::recv_data_noout<core::image>(core::image &img, int flags)
 {
 	// Get image dimensions
 	recv_data_noout(img.dims, flags);

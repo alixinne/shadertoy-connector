@@ -1,13 +1,20 @@
 #include <iostream>
 
-#include "net_host.hpp"
+#include "stc/client/net_host.hpp"
+#include "stc/net/io.hpp"
 
 #include <zmq.hpp>
 
 #include <shadertoy/spdlog/spdlog.h>
 #include <shadertoy/spdlog/fmt/ostr.h>
 
-#include "net_io.hpp"
+using namespace stc;
+using namespace stc::client;
+
+namespace stc
+{
+namespace client
+{
 
 struct net_host_impl
 {
@@ -18,7 +25,7 @@ struct net_host_impl
 
 	std::shared_ptr<spdlog::logger> log;
 
-	net_io io;
+	net::io io;
 
 	net_host_impl(const std::string &target)
 		: target_address(target),
@@ -35,14 +42,16 @@ struct net_host_impl
 		socket.connect(target_address);
 	}
 };
+}
+}
 
 net_context::net_context(const std::string &id, net_host_impl *impl)
-	: basic_context(id),
+	: core::basic_context(id),
 	impl_(impl)
 {
 }
 
-void net_context::set_input(const std::string &buffer, size_t channel, const boost::variant<std::string, std::shared_ptr<StImage>> &data)
+void net_context::set_input(const std::string &buffer, size_t channel, const boost::variant<std::string, std::shared_ptr<core::image>> &data)
 {
 	impl_->io.send_string("context", ZMQ_SNDMORE);
 	impl_->io.send_string(id(), ZMQ_SNDMORE);
@@ -53,7 +62,7 @@ void net_context::set_input(const std::string &buffer, size_t channel, const boo
 	impl_->io.send_data(channel, ZMQ_SNDMORE);
 
 	// Send contents
-	if (const auto img = boost::get<const std::shared_ptr<StImage>>(&data))
+	if (const auto img = boost::get<const std::shared_ptr<core::image>>(&data))
 	{
 		impl_->io.send_string("image", ZMQ_SNDMORE);
 		impl_->io.send_data_noout(*img);
@@ -135,8 +144,8 @@ void net_host::allocate()
 	impl_->connect();
 }
 
-StImage net_host::render(const std::string &id, boost::optional<int> frame, size_t width, size_t height,
-						 const std::array<float, 4> &mouse, GLenum format)
+core::image net_host::render(const std::string &id, boost::optional<int> frame, size_t width, size_t height,
+							 const std::array<float, 4> &mouse, GLenum format)
 {
 	int act_frame = frame.get_value_or(std::numeric_limits<int>::min());
 	impl_->log->info("render id: {} frame: {} width: {} height: {}", id, act_frame, width, height);
@@ -159,10 +168,10 @@ StImage net_host::render(const std::string &id, boost::optional<int> frame, size
 		throw std::runtime_error(impl_->io.recv_string());
 	}
 
-	StImage result;
+	core::image result;
 
 	// Get frame timing
-	impl_->io.recv_data(result.frameTiming);
+	impl_->io.recv_data(result.frame_timing);
 
 	// Get contents
 	impl_->io.recv_data_noout(result);
@@ -217,7 +226,7 @@ std::string net_host::create_local(const std::vector<std::pair<std::string, std:
 	}
 }
 
-std::shared_ptr<basic_context> net_host::get_context(const std::string &id)
+std::shared_ptr<core::basic_context> net_host::get_context(const std::string &id)
 {
 	impl_->io.send_string("get_context", ZMQ_SNDMORE);
 	impl_->io.send_string(id);

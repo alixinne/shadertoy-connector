@@ -1,5 +1,5 @@
-#ifndef _CONTEXT_HPP_
-#define _CONTEXT_HPP_
+#ifndef _STC_GL_CONTEXT_HPP_
+#define _STC_GL_CONTEXT_HPP_
 
 #include <memory>
 #include <string>
@@ -10,24 +10,29 @@
 
 #include <shadertoy.hpp>
 
-#include "basic_context.hpp"
+#include "stc/core/basic_context.hpp"
 
-class StContext : public basic_context
+namespace stc
+{
+namespace gl
+{
+
+class context : public core::basic_context
 {
 	/// Rendering size
-	shadertoy::rsize render_size;
+	shadertoy::rsize render_size_;
 
 	/// Rendering context
-	shadertoy::render_context context;
+	shadertoy::render_context context_;
 
 	/// Associated swap chain
-	shadertoy::swap_chain chain;
+	shadertoy::swap_chain chain_;
 
 	/// Number of rendered frames
-	int frameCount;
+	int frame_count_;
 
 	/// The currently rendered image
-	StImage currentImage;
+	core::image current_image_;
 
 public:
 	/**
@@ -37,7 +42,7 @@ public:
 	 * @param width    Initial width of the rendering context.
 	 * @param height   Initial height of the rendering context.
 	 */
-	StContext(const std::string &shaderId, size_t width, size_t height);
+	context(const std::string &shaderId, size_t width, size_t height);
 
 	/**
 	 * Builds a multi-buffer rendering context from source.
@@ -51,8 +56,8 @@ public:
 	 *                            the local context, or if the image buffer is
 	 *                            missing from the definition.
 	 */
-	StContext(const std::string &shaderId, const std::vector<std::pair<std::string, std::string>> &bufferSources,
-			  size_t width, size_t height);
+	context(const std::string &shaderId, const std::vector<std::pair<std::string, std::string>> &bufferSources,
+			size_t width, size_t height);
 
 	/**
 	 * @brief Gets the number of rendered frames using this context
@@ -60,7 +65,7 @@ public:
 	 * @return Number of rendered frames
 	 */
 	inline int frame_count() const
-	{ return frameCount; }
+	{ return frame_count_; }
 
 	/**
 	 * @brief Renders a new frame at the given resolution
@@ -78,10 +83,10 @@ public:
 	 *
 	 * @return Handle to the frame result
 	 */
-	inline StImage current_image() const
-	{ return currentImage; }
+	inline core::image current_image() const
+	{ return current_image_; }
 
-	void set_input(const std::string &buffer, size_t channel, const boost::variant<std::string, std::shared_ptr<StImage>> &data) override;
+	void set_input(const std::string &buffer, size_t channel, const boost::variant<std::string, std::shared_ptr<core::image>> &data) override;
 
 	void set_input_filter(const std::string &buffer, size_t channel, GLint minFilter) override;
 
@@ -98,19 +103,19 @@ public:
 	 *
 	 * @param  format Format to return the number of components of
 	 */
-	int formatDepth(GLenum format);
+	int format_depth(GLenum format);
 
 	/**
 	 * Returns the PixelDataFormat of a given image depth.
 	 *
 	 * @param  depth Depth of the image
 	 */
-	static GLint depthFormat(int depth);
+	static GLint depth_format(int depth);
 
 	/**
 	 * Allocates the rendering context
 	 */
-	void createContext();
+	void create_context();
 
 	/**
 	 * @brief Find a buffer by name
@@ -125,7 +130,7 @@ public:
 
 	class override_input : public shadertoy::inputs::basic_input
 	{
-		std::shared_ptr<StImage> data_buffer_;
+		std::shared_ptr<core::image> data_buffer_;
 		std::shared_ptr<shadertoy::gl::texture> texture_;
 
 		std::shared_ptr<shadertoy::inputs::buffer_input> member_input_;
@@ -142,7 +147,7 @@ public:
 	public:
 		override_input(std::shared_ptr<shadertoy::inputs::basic_input> overriden_input);
 
-		void set(std::shared_ptr<StImage> data_buffer);
+		void set(std::shared_ptr<core::image> data_buffer);
 
 		void set(std::shared_ptr<shadertoy::inputs::buffer_input> member_input);
 
@@ -150,5 +155,7 @@ public:
 		{ return overriden_input_; }
 	};
 };
+}
+}
 
-#endif /* _CONTEXT_HPP_ */
+#endif /* _STC_GL_CONTEXT_HPP_ */

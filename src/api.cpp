@@ -1,7 +1,12 @@
-#include "api.hpp"
+#include "stc/api.hpp"
+
+using namespace stc;
 
 /// Shadertoy Connector context host
-host_host host_mgr;
+host_manager stc::host_mgr;
+
+namespace stc
+{
 
 bool impl_st_parse_input(std::string &inputSpecName, std::string &buffer, int &channel)
 {
@@ -26,10 +31,11 @@ bool impl_st_parse_input(std::string &inputSpecName, std::string &buffer, int &c
 
 	return true;
 }
+}
 
 #if OMW_OCTAVE
 
-static omw::octave wrapper(reinterpret_cast<void*>(&impl_st_parse_input));
+static omw::octave wrapper(reinterpret_cast<void*>(&stc::impl_st_parse_input));
 
 DEFUN_DLD(shadertoy_octave, args, , "shadertoy_octave() initializes the shadertoy oct file")
 {
@@ -55,7 +61,7 @@ octave_value_list st_octave_run(const octave_value_list &args,
 #define OM_DEFUN(name,oct_usage) \
 	DEFUN_DLD(name, args, , oct_usage) \
 	{ \
-		return st_octave_run(args, impl_ ## name <omw::octave>); \
+		return st_octave_run(args, stc:: impl_ ## name <omw::octave>); \
 	}
 
 #endif /* OMW_OCTAVE */
@@ -69,7 +75,7 @@ static omw::mathematica wrapper("Shadertoy", stdlink);
 	extern "C" void name (); \
 	void name () \
  	{ \
-		st_wrapper_exec<omw::mathematica>(wrapper, impl_ ## name <omw::mathematica>); \
+		st_wrapper_exec<omw::mathematica>(wrapper, stc:: impl_ ## name <omw::mathematica>); \
 	}
 
 #endif /* OMW_MATHEMATICA */

@@ -11,23 +11,31 @@
 #include <signal.h>
 #endif
 
-#include "server.hpp"
-#include "basic_context.hpp"
-#include "gl_host.hpp"
-#include "net_io.hpp"
+#include "stc/server/host_server.hpp"
+#include "stc/core/basic_context.hpp"
+#include "stc/gl/host.hpp"
+#include "stc/net/io.hpp"
 
-class server_impl
+using namespace stc;
+using namespace stc::server;
+
+namespace stc
+{
+namespace server
+{
+
+class host_server_impl
 {
 	const std::string bind_address_;
 	zmq::context_t context_;
 	zmq::socket_t socket_;
 
-	gl_host rendering_context_;
+	gl::host rendering_context_;
 	std::shared_ptr<spdlog::logger> log_;
 
-	net_io io_;
+	net::io io_;
 
-	void handle_context_set_input(const std::shared_ptr<basic_context> &context)
+	void handle_context_set_input(const std::shared_ptr<core::basic_context> &context)
 	{
 		// Get input specification
 		auto buffer(io_.recv_string());
@@ -35,12 +43,12 @@ class server_impl
 
 		// Get input type
 		auto input_type(io_.recv_string());
-		boost::variant<std::string, std::shared_ptr<StImage>> value;
+		boost::variant<std::string, std::shared_ptr<core::image>> value;
 
 		// Get input data
 		if (input_type.compare("image") == 0)
 		{
-			auto img(std::make_shared<StImage>());
+			auto img(std::make_shared<core::image>());
 			io_.recv_data_noout(*img);
 			value = img;
 		}
@@ -61,7 +69,7 @@ class server_impl
 		io_.send_string("OK");
 	}
 
-	void handle_context_set_input_filter(const std::shared_ptr<basic_context> &context)
+	void handle_context_set_input_filter(const std::shared_ptr<core::basic_context> &context)
 	{
 		// Get input specification
 		auto buffer(io_.recv_string());
@@ -76,7 +84,7 @@ class server_impl
 		io_.send_string("OK");
 	}
 
-	void handle_context_reset_input(const std::shared_ptr<basic_context> &context)
+	void handle_context_reset_input(const std::shared_ptr<core::basic_context> &context)
 	{
 		// Get input specification
 		auto buffer(io_.recv_string());
@@ -109,7 +117,7 @@ class server_impl
 			io_.send_string("OK", ZMQ_SNDMORE);
 
 			// Send frame timing
-			io_.send_data(img.frameTiming, ZMQ_SNDMORE);
+			io_.send_data(img.frame_timing, ZMQ_SNDMORE);
 
 			// Send image
 			io_.send_data_noout(img);
@@ -204,7 +212,7 @@ class server_impl
 		auto id(io_.recv_string());
 		auto method(io_.recv_string());
 
-		std::shared_ptr<basic_context> context;
+		std::shared_ptr<core::basic_context> context;
 
 		try
 		{
@@ -258,7 +266,7 @@ class server_impl
 	// Signal handling
 	bool continue_;
 
-	static server_impl *current_server;
+	static host_server_impl *current_server;
 
 	static void sigterm_handler(int)
 	{
@@ -274,7 +282,7 @@ class server_impl
 	}
 
 public:
-	server_impl(const std::string bind_address)
+	host_server_impl(const std::string bind_address)
 		: bind_address_(bind_address),
 		context_(1),
 		socket_(context_, ZMQ_REP),
@@ -295,7 +303,7 @@ public:
 		struct sigaction previous_int_handler;
 
 		struct sigaction new_handler;
-		new_handler.sa_handler = server_impl::sigterm_handler;
+		new_handler.sa_handler = host_server_impl::sigterm_handler;
 		new_handler.sa_flags = 0;
 		sigemptyset(&new_handler.sa_mask);
 
@@ -357,20 +365,22 @@ public:
 		current_server = nullptr;
 	}
 };
+}
+}
 
-server_impl *server_impl::current_server = nullptr;
+host_server_impl *host_server_impl::current_server = nullptr;
 
-server::server(const std::string &bind_address)
-	: impl_(new server_impl(bind_address))
+host_server::host_server(const std::string &bind_address)
+	: impl_(new host_server_impl(bind_address))
 {
 }
 
-server::~server()
+host_server::~host_server()
 {
 	delete impl_;
 }
 
-void server::run()
+void host_server::run()
 {
 	impl_->run();
 }

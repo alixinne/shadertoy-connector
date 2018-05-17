@@ -1,5 +1,5 @@
-#ifndef _BASIC_HOST_HPP_
-#define _BASIC_HOST_HPP_
+#ifndef _STC_CORE_BASIC_HOST_HPP_
+#define _STC_CORE_BASIC_HOST_HPP_
 
 #include <memory>
 #include <string>
@@ -11,6 +11,11 @@
 #include <epoxy/gl.h>
 
 #include "image.hpp"
+
+namespace stc
+{
+namespace core
+{
 
 class basic_context;
 
@@ -43,8 +48,8 @@ class basic_host
 	 * @param  format Format of the rendering (GL_RGBA, GL_RGB, or GL_LUMINANCE).
 	 * @return        Handle to the rendered frame
 	 */
-	virtual StImage render(const std::string &id, boost::optional<int> frame, size_t width, size_t height,
-						   const std::array<float, 4> &mouse, GLenum format) = 0;
+	virtual image render(const std::string &id, boost::optional<int> frame, size_t width, size_t height,
+						 const std::array<float, 4> &mouse, GLenum format) = 0;
 
 	/**
 	 * Resets the context associated with this Shadertoy Id.
@@ -71,5 +76,7 @@ class basic_host
 	 */
 	virtual std::shared_ptr<basic_context> get_context(const std::string &id) = 0;
 };
+}
+}
 
-#endif /* _BASIC_HOST_HPP_ */
+#endif /* _STC_CORE_BASIC_HOST_HPP_ */

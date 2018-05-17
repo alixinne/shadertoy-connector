@@ -8,9 +8,12 @@
 
 #include <epoxy/gl.h>
 
-#include "local.hpp"
+#include "stc/gl/local.hpp"
 
 namespace fs = boost::filesystem;
+
+using namespace stc;
+using namespace stc::gl;
 
 std::shared_ptr<shadertoy::buffers::toy_buffer> get_buffer(const std::string &shaderId, const std::pair<std::string, std::string> &bufferSource)
 {
@@ -43,8 +46,8 @@ std::shared_ptr<shadertoy::buffers::toy_buffer> get_buffer(const std::string &sh
 	return buffer;
 }
 
-void loadLocal(const std::string &shaderId, const std::vector<std::pair<std::string, std::string>> &bufferSources,
-			   shadertoy::render_context &context, shadertoy::swap_chain &chain, const shadertoy::rsize &render_size)
+void stc::gl::load_local(const std::string &shaderId, const std::vector<std::pair<std::string, std::string>> &bufferSources,
+						 shadertoy::render_context &context, shadertoy::swap_chain &chain, const shadertoy::rsize &render_size)
 {
 	// Put everything in tmp
 	fs::path basedir(fs::temp_directory_path());
