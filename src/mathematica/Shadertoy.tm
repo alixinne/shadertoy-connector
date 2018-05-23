@@ -1,3 +1,32 @@
+:Evaluate: BeginPackage["Shadertoy`"]
+
+:Evaluate: SetShadertoyRenderer::usage = "SetShadertoyRenderer[host] sets the target host for rendering";
+
+:Evaluate: RenderShadertoy::usage = "RenderShadertoy[id, Frame -> Null, Size -> { 640, 360 }, Mouse -> { 0, 0, 0, 0 }, FrameTiming -> False] renders a Shadertoy as an image";
+:Evaluate: Options[RenderShadertoy] = { Frame -> Null, Size -> { 640, 360 }, Mouse -> { 0, 0, 0, 0 }, Format -> "RGB", FrameTiming -> False };
+
+:Evaluate: Size        = Symbol["Size"];
+:Evaluate: Mouse       = Symbol["Mouse"];
+:Evaluate: FrameTiming = Symbol["FrameTiming"];
+
+:Evaluate: ResetShadertoy::usage = "ResetShadertoy[id] resets the rendering context of a Shadertoy";
+
+:Evaluate: CompileShadertoy::usage = "CompileShadertoy[source, \"a\" -> sourceA] compiles source as a Shadertoy and returns its id";
+
+:Evaluate: Shadertoy::glerr = "OpenGL error: `1`";
+:Evaluate: Shadertoy::err = "Error: `1`";
+
+:Evaluate: SetShadertoyInput::usage = "SetShadertoyInput[id, input -> image|\"buffer\"] sets the input 'input' of the Shadertoy context 'id' to 'image' or to the output of the named buffer \"buffer\"";
+
+:Evaluate: Linear  = Symbol["Linear"];
+:Evaluate: Mipmap  = Symbol["Mipmap"];
+
+:Evaluate: SetShadertoyInputFilter::usage = "SetShadertoyInputFilter[id, input -> Linear|Nearest|Mipmap] sets the input 'input' filter method of the Shadertoy context 'id' to the specified value";
+
+:Evaluate: SetShadertoyInput::usage = "ResetShadertoyInput[id, input, image] sets the input 'input' of the Shadertoy context 'id' to what was used by the shadertoy beforehand";
+
+:Evaluate: Begin["`Private`"]
+
 void st_set_renderer P(( ));
 
 :Begin:
@@ -7,8 +36,6 @@ void st_set_renderer P(( ));
 :ArgumentTypes:  { Manual }
 :ReturnType:     Manual
 :End:
-
-:Evaluate: SetShadertoyRenderer::usage = "SetShadertoyRenderer[host] sets the target host for rendering";
 
 void st_render P(( ));
 
@@ -20,13 +47,6 @@ void st_render P(( ));
 :ReturnType:     Manual
 :End:
 
-:Evaluate: RenderShadertoy::usage = "RenderShadertoy[id, Frame -> Null, Size -> { 640, 360 }, Mouse -> { 0, 0, 0, 0 }, FrameTiming -> False] renders a Shadertoy as an image";
-:Evaluate: Options[RenderShadertoy] = { Frame -> Null, Size -> { 640, 360 }, Mouse -> { 0, 0, 0, 0 }, Format -> "RGB", FrameTiming -> False };
-
-:Evaluate: Size        = Symbol["Size"];
-:Evaluate: Mouse       = Symbol["Mouse"];
-:Evaluate: FrameTiming = Symbol["FrameTiming"];
-
 void st_reset P(( ));
 
 :Begin:
@@ -36,8 +56,6 @@ void st_reset P(( ));
 :ArgumentTypes:  { Manual }
 :ReturnType:     Manual
 :End:
-
-:Evaluate: ResetShadertoy::usage = "ResetShadertoy[id] resets the rendering context of a Shadertoy";
 
 void st_compile P(( ));
 
@@ -49,11 +67,6 @@ void st_compile P(( ));
 :ReturnType:    Manual
 :End:
 
-:Evaluate: CompileShadertoy::usage = "CompileShadertoy[source, \"a\" -> sourceA] compiles source as a Shadertoy and returns its id";
-
-:Evaluate: Shadertoy::glerr = "OpenGL error: `1`";
-:Evaluate: Shadertoy::err = "Error: `1`";
-
 void st_set_input P(( ));
 
 :Begin:
@@ -63,8 +76,6 @@ void st_set_input P(( ));
 :ArgumentTypes: { Manual }
 :ReturnType:    Manual
 :End:
-
-:Evaluate: SetShadertoyInput::usage = "SetShadertoyInput[id, input -> image|\"buffer\"] sets the input 'input' of the Shadertoy context 'id' to 'image' or to the output of the named buffer \"buffer\"";
 
 void st_set_input_filter P(( ));
 
@@ -76,11 +87,6 @@ void st_set_input_filter P(( ));
 :ReturnType:    Manual
 :End:
 
-:Evaluate: Linear  = Symbol["Linear"];
-:Evaluate: Mipmap  = Symbol["Mipmap"];
-
-:Evaluate: SetShadertoyInputFilter::usage = "SetShadertoyInputFilter[id, input -> Linear|Nearest|Mipmap] sets the input 'input' filter method of the Shadertoy context 'id' to the specified value";
-
 void st_reset_input P(( ));
 
 :Begin:
@@ -91,4 +97,6 @@ void st_reset_input P(( ));
 :ReturnType:    Manual
 :End:
 
-:Evaluate: SetShadertoyInput::usage = "ResetShadertoyInput[id, input, image] sets the input 'input' of the Shadertoy context 'id' to what was used by the shadertoy beforehand";
+:Evaluate: End[]
+
+:Evaluate: EndPackage[]
