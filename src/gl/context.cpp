@@ -40,7 +40,7 @@ void context::perform_render(int frameCount, size_t width, size_t height,
 {
 	// Ensure we are working at the right size
 	GLint depth = format_depth(format);
-	if (width != render_size_.width || height != render_size_.height || depth != current_image_.dims[2])
+	if (width != render_size_.width || height != render_size_.height || depth != static_cast<GLint>(current_image_.dims[2]))
 	{
 		if (width != render_size_.width || height != render_size_.height)
 		{

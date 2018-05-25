@@ -226,7 +226,7 @@ template <typename TWrapper> void impl_st_set_input(TWrapper &w)
 
 			// Copy data, vflip
 			size_t stride_size = sizeof(float) * img.dims[1] * img.dims[2];
-			for (int i = 0; i < img.dims[0]; ++i)
+			for (auto i = 0u; i < img.dims[0]; ++i)
 			{
 				memcpy(&img.data->data()[i * stride_size / sizeof(float)],
 					   &imageValue->data()[(img.dims[0] - i - 1) * stride_size / sizeof(float)],

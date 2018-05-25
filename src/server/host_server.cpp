@@ -39,7 +39,7 @@ class host_server_impl
 	{
 		// Get input specification
 		auto buffer(io_.recv_string());
-		auto channel(io_.recv_data<size_t>());
+		auto channel(io_.recv_data<uint8_t>());
 
 		// Get input type
 		auto input_type(io_.recv_string());
@@ -73,10 +73,10 @@ class host_server_impl
 	{
 		// Get input specification
 		auto buffer(io_.recv_string());
-		auto channel(io_.recv_data<size_t>());
+		auto channel(io_.recv_data<uint8_t>());
 
 		// Get input filter
-		auto filter(io_.recv_data<GLenum>());
+		auto filter(io_.recv_data<int32_t>());
 
 		// Apply
 		context->set_input_filter(buffer, channel, filter);
@@ -88,7 +88,7 @@ class host_server_impl
 	{
 		// Get input specification
 		auto buffer(io_.recv_string());
-		auto channel(io_.recv_data<size_t>());
+		auto channel(io_.recv_data<uint8_t>());
 
 		// Apply
 		context->reset_input(buffer, channel);
@@ -99,11 +99,11 @@ class host_server_impl
 	void handle_render()
 	{
 		auto id(io_.recv_string());
-		auto frame(io_.recv_data<int>());
-		auto width(io_.recv_data<size_t>());
-		auto height(io_.recv_data<size_t>());
+		auto frame(io_.recv_data<int32_t>());
+		auto width(io_.recv_data<uint32_t>());
+		auto height(io_.recv_data<uint32_t>());
 		auto mouse(io_.recv_data_noout<std::array<float, 4>>());
-		auto format(io_.recv_data<GLenum>());
+		auto format(io_.recv_data<int32_t>());
 
 		try
 		{
@@ -153,11 +153,11 @@ class host_server_impl
 
 	void handle_create_local()
 	{
-		auto part_cnt(io_.recv_data<int>());
+		auto part_cnt(io_.recv_data<uint32_t>());
 
 		std::vector<std::pair<std::string, std::string>> buffer_sources;
 
-		for (int i = 0; i < part_cnt; ++i)
+		for (auto i = 0u; i < part_cnt; ++i)
 		{
 			std::string name(io_.recv_string()),
 						source(io_.recv_string());

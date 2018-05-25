@@ -13,14 +13,14 @@ namespace core
 struct image
 {
 	std::shared_ptr<std::vector<float>> data;
-	std::array<int, 3> dims;
+	std::array<uint32_t, 3> dims;
 
 	// Flag to indicate the data in the data field has changed since the last
 	// rendering
 	bool changed;
 
 	// Rendering duration of the main buffer
-	unsigned long long frame_timing;
+	uint64_t frame_timing;
 
 	void alloc();
 

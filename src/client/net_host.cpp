@@ -61,7 +61,7 @@ void net_context::set_input(const std::string &buffer, size_t channel, const boo
 
 	// Send input specification
 	impl_->io.send_string(buffer, ZMQ_SNDMORE);
-	impl_->io.send_data(channel, ZMQ_SNDMORE);
+	impl_->io.send_data<uint8_t>(channel, ZMQ_SNDMORE);
 
 	// Send contents
 	if (const auto img = boost::get<const std::shared_ptr<core::image>>(&data))
@@ -94,10 +94,10 @@ void net_context::set_input_filter(const std::string &buffer, size_t channel, GL
 
 	// Send input specification
 	impl_->io.send_string(buffer, ZMQ_SNDMORE);
-	impl_->io.send_data(channel, ZMQ_SNDMORE);
+	impl_->io.send_data<uint8_t>(channel, ZMQ_SNDMORE);
 
 	// Send filter
-	impl_->io.send_data(minFilter);
+	impl_->io.send_data<int32_t>(minFilter);
 
 	impl_->io.recv_wait();
 
@@ -118,7 +118,7 @@ void net_context::reset_input(const std::string &buffer, size_t channel)
 
 	// Send input specification
 	impl_->io.send_string(buffer, ZMQ_SNDMORE);
-	impl_->io.send_data(channel);
+	impl_->io.send_data<uint8_t>(channel);
 
 	impl_->io.recv_wait();
 
@@ -155,11 +155,11 @@ core::image net_host::render(const std::string &id, boost::optional<int> frame, 
 	impl_->io.send_string("render", ZMQ_SNDMORE);
 
 	impl_->io.send_string(id, ZMQ_SNDMORE);
-	impl_->io.send_data<int>(act_frame, ZMQ_SNDMORE);
-	impl_->io.send_data<size_t>(width, ZMQ_SNDMORE);
-	impl_->io.send_data<size_t>(height, ZMQ_SNDMORE);
+	impl_->io.send_data<int32_t>(act_frame, ZMQ_SNDMORE);
+	impl_->io.send_data<uint32_t>(width, ZMQ_SNDMORE);
+	impl_->io.send_data<uint32_t>(height, ZMQ_SNDMORE);
 	impl_->io.send_data_noout(mouse, ZMQ_SNDMORE);
-	impl_->io.send_data<GLenum>(format);
+	impl_->io.send_data<int32_t>(format);
 	
 	impl_->io.recv_wait();
 
@@ -203,7 +203,7 @@ std::string net_host::create_local(const std::vector<std::pair<std::string, std:
 	impl_->log->info("create_local sources: {}", bufferSources.size());
 
 	impl_->io.send_string("create_local", ZMQ_SNDMORE);
-	impl_->io.send_data<int>(bufferSources.size(), ZMQ_SNDMORE);
+	impl_->io.send_data<uint32_t>(bufferSources.size(), ZMQ_SNDMORE);
 
 	for (auto pair : bufferSources)
 	{
