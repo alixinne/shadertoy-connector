@@ -7,6 +7,10 @@ include(GNUInstallDirs)
 # Export compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(ST_BUILD_MATHEMATICA "Build the Mathematica target" ON)
+option(ST_BUILD_OCTAVE "Build the Octave target" ON)
+option(ST_BUILD_SERVER "Build the server" ON)
+
 # GL libraries
 find_package(OpenGL REQUIRED)
 find_package(Boost 1.54 REQUIRED COMPONENTS filesystem date_time program_options system)
@@ -73,9 +77,6 @@ if (HAS_ZMQ)
 else()
 	set(EXTRA_LIBRARIES "")
 endif()
-
-option(ST_BUILD_MATHEMATICA "Build the Mathematica target" ON)
-option(ST_BUILD_OCTAVE "Build the Octave target" ON)
 
 set(ST_SOURCES
 	${INCLUDE_DIR}/stc/api.hpp
