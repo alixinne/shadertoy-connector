@@ -6,6 +6,9 @@ add_executable(shadertoy_server
 
 target_link_libraries(shadertoy_server PUBLIC stc_net stc_gl)
 
+target_include_directories(shadertoy_server PRIVATE
+	${PROJECT_SOURCE_DIR}/3rdparty/spdlog/include)
+
 set_target_properties(shadertoy_server
 	PROPERTIES CXX_STANDARD 14)
 

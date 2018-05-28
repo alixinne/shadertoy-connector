@@ -6,6 +6,9 @@ target_link_libraries(stc_net PUBLIC
 	stc_core
 	${ZMQ_LIBRARIES})
 
+target_include_directories(stc_net PRIVATE
+	${PROJECT_SOURCE_DIR}/3rdparty/spdlog/include)
+
 if(NOT WIN32)
 	target_link_libraries(stc_net PUBLIC pthread)
 endif()

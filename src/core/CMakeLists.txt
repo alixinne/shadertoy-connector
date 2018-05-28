@@ -8,7 +8,11 @@ add_library(stc_core STATIC
 	${SRC_DIR}/core/basic_host.cpp
 	${SRC_DIR}/core/image.cpp)
 
-target_include_directories(stc_core PUBLIC ${INCLUDE_DIR} ${EPOXY_INCLUDE_DIRS})
+target_include_directories(stc_core PUBLIC
+	${INCLUDE_DIR}
+	${EPOXY_INCLUDE_DIRS}
+	${PROJECT_SOURCE_DIR}/3rdparty/spdlog/include)
+
 target_link_libraries(stc_core PUBLIC ${Boost_LIBRARIES})
 
 set_target_properties(stc_core

@@ -2,7 +2,7 @@
 
 #include "stc/server/host_server.hpp"
 
-#include <shadertoy/spdlog/spdlog.h>
+#include "spdlog/spdlog.h"
 
 #include <boost/program_options.hpp>
 

@@ -5,8 +5,8 @@
 
 #include <zmq.hpp>
 
-#include <shadertoy/spdlog/spdlog.h>
-#include <shadertoy/spdlog/fmt/ostr.h>
+#include "spdlog/spdlog.h"
+#include "spdlog/fmt/ostr.h"
 
 #undef min
 

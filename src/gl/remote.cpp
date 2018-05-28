@@ -11,12 +11,20 @@
 
 #include <epoxy/gl.h>
 
+#include "spdlog/spdlog.h"
+
+#include "spdlog/fmt/ostr.h"
+
 #include "stc/core/getpid.h"
 
 #include "stc/gl/remote.hpp"
 
-namespace u = shadertoy::utils;
 namespace fs = boost::filesystem;
+
+std::shared_ptr<spdlog::logger> remote_logger()
+{
+	return spdlog::stderr_color_mt("shadertoy-api");
+}
 
 void stc::gl::init_remote()
 {
@@ -132,12 +140,12 @@ void load_nonbuffer_input(std::shared_ptr<shadertoy::inputs::basic_input> &buffe
 
 		if (!fs::exists(dstpath))
 		{
-			u::log::shadertoy()->info("Downloading {}", url);
+			remote_logger()->info("Downloading {}", url);
 			file_get(curl, url, dstpath);
 		}
 		else
 		{
-			u::log::shadertoy()->info("Using cache for {}", url);
+			remote_logger()->info("Using cache for {}", url);
 		}
 
 		shadertoy::utils::input_loader loader;
@@ -161,7 +169,7 @@ void load_nonbuffer_input(std::shared_ptr<shadertoy::inputs::basic_input> &buffe
 	}
 	else
 	{
-		u::log::shadertoy()->warn("Unsupported input {} for pass {}, input {}",
+		remote_logger()->warn("Unsupported input {} for pass {}, input {}",
 								  input["ctype"].asString(), i, input["channel"].asInt());
 	}
 }
@@ -178,7 +186,7 @@ void load_buffer_input(std::shared_ptr<shadertoy::inputs::basic_input> &buffer_i
 		source.back() = 'A' + (input["id"].asInt() - 257);
 		std::transform(source.begin(), source.end(), source.begin(), ::tolower);
 
-		u::log::shadertoy()->info("Pass {}, input {}: binding {} buffer", i, input["channel"].asInt(), source);
+		remote_logger()->info("Pass {}, input {}: binding {} buffer", i, input["channel"].asInt(), source);
 
 		auto src = known_buffers[source];
 		assert(src);
@@ -232,7 +240,7 @@ void stc::gl::load_remote(const std::string &shaderId, const std::string &shader
 			// Skip if sound buffer
 			if (pass["type"].asString().compare("sound") == 0)
 			{
-				u::log::shadertoy()->warn("Skipping unsupported sound shader.");
+				remote_logger()->warn("Skipping unsupported sound shader.");
 				continue;
 			}
 

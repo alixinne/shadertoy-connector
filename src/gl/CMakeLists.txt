@@ -17,7 +17,8 @@ target_link_libraries(stc_gl PUBLIC stc_core
 	shadertoy-shared)
 
 target_include_directories(stc_gl PRIVATE
-	${jsoncpp_INCLUDE_DIRS})
+	${jsoncpp_INCLUDE_DIRS}
+	${PROJECT_SOURCE_DIR}/3rdparty/spdlog/include)
 
 set_target_properties(stc_gl
 	PROPERTIES CXX_STANDARD 14

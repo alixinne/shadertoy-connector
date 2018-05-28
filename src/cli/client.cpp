@@ -2,7 +2,7 @@
 
 #include "stc/client/net_host.hpp"
 
-#include <shadertoy/spdlog/spdlog.h>
+#include "spdlog/spdlog.h"
 
 int main(int argc, char *argv[])
 {
