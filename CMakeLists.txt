@@ -50,6 +50,11 @@ endif()
 set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
 
+# Win32
+if (MSVC)
+	add_compile_options("/DNOMINMAX")
+endif()
+
 # libshadertoy
 find_package(shadertoy 1.0.0 REQUIRED)
 
