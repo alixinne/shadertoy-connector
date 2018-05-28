@@ -67,7 +67,7 @@ void net_context::set_input(const std::string &buffer, size_t channel, const boo
 	if (const auto img = boost::get<const std::shared_ptr<core::image>>(&data))
 	{
 		impl_->io.send_string("image", ZMQ_SNDMORE);
-		impl_->io.send_data_noout(*img);
+		impl_->io.send_data_noout(**img);
 	}
 	else
 	{
