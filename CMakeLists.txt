@@ -7,6 +7,9 @@ include(GNUInstallDirs)
 # Export compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Include modules
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/modules)
+
 option(ST_BUILD_MATHEMATICA "Build the Mathematica target" ON)
 option(ST_BUILD_OCTAVE "Build the Octave target" ON)
 option(ST_BUILD_SERVER "Build the server" ON)
@@ -16,16 +19,11 @@ find_package(OpenGL REQUIRED)
 find_package(Boost 1.54 REQUIRED COMPONENTS filesystem date_time program_options system)
 find_package(CURL REQUIRED)
 
-find_package(PkgConfig REQUIRED)
+find_package(GLFW3 REQUIRED)
 
-pkg_search_module(glfw3 REQUIRED glfw3)
-link_directories(${glfw3_LIBDIR})
+find_package(jsoncpp REQUIRED)
 
-pkg_search_module(jsoncpp REQUIRED jsoncpp)
-link_directories(${jsoncpp_LIBDIR})
-
-pkg_search_module(EPOXY REQUIRED epoxy)
-link_directories(${epoxy_LBIDIR})
+find_package(Epoxy REQUIRED)
 
 if (WIN32)
 	find_package(ZeroMQ)

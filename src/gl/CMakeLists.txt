@@ -11,7 +11,7 @@ add_library(stc_gl STATIC
 
 target_link_libraries(stc_gl PUBLIC stc_core
 	${EPOXY_LIBRARIES}
-	${glfw3_LIBRARIES}
+	${GLFW3_LIBRARIES}
 	${CURL_LIBRARIES}
 	${jsoncpp_LIBRARIES}
 	shadertoy-shared)
