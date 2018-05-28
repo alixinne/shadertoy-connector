@@ -9,4 +9,4 @@ target_include_directories(shadertoy_client PRIVATE
 set_target_properties(shadertoy_client
 	PROPERTIES CXX_STANDARD 14)
 
-target_compile_options(shadertoy_client PUBLIC "-Wall")
+target_compile_options(shadertoy_client PUBLIC ${EXTRA_FLAGS})

@@ -88,6 +88,12 @@ set(ST_SOURCES
 	${SRC_DIR}/api.cpp
 	${SRC_DIR}/host_manager.cpp)
 
+if(MSVC)
+	set(EXTRA_FLAGS "/W2;/wd4275;/wd4251")
+else()
+	set(EXTRA_FLAGS "-Wall;-Wno-missing-braces;-pedantic")
+endif()
+
 # Mathematica connector
 if(ST_BUILD_MATHEMATICA)
 	omw_add_mathematica(shadertoy_mathematica
@@ -96,7 +102,7 @@ if(ST_BUILD_MATHEMATICA)
 		MPREP_SOURCES ${SRC_DIR}/mathematica/Shadertoy.tm
 		SOURCES ${ST_SOURCES}
 		LINK_LIBRARIES stc_gl ${EXTRA_LIBRARIES}
-		COMPILE_OPTIONS "-Wall"
+		COMPILE_OPTIONS "${EXTRA_FLAGS}"
 		COMPILE_DEFINITIONS ${ZMQ_OPT})
 endif()
 
@@ -106,7 +112,7 @@ if(ST_BUILD_OCTAVE)
 		SOURCES ${ST_SOURCES}
 		LINK_LIBRARIES stc_gl ${EXTRA_LIBRARIES}
 		INSTALL st_octave
-		COMPILE_OPTIONS "-Wall"
+		COMPILE_OPTIONS "${EXTRA_ARGS}"
 		COMPILE_DEFINITIONS ${ZMQ_OPT})
 endif()
 

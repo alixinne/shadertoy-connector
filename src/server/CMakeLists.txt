@@ -12,7 +12,7 @@ target_include_directories(shadertoy_server PRIVATE
 set_target_properties(shadertoy_server
 	PROPERTIES CXX_STANDARD 14)
 
-target_compile_options(shadertoy_server PUBLIC "-Wall")
+target_compile_options(shadertoy_server PUBLIC ${EXTRA_ARGS})
 
 install(TARGETS shadertoy_server
 	RUNTIME DESTINATION bin

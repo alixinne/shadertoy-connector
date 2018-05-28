@@ -24,4 +24,4 @@ set_target_properties(stc_gl
 	PROPERTIES CXX_STANDARD 14
 	POSITION_INDEPENDENT_CODE ON)
 
-target_compile_options(stc_gl PUBLIC "-Wall")
+target_compile_options(stc_gl PUBLIC ${EXTRA_ARGS})

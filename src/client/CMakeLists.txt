@@ -11,4 +11,4 @@ set_target_properties(stc_client
 	PROPERTIES CXX_STANDARD 14
 	POSITION_INDEPENDENT_CODE ON)
 
-target_compile_options(stc_client PUBLIC "-Wall")
+target_compile_options(stc_client PUBLIC ${EXTRA_FLAGS})
