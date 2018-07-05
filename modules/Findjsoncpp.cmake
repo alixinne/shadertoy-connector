@@ -11,7 +11,7 @@ find_path(jsoncpp_INCLUDE_DIR
 
 # Library
 find_library(jsoncpp_LIBRARY
-	NAMES jsoncpp
+	NAMES ${jsoncpp_PKGCONF_LIBARIES} jsoncpp
 	PATHS ${jsoncpp_PKGCONF_LIBRARY_DIRS})
 
 # Set include dir and libraries variables

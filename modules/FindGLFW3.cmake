@@ -15,7 +15,7 @@ find_path(GLFW3_INCLUDE_DIR_FIND
 
 # Library
 find_library(GLFW3_LIBRARY_FIND
-	NAMES glfw3 glfw3dll
+	NAMES ${glfw3_PKGCONF_LIBRARIES} glfw3 glfw3dll
 	PATHS ${glfw3_PKGCONF_LIBRARY_DIRS} ${glfw3_LIBRARY_DIRS})
 
 # Set include dir and libraries variables

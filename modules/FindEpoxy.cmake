@@ -11,7 +11,7 @@ find_path(EPOXY_INCLUDE_DIR
 
 # Finally the library itself
 find_library(EPOXY_LIBRARY
-	NAMES epoxy
+	NAMES ${EPOXY_PKGCONF_LIBRARIES} epoxy
 	PATHS ${EPOXY_PKGCONF_LIBRARY_DIRS})
 
 # Set include dir and libraries variables
