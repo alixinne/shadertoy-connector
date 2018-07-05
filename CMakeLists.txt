@@ -10,10 +10,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Include modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/modules)
 
-option(ST_BUILD_MATHEMATICA "Build the Mathematica target" ON)
-option(ST_BUILD_OCTAVE "Build the Octave target" ON)
-option(ST_BUILD_SERVER "Build the server" ON)
-
 # GL libraries
 find_package(OpenGL REQUIRED)
 find_package(Boost 1.54 REQUIRED COMPONENTS filesystem date_time program_options system)
@@ -60,6 +56,10 @@ find_package(shadertoy 1.0.0 REQUIRED)
 
 # Load omw
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ext/omw)
+
+option(ST_BUILD_MATHEMATICA "Build the Mathematica target" OMW_MATHEMATICA_FOUND)
+option(ST_BUILD_OCTAVE "Build the Octave target" OMW_OCTAVE_FOUND)
+option(ST_BUILD_SERVER "Build the server" ON)
 
 # Load components
 add_subdirectory(${SRC_DIR}/core)
