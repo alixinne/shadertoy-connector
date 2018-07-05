@@ -1,4 +1,4 @@
-shadertoy-connector (1.0.0~rc4) UNRELEASED; urgency=medium
+shadertoy-connector (1.0.0~rc4) unstable; urgency=medium
 
   * Add remote rendering support
   * Fix undefined symbols in Mathematica module
