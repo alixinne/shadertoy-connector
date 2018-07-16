@@ -142,7 +142,7 @@ public:
 
 		void reset_input() override;
 
-		std::shared_ptr<shadertoy::gl::texture> use_input() override;
+		shadertoy::gl::texture *use_input() override;
 
 	public:
 		override_input(std::shared_ptr<shadertoy::inputs::basic_input> overriden_input);

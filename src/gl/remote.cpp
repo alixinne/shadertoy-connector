@@ -268,7 +268,7 @@ void stc::gl::load_remote(const std::string &shaderId, const std::string &shader
 				ofs.close();
 			}
 
-			buffer->source_files().push_back(p.string());
+			buffer->source_file(p.string());
 
 			// Load inputs
 			for (size_t j = 0; j < pass["inputs"].size(); ++j)
@@ -279,7 +279,7 @@ void stc::gl::load_remote(const std::string &shaderId, const std::string &shader
 				load_nonbuffer_input(buffer->inputs()[channel_id].input(), input, curl, basedir, i);
 			}
 
-			auto member(shadertoy::members::make_buffer(buffer, shadertoy::make_size_ref(render_size)));
+			auto member(shadertoy::members::make_buffer(buffer, shadertoy::make_size_ref(render_size), chain.internal_format(), chain.swap_policy()));
 			known_buffers.emplace(name, member);
 
 			if (name != "image")

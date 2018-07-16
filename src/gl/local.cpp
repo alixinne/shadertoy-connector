@@ -37,7 +37,7 @@ std::shared_ptr<shadertoy::buffers::toy_buffer> get_buffer(const std::string &sh
 	auto buffer(std::make_shared<shadertoy::buffers::toy_buffer>(buffer_name));
 
 	// Add source files
-	buffer->source_files().push_back(p.string());
+	buffer->source_file(p.string());
 
 	// Create shadertoy inputs
 	for (size_t i = 0; i < SHADERTOY_ICHANNEL_COUNT; ++i)
@@ -59,6 +59,8 @@ void stc::gl::load_local(const std::string &shaderId, const std::vector<std::pai
 	try
 	{
 		// Apply overrides to the template specification
+		auto &shader_template(context.buffer_template()[GL_FRAGMENT_SHADER]);
+
 		for (auto it = bufferSources.begin(); it != bufferSources.end(); ++it)
 		{
 			bool is_override = it->first.find(":") != std::string::npos;
@@ -69,7 +71,7 @@ void stc::gl::load_local(const std::string &shaderId, const std::vector<std::pai
 				if (contents.back() != '\n')
 					contents += "\n";
 
-				context.buffer_template().replace(it->first, shadertoy::compiler::template_part(it->first, contents));
+				shader_template.replace(it->first, shadertoy::compiler::template_part(it->first, contents));
 			}
 		}
 

@@ -310,11 +310,11 @@ void context::override_input::reset_input()
 	}
 }
 
-std::shared_ptr<shadertoy::gl::texture> context::override_input::use_input()
+shadertoy::gl::texture *context::override_input::use_input()
 {
 	if (data_buffer_)
 	{
-		return texture_;
+		return texture_.get();
 	}
 	else
 	{
