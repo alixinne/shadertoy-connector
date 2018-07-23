@@ -21,9 +21,16 @@
 
 namespace fs = boost::filesystem;
 
+static std::shared_ptr<spdlog::logger> connector_api_logger;
+
 std::shared_ptr<spdlog::logger> remote_logger()
 {
-	return spdlog::stderr_color_mt("shadertoy-api");
+	if (!connector_api_logger)
+	{
+		connector_api_logger = spdlog::stderr_color_mt("shadertoy-api");
+	}
+
+	return connector_api_logger;
 }
 
 void stc::gl::init_remote()
