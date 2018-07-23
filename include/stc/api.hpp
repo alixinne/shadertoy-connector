@@ -133,8 +133,15 @@ template <typename TWrapper> void impl_st_render(TWrapper &w)
 
 	auto frameCount(w.template get_param<boost::optional<int>>(1, "Frame"));
 
+	// Octave: -1 is default
+	if (frameCount == -1) frameCount = {};
+
 	auto width(w.template get_param<boost::optional<int>>(2, "Width").get_value_or(640));
 	auto height(w.template get_param<boost::optional<int>>(3, "Height").get_value_or(360));
+
+	// Octave: -1 is default
+	if (width == -1) width = 640;
+	if (height == -1) height = 360;
 
 	auto formatName(w.template get_param<boost::optional<std::string>>(4, "Format").get_value_or("RGBA"));
 	std::transform(formatName.begin(), formatName.end(),
