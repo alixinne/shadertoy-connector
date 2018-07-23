@@ -43,7 +43,8 @@ shadertoy_octave();
 img = st_render('llySRh');
 
 % Show it
-imshow(img);
+% Note that Octave does not support RGBA images, thus we only feed RGB to imshow
+imshow(img(:,:,1:3));
 
 % Grayscale render, next frame
 img = st_render('llySRh', -1, -1, -1, 'Luminance');
