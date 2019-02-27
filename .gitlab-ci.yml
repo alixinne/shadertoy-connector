@@ -20,6 +20,9 @@ stages:
 .fetch_submodules: &fetch_submodules
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
+    # Cannot test OpenGL stuff in headless environments
+    SKIP_TESTS: 1
+    IGNORE_TEST_FAILURES: 1
 
 .build_pkg: &build_pkg
   <<: *fetch_submodules
