@@ -4,9 +4,6 @@ add_library(stc_client STATIC
 
 target_link_libraries(stc_client PUBLIC stc_net)
 
-target_include_directories(stc_client PRIVATE
-	${PROJECT_SOURCE_DIR}/3rdparty/spdlog/include)
-
 set_target_properties(stc_client
 	PROPERTIES CXX_STANDARD 14
 	POSITION_INDEPENDENT_CODE ON)

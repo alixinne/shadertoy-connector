@@ -44,10 +44,9 @@ build_pkg () {
 	fi
 
 	echo "[==== BUILDING $DISTRIBUTION-$ARCH ====]" >&2
-	if [ "$ARCH" = "amd64" ]; then
-		ARCHALL_ARG='--arch-all'
-	elif [ "$ARCH" = "i386" ]; then
-		ARCHALL_ARG='--no-arch-all'
+	FAKEROOT_ARG=-rfakeroot
+	if [ "$EUID" = "0" ]; then
+		FAKEROOT_ARG=""
 	fi
 
 	DIR_ARCHSUFFIX="-$DISTRIBUTION"
@@ -59,31 +58,60 @@ build_pkg () {
 	mkdir -p $TARGET_DIRECTORY
 
 	if [ "$ARCH" != "source" ]; then
-		if [ "$DISTRIBUTION" != "local" ]; then
+		if [ "x$NO_SBUILD" = "x" ] && [ "$DISTRIBUTION" != "local" ]; then
+			if [ "$ARCH" = "amd64" ]; then
+				ARCHALL_ARG='--arch-all'
+			elif [ "$ARCH" = "i386" ]; then
+				ARCHALL_ARG='--no-arch-all'
+			fi
+
 			(cd shadertoy-connector && sbuild --no-apt-update --no-apt-upgrade \
 				--no-apt-clean --resolve-alternatives \
 				-d $DISTRIBUTION \
 				--arch $ARCH \
 				$ARCHALL_ARG \
 				--verbose)
-
-			RESULT="$?"
 		else
-			(cd shadertoy-connector && debuild -jauto)
-			RESULT="$?"
+			if [ "$ARCH" = "amd64" ]; then
+				ARCHALL_ARG='-b'
+			elif [ "$ARCH" = "i386" ]; then
+				ARCHALL_ARG='-B'
+			fi
+
+			(cd shadertoy-connector && dpkg-buildpackage -uc $ARCHALL_ARG \
+				$FAKEROOT_ARG -j$PROC_ARG \
+				-a $ARCH)
 		fi
 
+		RESULT="$?"
 		if [ "$RESULT" -ne "0" ]; then
 			echo "[==== BUILD FAILED FOR $DISTRIBUTION-$ARCH ====]" >&2
 			exit 1
 		fi
 
 		echo "[==== MOVING ARTIFACTS $DISTRIBUTION-$ARCH ====]" >&2
-		CHANGES_FILE=$(sed 's/[0-9]*://' <<< "shadertoy-connector_${LIBVERSION}_$ARCH.changes")
+		CHANGES_FILE=shadertoy-connector_${LIBVERSION}_$ARCH.changes
 		BUILD_ARTIFACTS=$(awk '/^Files:/{a=1;next}/^$/{a=0}{if(a)print $NF}' "$CHANGES_FILE")
 		mv $BUILD_ARTIFACTS $CHANGES_FILE $TARGET_DIRECTORY
+
+		if [ "x$SKIP_TESTS" = "x" ] && [ "$DISTRIBUTION" != "local" ]; then
+			echo "[==== TESTING ARTIFACTS $DISTRIBUTION-$ARCH ====]" >&2
+			(
+				cd shadertoy-connector
+				shopt -s nullglob
+				autopkgtest $TARGET_DIRECTORY/shadertoy-connector*_$ARCH.deb \
+					$TARGET_DIRECTORY/shadertoy-connector*_all.deb \
+					-- schroot $DISTRIBUTION-$ARCH-sbuild
+			)
+			if [ "$?" -ne "0" ]; then
+				echo "[==== TESTS FAILED FOR $DISTRIBUTION-$ARCH ====]" >&2
+				if [ "x$IGNORE_TEST_FAILURES" = "x" ]; then
+					exit 2
+				fi
+			fi
+		fi
 	else
-		(cd shadertoy-connector && dpkg-buildpackage -S -uc -us -rfakeroot -d \
+		(cd shadertoy-connector && dpkg-buildpackage -S -uc -us $FAKEROOT_ARG -d \
 			--changes-option=-DDistribution=$DISTRIBUTION
 		)
 
@@ -146,6 +174,15 @@ build_src () {
 	if [ "$?" -ne 0 ]; then
 		echo "[==== FAILED TO INSTALL PROJECT ====]" >&2
 		exit 1
+	fi
+
+	if [ "x$SKIP_TESTS" = "x" ]; then
+		echo "[==== TESTING SOURCE BUILD ====]" >&2
+		./test.sh -s
+		if [ "$?" -ne "0" ]; then
+			echo "[==== TESTS FAILED FOR SOURCE BUILD ====]" >&2
+			exit 1
+		fi
 	fi
 }
 

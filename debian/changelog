@@ -1,7 +1,7 @@
 shadertoy-connector (1.0.0~rc6) UNRELEASED; urgency=medium
 
   * Update libshadertoy
-  * Drop support for Ubuntu 16.04
+  * Update support for Ubuntu to 18.04
   * Add support for Debian Buster
   * Use spdlog bundled with libshadertoy
 

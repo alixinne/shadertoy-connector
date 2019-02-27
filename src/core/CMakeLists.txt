@@ -10,8 +10,7 @@ add_library(stc_core STATIC
 
 target_include_directories(stc_core PUBLIC
 	${INCLUDE_DIR}
-	${EPOXY_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/3rdparty/spdlog/include)
+	${EPOXY_INCLUDE_DIRS})
 
 target_link_libraries(stc_core PUBLIC ${Boost_LIBRARIES})
 

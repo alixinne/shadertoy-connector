@@ -57,8 +57,10 @@ find_package(shadertoy 1.0.0 REQUIRED)
 # Load omw
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ext/omw)
 
-option(ST_BUILD_MATHEMATICA "Build the Mathematica target" OMW_MATHEMATICA_FOUND)
-option(ST_BUILD_OCTAVE "Build the Octave target" OMW_OCTAVE_FOUND)
+cmake_dependent_option(ST_BUILD_MATHEMATICA "Build the Mathematica target" ON
+	"OMW_MATHEMATICA_FOUND" OFF)
+cmake_dependent_option(ST_BUILD_OCTAVE "Build the Octave target" ON
+	"OMW_OCTAVE_FOUND" OFF)
 option(ST_BUILD_SERVER "Build the server" ON)
 
 # Load components

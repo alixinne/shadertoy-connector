@@ -35,7 +35,7 @@ bool impl_st_parse_input(std::string &inputSpecName, std::string &buffer, int &c
 
 #if OMW_OCTAVE
 
-static omw::octave wrapper(reinterpret_cast<void*>(&stc::impl_st_parse_input));
+static omw::octavew wrapper(reinterpret_cast<void*>(&stc::impl_st_parse_input));
 
 DEFUN_DLD(shadertoy_octave, args, , "shadertoy_octave() initializes the shadertoy oct file")
 {
@@ -53,15 +53,15 @@ DEFUN_DLD(shadertoy_octave, args, , "shadertoy_octave() initializes the shaderto
 }
 
 octave_value_list st_octave_run(const octave_value_list &args,
-	std::function<void(omw::octave&)> fun)
+	std::function<void(omw::octavew&)> fun)
 {
-	return st_wrapper_exec<omw::octave, const octave_value_list &>(wrapper, fun, args);
+	return st_wrapper_exec<omw::octavew, const octave_value_list &>(wrapper, fun, args);
 }
 
 #define OM_DEFUN(name,oct_usage) \
 	DEFUN_DLD(name, args, , oct_usage) \
 	{ \
-		return st_octave_run(args, stc:: impl_ ## name <omw::octave>); \
+		return st_octave_run(args, stc:: impl_ ## name <omw::octavew>); \
 	}
 
 #endif /* OMW_OCTAVE */
