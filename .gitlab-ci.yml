@@ -27,7 +27,7 @@ stages:
   before_script:
     - export DEBIAN_FRONTEND=noninteractive
     - apt-get update -qq
-    - apt-get install -y lsb-release wget
+    - apt-get install --no-install-recommends -y lsb-release wget gnupg2
     - wget -qO - https://bintray.com/user/downloadSubjectPublicKey?username=vtavernier | apt-key add -
     - echo "deb https://dl.bintray.com/vtavernier/libshadertoy $(lsb_release -cs) main" >/etc/apt/sources.list.d/libshadertoy.list
     - apt-get update -qq
