@@ -196,6 +196,8 @@ elif [ "$1" = "gl" ]; then
 	SKIP_TESTS=1
 	NO_SBUILD=1
 	PROC_ARG=2
+	# We don't want tests to run while in GitLab CI
+	export DEB_BUILD_OPTIONS=nocheck
 
 	build_pkg "${OS_DIST}-${DEB_BUILD_ARCH}"
 else
