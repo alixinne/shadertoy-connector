@@ -4,8 +4,8 @@
 
 #include <zmq.hpp>
 
-#include "spdlog/spdlog.h"
-#include "spdlog/fmt/ostr.h"
+#include <shadertoy/spdlog/spdlog.h>
+#include <shadertoy/spdlog/fmt/ostr.h>
 
 #ifndef _WIN32
 #include <signal.h>

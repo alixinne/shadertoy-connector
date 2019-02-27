@@ -11,9 +11,9 @@
 
 #include <epoxy/gl.h>
 
-#include "spdlog/spdlog.h"
+#include <shadertoy/spdlog/spdlog.h>
 
-#include "spdlog/fmt/ostr.h"
+#include <shadertoy/spdlog/fmt/ostr.h>
 
 #include "stc/core/getpid.h"
 
