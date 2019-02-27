@@ -1,4 +1,4 @@
-shadertoy-connector (1.0.0~rc6) UNRELEASED; urgency=medium
+shadertoy-connector (1.0.0~rc6) unstable; urgency=medium
 
   * Update libshadertoy
   * Update support for Ubuntu to 18.04
