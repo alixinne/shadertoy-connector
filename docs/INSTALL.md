@@ -28,7 +28,7 @@ $ cd shadertoy-connector
 
 The following Debian/Ubuntu packages are required for building the package:
 
-* [libshadertoy-dev](https://gitlab.inria.fr/vtaverni/libshadertoy) >= 0.1.7
+* [libshadertoy-dev](https://gitlab.inria.fr/vtaverni/libshadertoy) = 1.0.0~rc6
 * cmake >= 3.1
 * libgl1-mesa-dev
 * libepoxy-dev >= 1.3
