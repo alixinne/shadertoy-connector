@@ -1,0 +1,88 @@
+---
+variables:
+  STRETCH_AMD64_TEST_IMAGE: registry.gitlab.inria.fr/vtaverni/libshadertoy/amd64/build-stretch:$CI_COMMIT_REF_SLUG
+  STRETCH_AMD64_RELEASE_IMAGE: registry.gitlab.inria.fr/vtaverni/libshadertoy/amd64/build-stretch:latest
+  STRETCH_I386_TEST_IMAGE: registry.gitlab.inria.fr/vtaverni/libshadertoy/i386/build-stretch:$CI_COMMIT_REF_SLUG
+  STRETCH_I386_RELEASE_IMAGE: registry.gitlab.inria.fr/vtaverni/libshadertoy/i386/build-stretch:latest
+  BUSTER_AMD64_TEST_IMAGE: registry.gitlab.inria.fr/vtaverni/libshadertoy/amd64/build-buster:$CI_COMMIT_REF_SLUG
+  BUSTER_AMD64_RELEASE_IMAGE: registry.gitlab.inria.fr/vtaverni/libshadertoy/amd64/build-buster:latest
+  BUSTER_I386_TEST_IMAGE: registry.gitlab.inria.fr/vtaverni/libshadertoy/i386/build-buster:$CI_COMMIT_REF_SLUG
+  BUSTER_I386_RELEASE_IMAGE: registry.gitlab.inria.fr/vtaverni/libshadertoy/i386/build-buster:latest
+  BIONIC_AMD64_TEST_IMAGE: registry.gitlab.inria.fr/vtaverni/libshadertoy/amd64/build-bionic:$CI_COMMIT_REF_SLUG
+  BIONIC_AMD64_RELEASE_IMAGE: registry.gitlab.inria.fr/vtaverni/libshadertoy/amd64/build-bionic:latest
+  BIONIC_I386_TEST_IMAGE: registry.gitlab.inria.fr/vtaverni/libshadertoy/i386/build-bionic:$CI_COMMIT_REF_SLUG
+  BIONIC_I386_RELEASE_IMAGE: registry.gitlab.inria.fr/vtaverni/libshadertoy/i386/build-bionic:latest
+
+
+stages:
+  - build
+
+.fetch_submodules: &fetch_submodules
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+
+.build_pkg: &build_pkg
+  <<: *fetch_submodules
+  stage: build
+  before_script:
+    - export DEBIAN_FRONTEND=noninteractive
+    - apt-get update -qq
+    - apt-get install -y lsb-release wget
+    - wget -qO - https://bintray.com/user/downloadSubjectPublicKey?username=vtavernier | apt-key add -
+    - echo "deb https://dl.bintray.com/vtavernier/libshadertoy $(lsb_release -cs) main" >/etc/apt/sources.list.d/libshadertoy.list
+    - apt-get update -qq
+    - apt-get install --no-install-recommends -y libboost-log-dev libboost-date-time-dev libglfw3-dev libgl1-mesa-dev libcurl-dev libjsoncpp-dev octave-pkg-dev libshadertoy-dev libzmq3-dev
+  script:
+    - make gl
+  tags:
+    - linux
+
+bionic_amd64_pkg:
+  <<: *build_pkg
+  image: $BIONIC_AMD64_TEST_IMAGE
+  artifacts:
+    name: 'shadertoy-connector-bionic-amd64-$CI_COMMIT_REF_SLUG'
+    paths:
+      - '*.deb'
+
+bionic_i386_pkg:
+  <<: *build_pkg
+  image: $BIONIC_I386_TEST_IMAGE
+  artifacts:
+    name: 'shadertoy-connector-bionic-i386-$CI_COMMIT_REF_SLUG'
+    paths:
+      - '*.deb'
+
+stretch_amd64_pkg:
+  <<: *build_pkg
+  image: $STRETCH_AMD64_TEST_IMAGE
+  artifacts:
+    name: 'shadertoy-connector-stretch-amd64-$CI_COMMIT_REF_SLUG'
+    paths:
+      - '*.deb'
+
+stretch_i386_pkg:
+  <<: *build_pkg
+  image: $STRETCH_I386_TEST_IMAGE
+  artifacts:
+    name: 'shadertoy-connector-stretch-i386-$CI_COMMIT_REF_SLUG'
+    paths:
+      - '*.deb'
+
+buster_amd64_pkg:
+  <<: *build_pkg
+  image: $BUSTER_AMD64_TEST_IMAGE
+  artifacts:
+    name: 'shadertoy-connector-buster-amd64-$CI_COMMIT_REF_SLUG'
+    paths:
+      - '*.deb'
+
+buster_i386_pkg:
+  <<: *build_pkg
+  image: $BUSTER_I386_TEST_IMAGE
+  artifacts:
+    name: 'shadertoy-connector-buster-i386-$CI_COMMIT_REF_SLUG'
+    paths:
+      - '*.deb'
+
+# vim: set et:ts=2:sw=2:

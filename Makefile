@@ -12,7 +12,7 @@ ALL_LOCAL=local-amd64 local-source
 ALL_PKGS=$(ALL_BIONIC_ARCHS) $(ALL_STRETCH_ARCHS) $(ALL_BUSTER_ARCHS) $(ALL_LOCAL)
 
 # Test settings
-IGNORE_TEST_FAILURES?=1
+IGNORE_TEST_FAILURES?=
 SKIP_TESTS?=
 
 # CI settings
@@ -48,6 +48,15 @@ ci-src:
 # ci-pkg builds packages for the current distribution, on supported hosts
 ci-pkg: $(patsubst %,$(OS_DIST)-%,$(PKG_TYPES))
 	tar -cjvf shadertoy-connector-$(VERS)-$(OS_DIST)-$(GIT_PREFIX).tar.bz2 ../shadertoy-connector-$(VERS)-$(OS_DIST)-$(GIT_PREFIX)
+
+gl:
+	./buildpackage.sh $@
+	mv ../shadertoy-connector-$(VERS)-$(OS_DIST)-$(GIT_PREFIX)/*.deb .
+	if [ -n "$(BINTRAY_API_KEY)" ] && (echo "$(CI_COMMIT_REF_NAME)" | grep "^v.*" >/dev/null) ; then \
+		for DEB_FILE in *.deb; do \
+			curl -T $$DEB_FILE -u$(BINTRAY_ORG):$(BINTRAY_API_KEY) "https://api.bintray.com/content/$(BINTRAY_ORG)/libshadertoy/shadertoy-connector/$(VERS)/$(OS_DIST)/$${DEB_FILE};deb_distribution=$(OS_DIST);deb_component=main;deb_architecture=$$(echo -n $$DEB_FILE | sed 's/.*_\(amd64\|i386\|all\)\.deb$$/\1/')" ; \
+		done ; \
+	fi
 
 .PHONY: all ci-src ci-pkg $(ALL_DISTS) $(ALL_PKGS)
 

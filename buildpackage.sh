@@ -186,8 +186,18 @@ build_src () {
 	fi
 }
 
+PROC_ARG=$(nproc)
+
 if [ "$1" = "ci-src" ]; then
 	build_src
+elif [ "$1" = "gl" ]; then
+	# Set build parameters for GitLab CI build
+	eval $(dpkg-architecture)
+	SKIP_TESTS=1
+	NO_SBUILD=1
+	PROC_ARG=2
+
+	build_pkg "${OS_DIST}-${DEB_BUILD_ARCH}"
 else
 	build_pkg "$@"
 fi
