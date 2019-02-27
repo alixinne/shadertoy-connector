@@ -66,7 +66,7 @@ $ sudo cmake -DCOMPONENT=st_mathematica -P cmake_install.cmake
 The following additional packages are required for building the octave package:
 
 * octave
-* octave-pkg-dev
+* liboctave-dev
 
 The following commands can be used to compile and install the project:
 
