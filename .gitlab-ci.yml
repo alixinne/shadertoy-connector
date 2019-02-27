@@ -31,7 +31,7 @@ stages:
     - wget -qO - https://bintray.com/user/downloadSubjectPublicKey?username=vtavernier | apt-key add -
     - echo "deb https://dl.bintray.com/vtavernier/libshadertoy $(lsb_release -cs) main" >/etc/apt/sources.list.d/libshadertoy.list
     - apt-get update -qq
-    - apt-get install --no-install-recommends -y libboost-log-dev libboost-date-time-dev libglfw3-dev libgl1-mesa-dev libcurl-dev libjsoncpp-dev liboctave-dev libshadertoy-dev libzmq3-dev
+    - apt-get install --no-install-recommends -y libboost-log-dev libboost-date-time-dev libglfw3-dev libgl1-mesa-dev libcurl4-openssl-dev libjsoncpp-dev liboctave-dev libshadertoy-dev libzmq3-dev
   script:
     - make gl
   tags:
