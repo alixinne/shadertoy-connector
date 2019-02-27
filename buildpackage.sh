@@ -90,7 +90,7 @@ build_pkg () {
 		fi
 
 		echo "[==== MOVING ARTIFACTS $DISTRIBUTION-$ARCH ====]" >&2
-		CHANGES_FILE=shadertoy-connector_${LIBVERSION}_$ARCH.changes
+		CHANGES_FILE=$(sed 's/[0-9]*://' <<< "shadertoy-connector_${LIBVERSION}_$ARCH.changes")
 		BUILD_ARTIFACTS=$(awk '/^Files:/{a=1;next}/^$/{a=0}{if(a)print $NF}' "$CHANGES_FILE")
 		mv $BUILD_ARTIFACTS $CHANGES_FILE $TARGET_DIRECTORY
 
