@@ -9,9 +9,9 @@ Build-Depends: debhelper (>= 9),
  libzmq3-dev, pkg-config, cmake (>= 3.1), gcc-6 | gcc-7 | gcc-8
 Standards-Version: 3.9.8
 Section: libs
-Homepage: https://gitlab.inria.fr/vtaverni/shadertoy-connector
-Vcs-Git: https://gitlab.inria.fr/vtaverni/shadertoy-connector.git
-Vcs-Browser: https://gitlab.inria.fr/vtaverni/shadertoy-connector
+Homepage: https://github.com/vtavernier/shadertoy-connector
+Vcs-Git: https://github.com/vtavernier/shadertoy-connector.git
+Vcs-Browser: https://github.com/vtavernier/shadertoy-connector
 
 Package: shadertoy-connector-server
 Section: libs

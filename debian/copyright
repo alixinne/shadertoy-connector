@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: shadertoy-connector
-Source: https://gitlab.inria.fr/vtaverni/shadertoy-connector
+Source: https://github.com/vtavernier/shadertoy-connector
 
 Files: *
 Copyright: 2017-2018 Vincent Tavernier <vince.tavernier@gmail.com>
