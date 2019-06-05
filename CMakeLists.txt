@@ -54,6 +54,7 @@ endif()
 
 # libshadertoy
 find_package(shadertoy 1.0.0 REQUIRED)
+get_target_property(SHADERTOY_INCLUDE_DIRS shadertoy-shared INTERFACE_INCLUDE_DIRECTORIES)
 
 # Load omw
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ext/omw)

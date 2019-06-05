@@ -15,3 +15,6 @@ set_target_properties(stc_net
 	POSITION_INDEPENDENT_CODE ON)
 
 target_compile_options(stc_net PUBLIC ${EXTRA_ARGS})
+
+target_include_directories(stc_net PUBLIC
+	${SHADERTOY_INCLUDE_DIRS})
