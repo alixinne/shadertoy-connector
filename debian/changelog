@@ -1,11 +1,11 @@
-shadertoy-connector (1.0.0~rc7) UNRELEASED; urgency=medium
+shadertoy-connector (1.0.0~rc7) unstable; urgency=medium
 
   * Upgrade to C++17
   * Update libshadertoy
   * Drop support for Debian Stretch
   * Switch to GitHub
 
- -- Vincent Tavernier <vince.tavernier@gmail.com>  Wed, 05 Jun 2019 16:00:00 +0200
+ -- Vincent Tavernier <vince.tavernier@gmail.com>  Wed, 05 Jun 2019 17:17:38 +0200
 
 shadertoy-connector (1.0.0~rc6) unstable; urgency=medium
 
