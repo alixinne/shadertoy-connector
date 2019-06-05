@@ -55,37 +55,36 @@ void context::perform_render(int frameCount, size_t width, size_t height,
 		current_image_.alloc();
 	}
 
-	auto &state(context_.state());
-
 	// Poll events
 	glfwPollEvents();
 
 	// Update uniforms
-	//  iTime and iFrame
-	state.get<shadertoy::iTime>() = frameCount * (1.0 / state.get<shadertoy::iFrameRate>());
-	state.get<shadertoy::iFrame>() = frameCount;
+	//  iFrameRate, iTime, iFrame
+	chain_.set_uniform("iFrameRate", 60.0f);
+	chain_.set_uniform("iTimeDelta", 1.0f / 60.0f);
+	chain_.set_uniform("iTime", frameCount * (1.0f / 60.0f));
+	chain_.set_uniform("iFrame", frameCount);
 
 	//  iDate
 	boost::posix_time::ptime dt = boost::posix_time::microsec_clock::local_time();
-	state.get<shadertoy::iDate>() = glm::vec4(dt.date().year() - 1, dt.date().month(), dt.date().day(),
-											  dt.time_of_day().total_nanoseconds() / 1e9f);
+	chain_.set_uniform("iDate", glm::vec4(dt.date().year() - 1, dt.date().month(), dt.date().day(),
+										  dt.time_of_day().total_nanoseconds() / 1e9f));
 
 	//  iMouse
-	for (int i = 0; i < 4; ++i)
-		state.get<shadertoy::iMouse>()[i] = mouse[i];
+	chain_.set_uniform("iMouse", glm::vec4(mouse[0], mouse[1], mouse[2], mouse[3]));
 	// End update uniforms
 
 	// Render to texture
 	context_.render(chain_);
 
 	// Read the current texture
-	auto tex(chain_.current()->output());
+	auto tex(chain_.current()->output().front());
 
 	// Store it in a suitably sized array
 
 	// float textures
 	std::shared_ptr<std::vector<float>> texData = current_image_.data;
-	tex->get_image(0, format, GL_FLOAT, sizeof(float) * width * height * depth, texData->data());
+	std::get<1>(tex)->get_image(0, format, GL_FLOAT, sizeof(float) * width * height * depth, texData->data());
 
 	// Vertical flip
 	size_t stride_size = sizeof(float) * width * depth;
@@ -205,9 +204,6 @@ void context::reset_input(const std::string &buffer, size_t channel)
 
 void context::initialize(const std::string &shaderId, size_t width, size_t height)
 {
-	context_.state().get<shadertoy::iTimeDelta>() = 1.0 / 60.0;
-	context_.state().get<shadertoy::iFrameRate>() = 60.0;
-
 	current_image_.dims[0] = height;
 	current_image_.dims[1] = width;
 	current_image_.dims[2] = format_depth(GL_RGB);
