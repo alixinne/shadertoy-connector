@@ -1,0 +1,75 @@
+language: cpp
+
+services:
+  - docker
+
+env:
+  global:
+    - PACKAGE_NAME=shadertoy-connector
+    - BINTRAY_ORG=vtavernier
+    - secure: IeASiwwn8w3+iDotipR+BEUfhxVZJlOSc1avJzQkz+PmHldNGamYHmY1WBrRJUUgjtLgQYL4gmITP042aU44lGN0XUiUlLQ4RhG7lyHjClkK0dCcn7l1Ge+8vX8cfzCrsQ0rIGQNUzu7yCN0ZZpgqV3CAhvovXKhsn01f8ycNXxCFbeDykqri2XXXB1bJvzhvaEj5CutdQu1x5JqjuyM1Wcupx3LXRSy9NLFVRrpT/ueYAy8IocZMGNhk3x2SwpqdOPmgQd+pzb1y4atlAMkbJalnerwYHAKrHQ2VSTlP3cbj3qQt3YQEQUzQ6i3ShJEZMb7O8T8QFm9d0zKXqHQZd6jWcpbd3fAQ8G/DL6wMkPMlTv5q6cMkE5yGI4lCcIirBzmFLgf8dQlGPXqLNxnCIPhXR5wmCzcr+EAlHlH3U9XoCQay5KRNorWaO7Khh79+LdL6k6YSHS+7E8xKhiULQAwuxibTrqlKZSSmA2sq5cEMCpp2ee7VQP7mInUJpw5/g6nfmir6wbZ08cj2zDHzPjEgexTGkThZaugV6rpOMj/KzTd7w//OiYJtehkDcd31QQweMWqONDcmBXhxO55GbYH4OsPOn7ltznKTYTsfiZXL3wgcS/oLaiXTZEb9Neeummh4qmN/ZZlxnVYFxNBEnTsb6cZHsgAeJAu6NiUWTA=
+
+matrix:
+  fast_finish: true
+  include:
+    - os: linux
+      env:
+      - OS_TYPE=deb
+      - OS_DIST=ubuntu
+      - OS_VERSION=bionic
+    - os: linux
+      env:
+      - OS_TYPE=deb
+      - OS_DIST=debian
+      - OS_VERSION=buster
+
+before_script: |
+  if [ $TRAVIS_OS_NAME = linux ]; then
+    (
+      set -exv
+      if [ -n "$OS_TYPE" ]; then
+        # CI build of packages
+        # Docker image parameters
+        OS_BASE_IMAGE=${OS_DIST}:${OS_VERSION}
+        BUILD_IMAGE=${PACKAGE_NAME}/${OS_VERSION}
+        # Build image
+        docker build -t $BUILD_IMAGE --build-arg base_image=$OS_BASE_IMAGE .
+      fi
+    )
+  fi
+
+script: |
+  if [ $TRAVIS_OS_NAME = linux ]; then
+    (
+      set -exv
+      if [ -n "$OS_TYPE" ]; then
+        # CI build of packages
+        # Docker image parameters
+        BUILD_IMAGE=${PACKAGE_NAME}/${OS_VERSION}
+        # TODO: i386
+        # Note: cannot test OpenGL stuff in headless environments
+        docker run --mount type=bind,source=$(pwd),target=/build $BUILD_IMAGE \
+          make \
+          BINTRAY_API_KEY=$BINTRAY_API_KEY \
+          BINTRAY_ORG=$BINTRAY_ORG \
+          CI_COMMIT_REF_NAME=$TRAVIS_TAG \
+          SKIP_TESTS=1 \
+          IGNORE_TEST_FAILURES=1 \
+          gl
+      fi
+    )
+  fi
+
+deploy:
+  provider: releases
+  draft: true
+  file_glob: true
+  overwrite: true
+  skip_cleanup: true
+  api_key:
+    secure: RRDJt+scukbOx1iXBXbgOYOondkTsdidNSR0wSbZSjeR9omw1t8kNH/RStRwR7K0YcpS/oP9O/OBIjRrHmv4dqHegM0djl9R5JylSu3F2SBEQCUPKyCqcFObbfSNAtEKD60T23OQa87D5v5l4aO/rCRYKiTTFkwkau2KrsrB6QZ7yEy6WWtqnu8roiEdwQPPGX6/w/p/5T13KjNmQL20vEEqmyCdNwdBJiP5NDIxUGz8bynyx9Z5vsyfE63GB0dXRQLajInRfYBd45LcvM9oaELSvs4fVFYDRX7XSgDQQqtCDKN6vafMYtGJ+OZysdu/YYimiFiCnWmg/iOAg3BRTHII3nHBIZv9n93EUallGdkw8ZQyPg5w2OZhnbVMUWvR0uHUo03ciyhB5QYW/WkDEYHoEyrWnEtNaElUmVGAJdqCXUZbdKZs/4ZfSpu7A0nXRuWUDIKTZtuxNaU2g/Lg5DjRFVA7nWO2Q7E+xl8FCsIgQx1r9ZkjY4baiR2zD4V/0Q8EfDwh+CD3nPOY0TlSqTo0/od38sl1tV914warY9q7HE/++x9s2gKna2wYpDVbxAMCtyeD2EjX2OaKE7Pv/Y5KjNzcAntUFNW9FN1tVABj3406mGdEbLj1LY7+DWvyp17BATE+2LHV4EM6SpiAL9vtZwNX3Pn7dEK6ESxkLcQ=
+  file:
+    - "*.deb"
+  on:
+    repo: vtavernier/shadertoy-connector
+    tags: true

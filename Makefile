@@ -49,11 +49,17 @@ ci-pkg: $(patsubst %,$(OS_DIST)-%,$(PKG_TYPES))
 gl:
 	./buildpackage.sh $@
 	mv ../shadertoy-connector-$(VERS)-$(OS_DIST)-$(GIT_PREFIX)/*.deb .
+	# Upload to Bintray (without renaming)
 	if [ -n "$(BINTRAY_API_KEY)" ] && (echo "$(CI_COMMIT_REF_NAME)" | grep "^v.*" >/dev/null) ; then \
 		for DEB_FILE in *.deb; do \
 			curl -T $$DEB_FILE -u$(BINTRAY_ORG):$(BINTRAY_API_KEY) "https://api.bintray.com/content/$(BINTRAY_ORG)/libshadertoy/shadertoy-connector/$$(echo -n '$(VERS)' | sed 's/:/\%3A/g')/$(OS_DIST)/$${DEB_FILE};deb_distribution=$(OS_DIST);deb_component=main;deb_architecture=$$(echo -n $$DEB_FILE | sed 's/.*_\(amd64\|i386\|all\)\.deb$$/\1/')" ; \
 		done ; \
-	fi
+	fi ; \
+	# Rename for GitHub releases
+	for DEB_FILE in *.deb; do \
+		mv $$DEB_FILE $$(echo -n $$DEB_FILE | sed 's/shadertoy-connector/shadertoy-connector-$(OS_DIST)/') ; \
+	done
+
 
 .PHONY: all ci-src ci-pkg $(ALL_DISTS) $(ALL_PKGS)
 
