@@ -4,6 +4,6 @@ add_executable(shadertoy_client
 target_link_libraries(shadertoy_client PUBLIC stc_client)
 
 set_target_properties(shadertoy_client
-	PROPERTIES CXX_STANDARD 14)
+	PROPERTIES CXX_STANDARD 17)
 
 target_compile_options(shadertoy_client PUBLIC ${EXTRA_FLAGS})

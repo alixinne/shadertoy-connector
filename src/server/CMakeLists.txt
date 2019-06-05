@@ -7,7 +7,7 @@ add_executable(shadertoy_server
 target_link_libraries(shadertoy_server PUBLIC stc_net stc_gl)
 
 set_target_properties(shadertoy_server
-	PROPERTIES CXX_STANDARD 14)
+	PROPERTIES CXX_STANDARD 17)
 
 target_compile_options(shadertoy_server PUBLIC ${EXTRA_ARGS})
 

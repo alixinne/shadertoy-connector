@@ -57,6 +57,7 @@ find_package(shadertoy 1.0.0 REQUIRED)
 get_target_property(SHADERTOY_INCLUDE_DIRS shadertoy-shared INTERFACE_INCLUDE_DIRECTORIES)
 
 # Load omw
+set(OMW_CXX_STANDARD 17 CACHE STRING "OMW C++ standard")
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ext/omw)
 
 cmake_dependent_option(ST_BUILD_MATHEMATICA "Build the Mathematica target" ON

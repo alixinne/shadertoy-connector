@@ -20,7 +20,7 @@ target_include_directories(stc_gl PRIVATE
 	${jsoncpp_INCLUDE_DIRS})
 
 set_target_properties(stc_gl
-	PROPERTIES CXX_STANDARD 14
+	PROPERTIES CXX_STANDARD 17
 	POSITION_INDEPENDENT_CODE ON)
 
 target_compile_options(stc_gl PUBLIC ${EXTRA_ARGS})
