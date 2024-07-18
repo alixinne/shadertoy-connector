@@ -6,7 +6,7 @@ services:
 env:
   global:
     - PACKAGE_NAME=shadertoy-connector
-    - BINTRAY_ORG=vtavernier
+    - BINTRAY_ORG=alixinne
     - secure: IeASiwwn8w3+iDotipR+BEUfhxVZJlOSc1avJzQkz+PmHldNGamYHmY1WBrRJUUgjtLgQYL4gmITP042aU44lGN0XUiUlLQ4RhG7lyHjClkK0dCcn7l1Ge+8vX8cfzCrsQ0rIGQNUzu7yCN0ZZpgqV3CAhvovXKhsn01f8ycNXxCFbeDykqri2XXXB1bJvzhvaEj5CutdQu1x5JqjuyM1Wcupx3LXRSy9NLFVRrpT/ueYAy8IocZMGNhk3x2SwpqdOPmgQd+pzb1y4atlAMkbJalnerwYHAKrHQ2VSTlP3cbj3qQt3YQEQUzQ6i3ShJEZMb7O8T8QFm9d0zKXqHQZd6jWcpbd3fAQ8G/DL6wMkPMlTv5q6cMkE5yGI4lCcIirBzmFLgf8dQlGPXqLNxnCIPhXR5wmCzcr+EAlHlH3U9XoCQay5KRNorWaO7Khh79+LdL6k6YSHS+7E8xKhiULQAwuxibTrqlKZSSmA2sq5cEMCpp2ee7VQP7mInUJpw5/g6nfmir6wbZ08cj2zDHzPjEgexTGkThZaugV6rpOMj/KzTd7w//OiYJtehkDcd31QQweMWqONDcmBXhxO55GbYH4OsPOn7ltznKTYTsfiZXL3wgcS/oLaiXTZEb9Neeummh4qmN/ZZlxnVYFxNBEnTsb6cZHsgAeJAu6NiUWTA=
 
 matrix:
@@ -71,5 +71,5 @@ deploy:
   file:
     - "*.deb"
   on:
-    repo: vtavernier/shadertoy-connector
+    repo: alixinne/shadertoy-connector
     tags: true

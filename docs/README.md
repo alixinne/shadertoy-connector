@@ -14,4 +14,4 @@ Full function reference.
 
 ## Author
 
-Vincent Tavernier <vince.tavernier@gmail.com>
+Alixinne <alixinne@pm.me>

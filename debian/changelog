@@ -5,7 +5,7 @@ shadertoy-connector (1.0.0~rc7) unstable; urgency=medium
   * Drop support for Debian Stretch
   * Switch to GitHub
 
- -- Vincent Tavernier <vince.tavernier@gmail.com>  Wed, 05 Jun 2019 17:17:38 +0200
+ -- Alixinne <alixinne@pm.me>  Wed, 05 Jun 2019 17:17:38 +0200
 
 shadertoy-connector (1.0.0~rc6) unstable; urgency=medium
 
@@ -14,14 +14,14 @@ shadertoy-connector (1.0.0~rc6) unstable; urgency=medium
   * Add support for Debian Buster
   * Use spdlog bundled with libshadertoy
 
- -- Vincent Tavernier <vince.tavernier@gmail.com>  Fri, 15 Feb 2019 10:44:22 +0100
+ -- Alixinne <alixinne@pm.me>  Fri, 15 Feb 2019 10:44:22 +0100
 
 shadertoy-connector (1.0.0~rc5) unstable; urgency=medium
 
   * Update libshadertoy
   * Fix some bugs
 
- -- Vincent Tavernier <vince.tavernier@gmail.com>  Tue, 24 Jul 2018 00:15:06 +0200
+ -- Alixinne <alixinne@pm.me>  Tue, 24 Jul 2018 00:15:06 +0200
 
 shadertoy-connector (1.0.0~rc4) unstable; urgency=medium
 
@@ -34,21 +34,21 @@ shadertoy-connector (1.0.0~rc4) unstable; urgency=medium
   * Fix Mathematica context declaration
   * Update libshadertoy
 
- -- Vincent Tavernier <vince.tavernier@gmail.com>  Thu, 17 May 2018 16:09:25 +0200
+ -- Alixinne <alixinne@pm.me>  Thu, 17 May 2018 16:09:25 +0200
 
 shadertoy-connector (1.0.0~rc3) unstable; urgency=medium
 
   * Update libshadertoy to 1.0.0~rc3
   * Update omw wrapper
 
- -- Vincent Tavernier <vince.tavernier@gmail.com>  Wed, 16 May 2018 10:52:26 +0200
+ -- Alixinne <alixinne@pm.me>  Wed, 16 May 2018 10:52:26 +0200
 
 shadertoy-connector (1.0.0~rc2) unstable; urgency=medium
 
   * Update libshadertoy to 1.0.0~rc2
   * Reuse override_input objects
 
- -- Vincent Tavernier <vince.tavernier@gmail.com>  Wed, 25 Apr 2018 16:35:49 +0200
+ -- Alixinne <alixinne@pm.me>  Wed, 25 Apr 2018 16:35:49 +0200
 
 shadertoy-connector (1.0.0~rc1) unstable; urgency=medium
 
@@ -56,10 +56,10 @@ shadertoy-connector (1.0.0~rc1) unstable; urgency=medium
   * Upgrade libshadertoy dependency to 1.0.0
   * Upgrade omw dependency
 
- -- Vincent Tavernier <vince.tavernier@gmail.com>  Tue, 24 Apr 2018 22:15:16 +0200
+ -- Alixinne <alixinne@pm.me>  Tue, 24 Apr 2018 22:15:16 +0200
 
 shadertoy-connector (0.1.0) unstable; urgency=medium
 
   * Initial Release.
 
- -- Vincent Tavernier <vince.tavernier@gmail.com>  Mon, 12 Mar 2018 22:39:30 +0100
+ -- Alixinne <alixinne@pm.me>  Mon, 12 Mar 2018 22:39:30 +0100

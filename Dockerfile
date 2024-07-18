@@ -17,7 +17,7 @@ RUN mv /etc/apt/sources.list /etc/apt/sources.list.save && \
         wget \
         gnupg2 \
         apt-transport-https && \
-    wget -qO - 'https://bintray.com/user/downloadSubjectPublicKey?username=vtavernier' | apt-key add - && \
-    echo "deb https://dl.bintray.com/vtavernier/libshadertoy $(lsb_release -cs) main" >/etc/apt/sources.list.d/libshadertoy.list && \
+    wget -qO - 'https://bintray.com/user/downloadSubjectPublicKey?username=alixinne' | apt-key add - && \
+    echo "deb https://dl.bintray.com/alixinne/libshadertoy $(lsb_release -cs) main" >/etc/apt/sources.list.d/libshadertoy.list && \
     apt-get update -qq && \
     mk-build-deps --install --remove ./debian/control -t 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y'

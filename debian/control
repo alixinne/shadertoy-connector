@@ -1,6 +1,6 @@
 Source: shadertoy-connector
 Priority: optional
-Maintainer: Vincent Tavernier <vince.tavernier@gmail.com>
+Maintainer: Alixinne <alixinne@pm.me>
 Build-Depends: debhelper (>= 9),
  libboost-filesystem-dev (>= 1.54), libboost-log-dev (>= 1.54), libboost-date-time-dev (>= 1.54),
  libboost-program-options-dev (>= 1.54), libc6-dev (>= 2), libstdc++6 (>= 5),
@@ -9,9 +9,9 @@ Build-Depends: debhelper (>= 9),
  libzmq3-dev, pkg-config, cmake (>= 3.1), gcc-6 | gcc-7 | gcc-8
 Standards-Version: 3.9.8
 Section: libs
-Homepage: https://github.com/vtavernier/shadertoy-connector
-Vcs-Git: https://github.com/vtavernier/shadertoy-connector.git
-Vcs-Browser: https://github.com/vtavernier/shadertoy-connector
+Homepage: https://github.com/alixinne/shadertoy-connector
+Vcs-Git: https://github.com/alixinne/shadertoy-connector.git
+Vcs-Browser: https://github.com/alixinne/shadertoy-connector
 
 Package: shadertoy-connector-server
 Section: libs
